@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from '@/components/ui/sonner'
-import { addDays } from '@/lib/dates'
+import { addDays, daysBetween } from '@/lib/dates'
 
 /** S4 — Goals. Empty state + one-tap suggested goal + form; goal card with progress, pace, on-track tag. */
 export function Goals() {
@@ -31,31 +31,48 @@ export function Goals() {
   const lands = goal ? landingDate(goal, NOW) : null
   const onTrack = goal && lands ? lands.getTime() <= goal.deadline.getTime() : true
   const pct = goal ? Math.round((goal.saved / goal.target) * 100) : 0
+  const weeksLeft = goal ? Math.max(0, Math.round(daysBetween(NOW, goal.deadline) / 7)) : 0
 
   return (
     <div data-screen="goals" className="max-w-quick">
       <Link to="/" className="mb-[10px] inline-block text-[14px] font-semibold">← Insights</Link>
       <h1 className="mb-[18px] text-h1 font-bold">Goals</h1>
       {goal ? (
-        <section className="pc-card px-[22px] py-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-[16px] font-bold text-purple">{goal.emoji ?? '✦'} {goal.name}</div>
-            <Badge tone={onTrack ? 'green' : 'salmon'} size="xs" className="py-[3px]">{onTrack ? 'on track' : 'behind'}</Badge>
+        <section className="pc-card overflow-hidden">
+          <div className="bg-purple-tint px-[26px] pb-6 pt-[22px]">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="text-[15px] font-bold text-purple">{goal.emoji ?? '✦'} {goal.name}</div>
+              <Badge tone={onTrack ? 'green' : 'salmon'} size="sm">{onTrack ? 'on track' : 'behind'}</Badge>
+            </div>
+            <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <Money value={goal.saved} size="hero" className="text-purple" />
+              <span className="text-[15px] text-slate">of <Money value={goal.target} size="inline" cents="never" /> · <Num value={pct} suffix="%" /></span>
+            </div>
+            <div className="relative mt-4 h-4 overflow-hidden rounded-pill bg-white/70"><div className="absolute inset-y-0 left-0 rounded-pill bg-purple transition-[width] duration-700" style={{ width: `${pct}%` }} /></div>
           </div>
-          <div className="relative mt-[14px] h-3 overflow-hidden rounded-pill bg-lavender-soft"><div className="absolute inset-y-0 left-0 rounded-pill bg-purple transition-[width] duration-500" style={{ width: `${pct}%` }} /></div>
-          <div className="mt-2 flex justify-between text-[13px] text-slate"><span><Money value={goal.saved} size="inline" cents="never" /> of <Money value={goal.target} size="inline" cents="never" /> · vault</span><span>by <DateText date={goal.deadline} /></span></div>
-          <div className="mt-[6px] text-[13px] text-slate"><Money value={goal.weekly} size="inline" cents="never" />/week keeps you on pace{lands ? <> — lands <DateText date={lands} />.</> : '.'}</div>
-          <button onClick={() => { setGoal(null); toast('Goal removed.') }} className="mt-3 inline-block cursor-pointer text-[13px] font-semibold text-red">Stop tracking</button>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4 px-[26px] py-5 sm:grid-cols-4">
+            <div><div className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-muted">Deadline</div><div className="mt-1 text-[16px] font-bold text-ink"><DateText date={goal.deadline} /></div></div>
+            <div><div className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-muted">Weeks left</div><div className="mt-1 text-[16px] font-bold text-ink"><Num value={weeksLeft} /></div></div>
+            <div><div className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-muted">Weekly pace</div><div className="mt-1 text-[16px] font-bold text-ink"><Money value={goal.weekly} size="inline" cents="never" /></div></div>
+            <div><div className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-muted">Lands</div><div className="mt-1 text-[16px] font-bold text-ink">{lands ? <DateText date={lands} /> : '—'}</div></div>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 px-[26px] pb-5 text-[13px] text-slate">
+            <span><Money value={goal.target - goal.saved} size="inline" cents="never" /> to go — small purchases now check against this.</span>
+            <button onClick={() => { setGoal(null); toast('Goal removed.') }} className="cursor-pointer font-semibold text-red">Stop tracking</button>
+          </div>
         </section>
       ) : (
         <>
           <div className="pc-card p-[22px] text-center text-[14.5px] text-slate-muted">Nothing tracked yet.</div>
-          <div className="mt-[14px] flex flex-wrap items-center justify-between gap-[14px] rounded-card bg-purple-tint px-[22px] py-5">
-            <div className="text-[14px] text-purple">
-              <b>✈ {suggestion.name} — <Money value={suggestion.target} size="inline" cents="never" /> by <DateText date={suggestion.deadline} animated={false} /></b><br />
-              <span className="text-[13px]"><Money value={suggestion.saved} size="inline" cents="never" /> already in your vault.</span>
+          <div className="mt-[14px] rounded-card bg-purple-tint px-[26px] py-6">
+            <div className="text-[11px] font-semibold uppercase tracking-[.08em] text-purple">Suggested from your vault</div>
+            <div className="mt-2 text-[20px] font-bold text-purple">{suggestion.emoji ?? '✦'} {suggestion.name}</div>
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-3"><Money value={suggestion.saved} size="lg" className="text-purple" /><span className="text-[15px] text-slate">already saved of <Money value={suggestion.target} size="inline" cents="never" /> by <DateText date={suggestion.deadline} animated={false} /></span></div>
+            <div className="relative mt-4 h-3 overflow-hidden rounded-pill bg-white/70"><div className="absolute inset-y-0 left-0 rounded-pill bg-purple" style={{ width: `${Math.round((suggestion.saved / suggestion.target) * 100)}%` }} /></div>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <span className="text-[13px] text-slate"><Money value={suggestion.weekly} size="inline" cents="never" />/week gets you there on time.</span>
+              <Button variant="purple" size="lg" onClick={() => { setGoal({ ...suggestion, createdAt: NOW }); toast(`${suggestion.name.split(' ')[0]} is now a tracked goal.`) }}>Track it</Button>
             </div>
-            <Button variant="purple" onClick={() => { setGoal({ ...suggestion, createdAt: NOW }); toast('Lisbon is now a tracked goal.') }}>Track it</Button>
           </div>
           <section className="pc-card mt-[14px] px-[22px] py-5">
             <div className="mb-3 text-[14px] font-bold">Add a goal</div>

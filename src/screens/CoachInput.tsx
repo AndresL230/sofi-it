@@ -61,8 +61,13 @@ export function CoachInput() {
         </div>
         <div className="flex flex-wrap items-center gap-[10px]">
           {goal ? (
-            <button onClick={() => nav('/goals')} className="cursor-pointer rounded-pill bg-purple px-[13px] py-[6px] text-[12.5px] font-semibold text-white"><Rich text={goalPill(goal)} animated={false} /></button>
-          ) : null}
+            <button onClick={() => nav('/goals')} className="group cursor-pointer rounded-pill bg-purple px-[14px] py-[7px] text-left text-[12.5px] font-semibold text-white" aria-label="Open goals">
+              <Rich text={goalPill(goal)} animated={false} />
+              <span className="mt-[5px] block h-[3px] w-full overflow-hidden rounded-pill bg-white/30"><span className="block h-full rounded-pill bg-white" style={{ width: `${Math.min(100, Math.round((goal.saved / goal.target) * 100))}%` }} /></span>
+            </button>
+          ) : (
+            <button onClick={() => nav('/goals')} className="cursor-pointer rounded-pill bg-purple-tint px-[14px] py-[7px] text-[13px] font-semibold text-purple hover:bg-purple hover:text-white">✦ Set a goal</button>
+          )}
           <button onClick={() => nav('/goals')} className="cursor-pointer text-[14px] font-semibold text-teal hover:text-teal-ink">Goals</button>
         </div>
       </div>
