@@ -12,12 +12,19 @@ type Range = (typeof RANGES)[number]
 /** S0 — Relay "My financial insights" clone with Maya's numbers (everything derived from the mock accounts + transactions). */
 export function Home() {
   const [range, setRange] = useState<Range>('6M')
+  const [open, setOpen] = useState<Set<string>>(new Set())
+  const toggle = (k: string) => setOpen((prev) => { const n = new Set(prev); if (n.has(k)) n.delete(k); else n.add(k); return n })
   const { user } = useUser()
   const cash = user.accounts.filter((a) => a.type === 'depository')
   const credit = user.accounts.filter((a) => a.type === 'credit')
   const invest = user.accounts.filter((a) => a.type === 'investment')
   const sum = (xs: { balance: number }[]) => xs.reduce((s, a) => s + a.balance, 0)
   const netWorth = sum(cash) - sum(credit) + sum(invest)
+  const groups = [
+    { key: 'cash', label: 'Cash', accounts: cash, neg: false },
+    { key: 'credit', label: 'Credit cards', accounts: credit, neg: true },
+    { key: 'invest', label: 'Investments', accounts: invest, neg: false },
+  ]
   const history = user.netWorthHistory
   const sixMonthDelta = netWorth - (history[history.length - 7]?.value ?? netWorth)
 
@@ -65,18 +72,43 @@ export function Home() {
             ))}
           </div>
           <div className="mt-4 border-t border-lavender">
-            {[
-              { label: 'Cash', n: cash.length, v: sum(cash), neg: false },
-              { label: 'Credit cards', n: credit.length, v: sum(credit), neg: true },
-              { label: 'Investments', n: invest.length, v: sum(invest), neg: false },
-            ].map((row, i, arr) => (
-              <div key={row.label} className={cn('flex items-center justify-between py-[13px]', i < arr.length - 1 && 'border-b border-lavender')}>
-                <span className="text-[14.5px]">{row.label} <span className="text-slate-muted">· {row.n}</span></span>
-                <span className={cn('text-[14.5px] font-bold', row.neg && 'text-red')}>{row.neg ? '−' : ''}<Money value={row.v} size="inline" cents="never" /> <span className="text-hair text-slate-hair">›</span></span>
-              </div>
-            ))}
+            {groups.map((g, i) => {
+              const isOpen = open.has(g.key)
+              return (
+                <div key={g.key} className={cn(i < groups.length - 1 && 'border-b border-lavender')}>
+                  <button onClick={() => toggle(g.key)} aria-expanded={isOpen} className="flex w-full cursor-pointer items-center justify-between py-[13px] text-left">
+                    <span className="text-[14.5px]">{g.label} <span className="text-slate-muted">· {g.accounts.length}</span></span>
+                    <span className={cn('text-[14.5px] font-bold', g.neg && 'text-red')}>{g.neg ? '−' : ''}<Money value={sum(g.accounts)} size="inline" cents="never" /> <span className={cn('inline-block text-slate-hair transition-transform', isOpen && 'rotate-90')}>›</span></span>
+                  </button>
+                  {isOpen ? (
+                    <div className="mb-3 rounded-sm2 bg-lavender-soft/60 px-3 py-1" style={{ animation: 'fadeIn .2s both' }}>
+                      {g.accounts.map((a) => {
+                        const card = g.key === 'credit' ? user.cards.find((c) => c.last4 === a.mask) : undefined
+                        const util = a.limit ? a.balance / a.limit : null
+                        return (
+                          <div key={a.id} className="border-b border-white/70 py-2 last:border-b-0">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0"><div className="truncate text-[13.5px] font-semibold">{a.name}</div><div className="text-[11.5px] text-slate-muted">{a.officialName} ··{a.mask}{card?.apr ? <> · APR <Num value={card.apr * 100} fraction={2} suffix="%" animated={false} /></> : null}</div></div>
+                              <div className="shrink-0 text-right"><div className={cn('text-[13.5px] font-bold', g.neg && 'text-red')}>{g.neg ? '−' : ''}<Money value={a.balance} size="inline" cents="never" animated={false} /></div>{a.limit ? <div className="text-[11px] text-slate-muted">of <Money value={a.limit} size="inline" cents="never" animated={false} /> limit</div> : null}</div>
+                            </div>
+                            {util !== null ? <div className="mt-[6px] h-[4px] overflow-hidden rounded-pill bg-lavender"><div className="h-full rounded-pill" style={{ width: `${Math.min(100, util * 100)}%`, background: util > 0.3 ? 'var(--salmon)' : 'var(--teal)' }} /></div> : null}
+                            {a.vaults?.length ? (
+                              <div className="mt-[6px] flex flex-col gap-[3px]">
+                                {a.vaults.map((v) => (
+                                  <div key={v.name} className="flex items-center justify-between text-[12px] text-slate"><span><span className={cn('mr-[6px] inline-block h-[6px] w-[6px] rounded-full', /lisbon/i.test(v.name) ? 'bg-purple' : 'bg-teal')} />{v.name} vault</span><Money value={v.balance} size="inline" cents="never" animated={false} /></div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
           </div>
-          <a className="mt-2 inline-block cursor-pointer text-[14px] font-semibold">View more</a>
+          <button onClick={() => setOpen(open.size === groups.length ? new Set() : new Set(groups.map((g) => g.key)))} className="mt-2 inline-block cursor-pointer text-[14px] font-semibold text-teal hover:text-teal-ink">{open.size === groups.length ? 'View less' : 'View more'}</button>
         </section>
         <section className="pc-card p-6">
           <div className="text-[15px] font-semibold text-slate">Spending</div>
