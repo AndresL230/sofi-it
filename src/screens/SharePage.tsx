@@ -33,10 +33,8 @@ export default function SharePage() {
     <div data-screen="qr" className="flex min-h-screen items-center justify-center bg-page px-5 py-8">
       <section className="pc-card relative w-full max-w-[480px] px-8 pb-10 pt-12 text-center sm:px-10">
         <Link to="/" className="absolute left-5 top-4 text-meta text-slate-muted hover:text-slate">← Insights</Link>
-        <div className="text-title font-extrabold tracking-[-0.03em] text-navy">
-          {BRAND.wordmark}<span className="text-teal">.</span>
-        </div>
-        <h1 className="mt-1 text-h1 font-bold text-navy">{BRAND.product}</h1>
+        <img src={BRAND.logoSrc} alt={BRAND.wordmark} className="mx-auto h-6 w-auto" />
+        <h1 className="mt-2 text-h1 font-bold text-navy">{BRAND.product}</h1>
         <div
           data-qr
           className="mx-auto mt-7 aspect-square w-[min(72vw,280px)] rounded-card border border-lavender bg-white p-4 [&>svg]:h-full [&>svg]:w-full"

@@ -3,8 +3,10 @@
  * (e.g. for a public post outside the externship context) — no JSX find-and-replace.
  */
 export const BRAND = {
-  /** Wordmark shown in the nav. */
+  /** Wordmark. Now only the accessible name for the logo image + copy fallback. */
   wordmark: 'SoFi',
+  /** Logo lockup shown in the nav and on the share card. Lives in public/, served from root. */
+  logoSrc: '/sofi-logo.svg',
   /** Product name used in copy and the document title. */
   product: 'Purchase Coach',
   /** Nav section that is active. */

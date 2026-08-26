@@ -12,8 +12,8 @@ export function Shell() {
     <div className="min-h-screen bg-page">
       <div data-screen="nav" className="sticky top-0 z-20 border-b border-lavender bg-white">
         <div className="mx-auto flex max-w-shell items-center gap-4 px-4 py-3 sm:gap-5.5 sm:px-6">
-          <button onClick={() => nav('/')} className="-mx-1 inline-flex min-h-6 shrink-0 cursor-pointer items-center rounded-sm2 px-1 text-metric-sm font-extrabold tracking-[-0.03em] text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60" aria-label={`${BRAND.wordmark} home`}>
-            {BRAND.wordmark}<span className="text-teal">.</span>
+          <button onClick={() => nav('/')} className="-mx-1 inline-flex min-h-6 shrink-0 cursor-pointer items-center rounded-sm2 px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60" aria-label={`${BRAND.wordmark} home`}>
+            <img src={BRAND.logoSrc} alt="" className="h-5.5 w-auto" />
           </button>
           <div className="flex flex-1 gap-5 text-lede">
             <span className="whitespace-nowrap border-b-2 border-teal pb-0.5 font-bold text-navy">{BRAND.navSection}</span>
