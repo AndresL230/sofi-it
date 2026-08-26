@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { USER, NOW } from '@/data'
+import { NOW } from '@/data'
+import { useUser } from '@/store/profile'
 import { Money, Num } from '@/components/Money'
 import { addMonths, monthShort, sameMonth, startOfYear } from '@/lib/dates'
 import { cn } from '@/lib/utils'
@@ -11,7 +12,7 @@ type Range = (typeof RANGES)[number]
 /** S0 — Relay "My financial insights" clone with Maya's numbers (everything derived from the mock accounts + transactions). */
 export function Home() {
   const [range, setRange] = useState<Range>('6M')
-  const user = USER
+  const { user } = useUser()
   const cash = user.accounts.filter((a) => a.type === 'depository')
   const credit = user.accounts.filter((a) => a.type === 'credit')
   const invest = user.accounts.filter((a) => a.type === 'investment')
