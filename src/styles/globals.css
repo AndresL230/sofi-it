@@ -85,6 +85,13 @@ input[type=range] { accent-color: var(--teal); }
 @keyframes settle { 0% { transform: scale(1) } 60% { transform: scale(1.03) } 100% { transform: scale(1) } }
 @keyframes waterShimmer { 0%,100% { transform: translateX(0) } 50% { transform: translateX(2px) } }
 @keyframes sparkIn { from { opacity: 0; transform: scale(.4) } to { opacity: 1; transform: none } }
+/* Primary CTA confirmation: a ring leaves the button on press. Transform + opacity only, and it
+   sits on its own absolutely-positioned element so it never fights the button's :active transform. */
+@keyframes ctaRing { from { opacity: .9; transform: scale(1) } to { opacity: 0; transform: scale(1.3) } }
+@keyframes ctaFlash { from { opacity: .5 } to { opacity: 0 } }
+
+.anim-cta-ring { animation: ctaRing .38s cubic-bezier(.22,1,.36,1) both; }
+.anim-cta-flash { animation: ctaFlash .22s cubic-bezier(.22,1,.36,1) both; }
 
 .anim-shimmer {
   background: linear-gradient(90deg, #EEEBEF 25%, #F8F6F9 45%, #EEEBEF 65%);

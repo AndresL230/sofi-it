@@ -8,6 +8,7 @@ import { useUser } from '@/store/profile'
 import { goalPill } from '@/engine/goals'
 import { useGoalStore, useSession } from '@/store'
 import { useDemoStore } from '@/store/demo'
+import { BRAND } from '@/brand'
 import { Rich } from '@/components/Rich'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,12 @@ export function CoachInput() {
   const chips = profileById(profileId).starters
   const { query, loading, setQuery, setLoading, setResult } = useSession()
   const [pending, setPending] = useState<string | null>(null)
+  /** The ring is positioned from the button's measured rect and rendered OUTSIDE the
+   *  AnimatePresence: submit() flips `loading` in the same commit, so anything inside the input
+   *  branch is already unmounting and would never paint. */
+  const [ring, setRing] = useState<{ k: number; l: number; t: number; w: number; h: number } | null>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
   const inflight = useRef<AbortController | null>(null)
 
   async function submit(text: string) {
@@ -50,7 +57,16 @@ export function CoachInput() {
       setPending(null)
     }
   }
-  const onKey = (e: KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') submit(query) }
+  /** The primary CTA and Enter both fire the ring; starter chips deliberately do not — one
+   *  confirmation beat reads as intent, four reads as noise. */
+  function fire(text: string) {
+    if (!text.trim() || loading) return
+    const b = btnRef.current?.getBoundingClientRect()
+    const w = wrapRef.current?.getBoundingClientRect()
+    if (b && w) setRing({ k: Date.now(), l: b.left - w.left, t: b.top - w.top, w: b.width, h: b.height })
+    void submit(text)
+  }
+  const onKey = (e: KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') fire(query) }
 
   return (
     <section data-screen="coach-input" className="pc-card mb-5.5 px-6 py-5.5">
@@ -71,7 +87,7 @@ export function CoachInput() {
           <button onClick={() => nav('/goals')} className="inline-flex min-h-6 cursor-pointer items-center rounded-sm2 px-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">Goals</button>
         </div>
       </div>
-      <div className="relative mt-4">
+      <div ref={wrapRef} className="relative mt-4">
         <AnimatePresence initial={false} mode="wait">
           {loading ? (
             <motion.div key="shimmer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="anim-shimmer flex h-[52px] items-center rounded-ctl px-4.5 text-lede text-slate" aria-live="polite">
@@ -80,10 +96,17 @@ export function CoachInput() {
           ) : (
             <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="flex gap-2.5">
               <Input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={onKey} maxLength={200} placeholder='Try "$60 dinner" or "$1,200 flight to Lisbon in March"' className="h-[52px] rounded-ctl bg-[#FDFDFC] px-4.5 text-lede" aria-label="What are you about to buy?" />
-              <Button size="lg" onClick={() => submit(query)} className="rounded-ctl">Check</Button>
+              <Button ref={btnRef} size="lg" onClick={() => fire(query)} className="shrink-0 rounded-ctl transition-transform duration-100 active:scale-[.97]">{BRAND.checkCta}</Button>
             </motion.div>
           )}
         </AnimatePresence>
+        {ring ? (
+          <span key={ring.k} aria-hidden className="pointer-events-none absolute" style={{ left: ring.l, top: ring.t, width: ring.w, height: ring.h }}>
+            <span className="anim-cta-flash absolute inset-0 rounded-ctl bg-teal" />
+            <span className="anim-cta-ring absolute inset-0 rounded-ctl border-[2.5px] border-teal" />
+            <span className="anim-cta-ring absolute inset-0 rounded-ctl border-2 border-teal [animation-delay:90ms]" />
+          </span>
+        ) : null}
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {chips.map((c) => (

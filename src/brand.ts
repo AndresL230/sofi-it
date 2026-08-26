@@ -16,6 +16,8 @@ export const BRAND = {
   flatCardShort: 'SoFi 2%',
   /** Personal loan product name used by payment_fork. */
   loan: 'SoFi loan',
+  /** Primary call to action on the coach input. */
+  checkCta: 'SoFi It',
   /** Premium pill in the nav. */
   plusPill: 'Get ✦ Plus',
   /** Persona initials for the avatar. */
