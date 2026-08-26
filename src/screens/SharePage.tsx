@@ -8,7 +8,7 @@ import { BRAND } from '@/brand'
  * BRAND.publicUrl. Meant for a slide or a printout. `qrcode` is imported statically here so it
  * lands in this route's lazy chunk rather than the main bundle.
  */
-export default function QrPage() {
+export default function SharePage() {
   const [svg, setSvg] = useState('')
   const host = new URL(BRAND.publicUrl).host
 

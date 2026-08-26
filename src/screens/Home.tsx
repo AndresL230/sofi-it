@@ -105,7 +105,7 @@ export function Home() {
       </div>
       <div className="mt-[18px] flex justify-center gap-4 text-[12px]">
         <Link to="/gallery" className="text-slate-muted hover:text-slate">card gallery</Link>
-        <Link to="/qr" className="text-slate-muted hover:text-slate">qr code</Link>
+        <Link to="/share" className="text-slate-muted hover:text-slate">share</Link>
       </div>
       <span className="sr-only"><Num value={0} animated={false} /></span>
     </>

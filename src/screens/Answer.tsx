@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { USER, NOW } from '@/data'
+import { useUser } from '@/store/profile'
 import { buildContext } from '@/engine/context'
 import { compose } from '@/engine/composer'
 import { classify } from '@/engine/classify'
@@ -24,6 +24,7 @@ export function Answer() {
   const session = useSession()
   const { goal, setGoal } = useGoalStore()
   const [local, setLocal] = useState<Classification | null>(null)
+  const { user, now } = useUser()
   const classification = session.lastQuery === q ? session.classification : local
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export function Answer() {
     return () => { alive = false }
   }, [q])
 
-  const ctx = useMemo<EngineContext | null>(() => (classification && classification.is_purchase ? buildContext(classification, goal, USER, NOW) : null), [classification, goal])
+  const ctx = useMemo<EngineContext | null>(() => (classification && classification.is_purchase ? buildContext(classification, goal, user, now) : null), [classification, goal, user, now])
   const stack = useMemo(() => (ctx ? compose(ctx, CARD_METAS) : null), [ctx])
 
   const actions: CardActions = useMemo(() => ({

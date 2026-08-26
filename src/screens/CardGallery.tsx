@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { USER, NOW } from '@/data'
+import { NOW } from '@/data'
+import { useUser } from '@/store/profile'
 import { buildContext } from '@/engine/context'
 import { fallbackClassify } from '@/engine/fallbackClassifier'
 import { suggestedGoal } from '@/engine/goals'
@@ -15,14 +16,15 @@ const SECTIONS: CardSection[] = ['Verdict & framing', 'Money context', 'Cards & 
 
 /** Every card the composer can deal, rendered once from a single registry with engine-built sample data. */
 export function CardGallery() {
-  const ctxCache = useMemo(() => new Map<string, EngineContext>(), [])
+  const { user, profileId } = useUser()
+  const ctxCache = useMemo(() => new Map<string, EngineContext>(), [profileId])
   const ctxFor = (query: string, withGoal?: boolean) => {
     const key = `${query}|${withGoal ? 1 : 0}`
     let c = ctxCache.get(key)
     if (!c) {
       const cls = fallbackClassify(query)
       if (!cls.is_purchase) throw new Error(`gallery sample is not a purchase: ${query}`)
-      c = buildContext(cls, withGoal ? { ...suggestedGoal(USER, NOW), createdAt: NOW } : null, USER, NOW)
+      c = buildContext(cls, withGoal ? { ...suggestedGoal(user, NOW), createdAt: NOW } : null, user, NOW)
       ctxCache.set(key, c)
     }
     return c

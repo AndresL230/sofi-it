@@ -8,7 +8,7 @@ import { CardGallery } from '@/screens/CardGallery'
 import { Toaster } from '@/components/ui/sonner'
 
 /** Lazy so the `qrcode` library only ships with the /qr chunk, not the main bundle. */
-const QrPage = lazy(() => import('@/screens/QrPage'))
+const SharePage = lazy(() => import('@/screens/SharePage'))
 
 export default function App() {
   return (
@@ -20,7 +20,8 @@ export default function App() {
           <Route path="goals" element={<Goals />} />
           <Route path="gallery" element={<CardGallery />} />
         </Route>
-        <Route path="qr" element={<Suspense fallback={null}><QrPage /></Suspense>} />
+        <Route path="share" element={<Suspense fallback={null}><SharePage /></Suspense>} />
+        <Route path="qr" element={<Navigate to="/share" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />

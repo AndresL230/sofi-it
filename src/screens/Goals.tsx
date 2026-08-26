@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { USER, NOW } from '@/data'
+import { NOW } from '@/data'
+import { useUser } from '@/store/profile'
 import { suggestedGoal, landingDate } from '@/engine/goals'
 import { useGoalStore } from '@/store'
 import { Money, Num } from '@/components/Money'
@@ -14,7 +15,8 @@ import { addDays } from '@/lib/dates'
 /** S4 — Goals. Empty state + one-tap suggested goal + form; goal card with progress, pace, on-track tag. */
 export function Goals() {
   const { goal, setGoal } = useGoalStore()
-  const suggestion = suggestedGoal(USER, NOW)
+  const { user } = useUser()
+  const suggestion = suggestedGoal(user, NOW)
   const [form, setForm] = useState({ name: '', target: '', date: '', monthly: '' })
 
   function addFromForm() {
