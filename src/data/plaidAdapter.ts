@@ -64,6 +64,10 @@ export function adapt(res: PlaidResponse, now: Date, spec: ProfileSpec): UserMod
     loan: spec.loan, rent: { amount: spec.rent.amount, dayOfMonth: spec.rent.dayOfMonth }, netWorthHistory,
     redirectPlan: spec.redirectPlan, serviceCatalog: SERVICE_CATALOG,
     goalTemplate: spec.goalTemplate, habits: { coffeeMerchant: spec.habits.coffee.merchant, lunchMerchant: spec.habits.lunch.merchant },
+    seededGoals: (spec.goals ?? []).map((g) => {
+      const vault = g.vaultName ? accounts.find((a) => a.subtype === 'savings')?.vaults?.find((v) => v.name.toLowerCase() === g.vaultName!.toLowerCase()) : undefined
+      return { id: `seed-${g.name.toLowerCase().replace(/\W+/g, '-')}`, name: g.name, emoji: g.emoji, target: g.target, saved: g.saved ?? vault?.balance ?? 0, deadline: addDays(startOfDay(now), g.weeksOut * 7), weekly: g.weekly, createdAt: addDays(startOfDay(now), -30) }
+    }),
   }
 }
 

@@ -134,6 +134,8 @@ export interface UserModel {
   goalTemplate: { name: string; emoji: string; target: number; vaultName: string; weekly: number; weeksOut: number }
   /** Anchor merchants for the behavior lens. */
   habits: { coffeeMerchant: string; lunchMerchant: string }
+  /** Goals the persona already has in their data (shown on the Goals page; only the one the user tracks checks purchases). */
+  seededGoals: Goal[]
 }
 
 // ---------- Goals ----------

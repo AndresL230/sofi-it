@@ -14,7 +14,7 @@ import { addDays, daysBetween } from '@/lib/dates'
 
 /** S4 — Goals. Empty state + one-tap suggested goal + form; goal card with progress, pace, on-track tag. */
 export function Goals() {
-  const { goal, setGoal } = useGoalStore()
+  const { goal, setGoal, others, activate, addOther, remove } = useGoalStore()
   const { user } = useUser()
   const suggestion = suggestedGoal(user, NOW)
   const [form, setForm] = useState({ name: '', target: '', date: '', monthly: '' })
@@ -24,13 +24,15 @@ export function Goals() {
     const isLisbon = !form.name || /lisbon/i.test(form.name)
     const deadline = form.date ? new Date(form.date) : suggestion.deadline
     const weekly = form.monthly ? Math.round((parseFloat(form.monthly.replace(/[^\d.]/g, '')) || 0) * 12 / 52) : suggestion.weekly
-    setGoal({ id: isLisbon ? 'lisbon' : `goal-${Date.now()}`, name: form.name || suggestion.name, emoji: isLisbon ? '✈' : '✦', target, saved: isLisbon ? suggestion.saved : 0, deadline: Number.isNaN(deadline.getTime()) ? suggestion.deadline : deadline, weekly: weekly || suggestion.weekly, createdAt: NOW })
+    const created = { id: isLisbon ? 'lisbon' : `goal-${Date.now()}`, name: form.name || suggestion.name, emoji: isLisbon ? '✈' : '✦', target, saved: isLisbon ? suggestion.saved : 0, deadline: Number.isNaN(deadline.getTime()) ? suggestion.deadline : deadline, weekly: weekly || suggestion.weekly, createdAt: NOW }
+    if (goal) addOther(created); else setGoal(created)
     setForm({ name: '', target: '', date: '', monthly: '' })
-    toast('Goal tracked.')
+    toast(goal ? 'Goal added.' : 'Goal tracked.')
   }
   const lands = goal ? landingDate(goal, NOW) : null
   const onTrack = goal && lands ? lands.getTime() <= goal.deadline.getTime() : true
   const pct = goal ? Math.round((goal.saved / goal.target) * 100) : 0
+  const otherGoals = [...user.seededGoals, ...others].filter((g) => g.id !== goal?.id)
   const weeksLeft = goal ? Math.max(0, Math.round(daysBetween(NOW, goal.deadline) / 7)) : 0
 
   return (
@@ -86,6 +88,29 @@ export function Goals() {
           </section>
         </>
       )}
+      {otherGoals.length ? (
+        <section className="mt-5">
+          <div className="mb-2 flex items-baseline justify-between"><h2 className="text-[16px] font-bold">Your other goals</h2><span className="text-[12px] text-slate-muted">only one goal checks purchases at a time</span></div>
+          <div className="flex flex-col gap-3">
+            {otherGoals.map((g) => {
+              const p = Math.min(100, Math.round((g.saved / g.target) * 100))
+              const l = landingDate(g, NOW)
+              const ok = l.getTime() <= g.deadline.getTime()
+              return (
+                <div key={g.id} className="pc-card px-5 py-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-[15px] font-bold text-ink">{g.emoji ?? '✦'} {g.name}</div>
+                    <div className="flex items-center gap-2"><Badge tone={ok ? 'green' : 'salmon'} size="xs">{ok ? 'on track' : 'behind'}</Badge>{!g.id.startsWith('seed-') ? <button onClick={() => { remove(g.id); toast('Goal removed.') }} className="text-[12px] font-semibold text-red">Remove</button> : null}</div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[13px] text-slate"><Money value={g.saved} size="sm" className="text-ink" /> <span>of <Money value={g.target} size="inline" cents="never" /> · <Num value={p} suffix="%" /> · by <DateText date={g.deadline} animated={false} /> · <Money value={g.weekly} size="inline" cents="never" />/wk</span></div>
+                  <div className="relative mt-3 h-2 overflow-hidden rounded-pill bg-lavender-soft"><div className="absolute inset-y-0 left-0 rounded-pill bg-purple/70" style={{ width: `${p}%` }} /></div>
+                  <button onClick={() => { activate(g); toast(`Purchases now check against ${g.name.split(' ')[0]}.`) }} className="mt-3 cursor-pointer rounded-pill bg-purple-tint px-3 py-[6px] text-[12.5px] font-semibold text-purple hover:bg-purple hover:text-white">✦ Check purchases against this</button>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      ) : null}
       <span className="sr-only"><Num value={pct} animated={false} /></span>
     </div>
   )

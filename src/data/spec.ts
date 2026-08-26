@@ -40,10 +40,14 @@ export interface ProfileSpec {
   }
   /** Where a large purchase could be accelerated from. */
   redirectPlan: { category: SpendCategory; to: number }[]
+  /** Goals already in the persona's data (vault balance looked up by name when `vaultName` is set). */
+  goals?: { name: string; emoji: string; target: number; vaultName?: string; saved?: number; weekly: number; weeksOut: number }[]
   /** The goal the app suggests (vault balance is looked up by name). */
   goalTemplate: { name: string; emoji: string; target: number; vaultName: string; weekly: number; weeksOut: number }
   /** Six-month net-worth delta for the Home chart. */
   netWorthDelta6m: number
   /** Seed for the noise generator. */
   seed: number
+  /** Optional city-flavoured merchant pools for the CSV noise generator (scripts/gen-data.mjs); unlisted categories use its defaults. */
+  merchants?: Partial<Record<'dining' | 'groceries' | 'transport' | 'shopping' | 'entertainment' | 'other', string[]>>
 }

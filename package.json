@@ -10,6 +10,7 @@
     "lint": "eslint src worker",
     "typecheck": "tsc -b",
     "audit:literals": "node scripts/audit-literals.mjs",
+    "gen:data": "node scripts/gen-data.mjs",
     "deploy": "npm run build && wrangler deploy",
     "worker:dev": "wrangler dev"
   },
