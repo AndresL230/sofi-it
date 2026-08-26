@@ -7,8 +7,9 @@ import { classify } from '@/engine/classify'
 import { NON_PURCHASE_REPLY } from '@/engine/queries'
 import type { CardType, Classification, EngineContext } from '@/engine/types'
 import { useGoalStore, useSession } from '@/store'
-import { CARDS } from '@/cards/registry'
-import { DelayProvider, type CardActions } from '@/cards/kit'
+import { CARDS, CARD_METAS } from '@/cards'
+import { DelayProvider } from '@/cards/kit'
+import type { CardActions } from '@/types'
 import { toast } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
 
@@ -34,7 +35,7 @@ export function Answer() {
   }, [q])
 
   const ctx = useMemo<EngineContext | null>(() => (classification && classification.is_purchase ? buildContext(classification, goal, USER, NOW) : null), [classification, goal])
-  const stack = useMemo(() => (ctx ? compose(ctx, (t) => CARDS[t].condition(ctx)) : null), [ctx])
+  const stack = useMemo(() => (ctx ? compose(ctx, CARD_METAS) : null), [ctx])
 
   const actions: CardActions = useMemo(() => ({
     toast: (m) => toast(m),
@@ -60,8 +61,8 @@ export function Answer() {
   const isTwoCol = stack.layout !== 'quick'
   const maxW = stack.layout === 'quick' ? 'max-w-quick' : stack.layout === 'recurring' ? 'max-w-plan' : ''
   const stackKey = `${q}|${goal?.id ?? 'nogoal'}|${goal?.saved ?? 0}`
-  const isFull = (type: CardType) => FULL.includes(type) || CARDS[type].span === 'full'
-  const lanes = { left: stack.cards.filter((t) => !isFull(t) && CARDS[t].column === 'left'), right: stack.cards.filter((t) => !isFull(t) && CARDS[t].column !== 'left') }
+  const isFull = (type: CardType) => FULL.includes(type) || CARDS[type].meta.span === 'full'
+  const lanes = { left: stack.cards.filter((t) => !isFull(t) && CARDS[t].meta.column === 'left'), right: stack.cards.filter((t) => !isFull(t) && CARDS[t].meta.column !== 'left') }
   // a lone column collapses to full width; an empty lane is skipped
   const twoLanes = isTwoCol && lanes.left.length > 0 && lanes.right.length > 0
 
@@ -85,13 +86,14 @@ export function Answer() {
     {
           const mod = CARDS[type]
           const props = mod.select(ctx!)
-          const Comp = mod.Component as React.ComponentType<Record<string, unknown> & { actions: CardActions }>
+          const Comp = mod.Component
+          const bare = mod.meta.bare
           const delay = type === 'verdict_banner' ? 300 : i * STAGGER_MS
           const full = isTwoCol && isFull(type)
           return (
-            <div key={type} data-card={type} className={cn(full && 'col-span-full', mod.bare ? (full ? '' : 'contents') : 'motion-safe:[animation:riseIn_.45s_both]')} style={mod.bare ? undefined : { animationDelay: `${delay}ms` }}>
+            <div key={type} data-card={type} className={cn(full && 'col-span-full', bare ? (full ? '' : 'contents') : 'motion-safe:[animation:riseIn_.45s_both]')} style={bare ? undefined : { animationDelay: `${delay}ms` }}>
               <DelayProvider value={delay}>
-                <Comp {...(props as Record<string, unknown>)} actions={actions} />
+                <Comp {...props} actions={actions} />
               </DelayProvider>
             </div>
           )

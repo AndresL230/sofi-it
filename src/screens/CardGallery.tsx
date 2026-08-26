@@ -5,8 +5,9 @@ import { buildContext } from '@/engine/context'
 import { fallbackClassify } from '@/engine/fallbackClassifier'
 import { suggestedGoal } from '@/engine/goals'
 import type { CardSection, EngineContext } from '@/engine/types'
-import { CARD_LIST } from '@/cards/registry'
-import { DelayProvider, noopActions, type CardActions } from '@/cards/kit'
+import { CARD_LIST } from '@/cards'
+import { DelayProvider, noopActions } from '@/cards/kit'
+import type { CardActions } from '@/types'
 import { toast } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
 
@@ -37,16 +38,15 @@ export function CardGallery() {
         {SECTIONS.map((section) => (
           <div key={section} className="contents">
             <div className="mb-[14px] mt-2 text-[16px] font-extrabold text-navy [column-span:all]">{section}</div>
-            {CARD_LIST.filter((m) => m.section === section).map((mod) => (
-              <div key={mod.type} data-gallery-card={mod.type} className="mb-5 break-inside-avoid">
-                <div className="mb-[6px] text-[11px] font-bold uppercase tracking-[.1em] text-slate">{mod.type}{mod.label ? ` — ${mod.label}` : ''}</div>
+            {CARD_LIST.filter((c) => c.meta.group === section).map(({ meta: mod, select, Component: Comp }) => (
+              <div key={mod.id} data-gallery-card={mod.id} className="mb-5 break-inside-avoid">
+                <div className="mb-[6px] text-[11px] font-bold uppercase tracking-[.1em] text-slate">{mod.id}{mod.label ? ` — ${mod.label}` : ''}</div>
                 <div className="flex flex-col gap-2">
                   {mod.samples.map((s, i) => {
                     const ctx = ctxFor(s.query, s.goal)
                     if (!mod.condition(ctx) && !s.override) return <div key={i} className="rounded-card border border-dashed border-lavender p-3 text-[12px] text-salmon-ink">condition false for "{s.query}"</div>
-                    let props = mod.select(ctx) as Record<string, unknown>
-                    if (s.override) props = (s.override as (p: unknown) => Record<string, unknown>)(props)
-                    const Comp = mod.Component as React.ComponentType<Record<string, unknown> & { actions: CardActions }>
+                    let props = select(ctx)
+                    if (s.override) props = s.override(props) as Record<string, unknown>
                     return (
                       <div key={i} className={cn(mod.bare && 'py-1')}>
                         <DelayProvider value={0}><Comp {...props} actions={actions} /></DelayProvider>

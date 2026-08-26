@@ -7,8 +7,11 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+// One folder per card: src/cards/<id>/{index.tsx, meta.ts, graphic.tsx?}. Shared kit/_ranking are skipped.
 const dir = new URL('../src/cards', import.meta.url).pathname
-const files = readdirSync(dir).filter((f) => f.endsWith('.tsx') && !f.startsWith('_') && f !== 'kit.tsx')
+const files = readdirSync(dir, { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .flatMap((d) => readdirSync(join(dir, d.name)).filter((f) => f.endsWith('.tsx')).map((f) => `${d.name}/${f}`))
 const MONTHS = 'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec'
 const patterns = [
   { name: 'money literal', re: /[$€£]\s?\d/g },

@@ -23,7 +23,7 @@ export default tseslint.config(
         zones: [
           { target: './src/engine', from: './src/cards', message: 'engine must not import cards' },
           { target: './src/cards', from: './src/data', message: 'cards receive props only — never import data' },
-          { target: './src/cards', from: './src/engine', except: ['./types.ts', './format.ts'], message: 'cards may only import engine types' },
+          { target: './src/cards', from: './src/engine', except: ['./types.ts', './format.ts'], message: 'cards may only import engine types/format (src/types.ts is unrestricted)' },
           { target: './src/engine', from: './src/screens', message: 'engine must not import screens' },
           { target: './src/data', from: './src/engine', except: ['./types.ts'], message: 'data may only import engine types' },
         ],
