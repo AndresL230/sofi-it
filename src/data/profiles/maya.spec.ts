@@ -43,7 +43,7 @@ export const mayaSpec: ProfileSpec = {
   netWorthDelta6m: 1240,
   seed: 42,
   merchants: {
-    dining: ['Toro', 'Pho Pasteur', 'Tatte Bakery', 'Mei Mei', 'Neptune Oyster', 'Dumpling House', "Anna's Taqueria", 'Row 34', 'Flour Bakery', 'Clover Food Lab', 'Bon Me', 'Life Alive', 'Pavement Coffeehouse', 'El Pelón Taqueria'],
+    dining: ['Toro', 'Pho Pasteur', 'Tatte Bakery', 'Mei Mei', 'Neptune Oyster', 'Dumpling House', "El Jefe's Taqueria", 'Row 34', 'Flour Bakery', 'Clover Food Lab', 'Bon Me', 'Life Alive', 'Pavement Coffeehouse', 'El Pelón Taqueria'],
     groceries: ["Trader Joe's", 'Whole Foods', 'Star Market', 'H Mart', 'Harvest Co-op', 'Stop & Shop'],
     transport: ['Uber', 'Lyft', 'MBTA', 'Bluebikes', 'Shell', 'Logan Parking'],
     shopping: ['Amazon', 'Uniqlo', 'Target', 'Sephora', 'Nike', 'Newbury Comics', 'Madewell'],

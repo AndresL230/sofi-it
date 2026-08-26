@@ -60,7 +60,7 @@ const PFC = {
 }
 /** Fallback merchant pools (Boston); a spec's optional `merchants` overrides per category. */
 const DEFAULT_MERCHANTS = {
-  dining: ['Sweetgreen', 'Toro', 'Pho Pasteur', 'Tatte Bakery', 'Mei Mei', 'Blue Bottle Coffee', 'Neptune Oyster', 'Dumpling House', "Anna's Taqueria", 'Row 34'],
+  dining: ['Sweetgreen', 'Toro', 'Pho Pasteur', 'Tatte Bakery', 'Mei Mei', 'Blue Bottle Coffee', 'Neptune Oyster', 'Dumpling House', "El Jefe's Taqueria", 'Row 34'],
   groceries: ["Trader Joe's", 'Whole Foods', 'Star Market', 'H Mart', 'Harvest Co-op'],
   transport: ['Uber', 'Lyft', 'MBTA', 'Bluebikes', 'Shell'],
   shopping: ['Amazon', 'Uniqlo', 'Target', 'Sephora', 'Nike'],
