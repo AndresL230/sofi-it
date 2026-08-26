@@ -12,7 +12,7 @@ function DuplicateCheck({ priorLabel, priorAmount, weeksAgo, thisLabel, thisAmou
     </div>
   )
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="mb-3 text-[13px] text-slate"><Num value={count} suffix={count === 2 ? 'nd' : count === 3 ? 'rd' : 'th'} /> {kind} purchase this quarter.</div>
       <div className="relative flex items-stretch justify-center gap-1">
         {tile('-2deg', <><Num value={weeksAgo} animated={false} /> weeks ago</>, <>{priorLabel} · <b><Money value={priorAmount} size="inline" cents="never" animated={false} /></b></>)}

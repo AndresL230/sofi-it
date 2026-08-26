@@ -82,7 +82,7 @@ export function Answer() {
         <div key={stackKey} className="flex flex-col gap-4">
           {rows.map((row, r) => (
             <div key={r} className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-12" data-row={row.items.map((x) => `${(x.stack ?? [x.id]).join('+')}:${x.span}`).join(' ')}>
-              {row.items.map((x) => <div key={x.id} className="flex min-w-0 flex-col gap-4 md:[grid-column:span_var(--span)_/_span_var(--span)]" style={{ ['--span' as string]: x.span }}>{(x.stack ?? [x.id]).map((id) => renderCard(id, stack.cards.indexOf(id)))}</div>)}
+              {row.items.map((x) => <div key={x.id} className="flex min-w-0 flex-col gap-4 md:[grid-column:span_var(--span)_/_span_var(--span)] [&>*]:flex-[1_1_auto] [&>*]:min-h-fit" style={{ ['--span' as string]: x.span }}>{(x.stack ?? [x.id]).map((id) => renderCard(id, stack.cards.indexOf(id)))}</div>)}
             </div>
           ))}
         </div>

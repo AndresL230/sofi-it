@@ -8,7 +8,7 @@ interface Props { label: string; amount: number; daysLeft: number; windowDays: n
 function CreditExpiry({ label, amount, daysLeft, windowDays, noun }: Props) {
   const d = useDelay()
   return (
-    <div className="pc-card relative flex overflow-hidden">
+    <div className="pc-card relative flex h-full overflow-hidden">
       <div className="flex-[7] px-5 py-[18px]">
         <div className="flex items-center gap-[7px]"><div className="h-4 w-4 rounded-full shadow-[inset_0_-1px_2px_rgba(0,0,0,.2)]" style={{ background: 'linear-gradient(135deg, #F5CE6E, #C8973B)' }} /><Caps className="tracking-[.09em]">Unused credit</Caps></div>
         <div className="mt-2 text-[17px] font-semibold text-navy"><Money value={amount} size="inline" cents="never" /> {label}</div>

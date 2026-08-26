@@ -15,7 +15,7 @@ function PriceCreep({ monthly, monthLabels, raises, candidate, raiseTotal, drift
   const y = (v: number) => ((max - v) / (max - min)) * 100
   const x = (i: number) => (i / (monthly.length - 1)) * 92
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="text-[15px] font-semibold">Same subscriptions. <b className="text-salmon-ink"><Money value={raiseTotal} size="inline" cents={Number.isInteger(raiseTotal) ? 'never' : 'decimal'} signed animated={false} />/mo</b> in raises.</div>
       <div className="relative mt-[26px]" style={{ height: H + 18 }}>
         <div className="absolute inset-x-0 top-0" style={{ height: H, width: '92%' }}>

@@ -10,7 +10,7 @@ function CashflowTimeline({ today, paydays, inFull, accelerated, redirectMonthly
   const x = (d: Date) => `${Math.min(100, Math.max(0, (daysBetween(today, d) / horizon) * 100))}%`
   const accX = (daysBetween(today, accelerated) / horizon) * 100
   return (
-    <CardShell className="px-6 pb-[30px] pt-[22px]">
+    <CardShell className="px-6 pb-[30px] pt-[22px] flex flex-col justify-center">
       <div className="relative mx-2 mb-14 mt-9 h-2 rounded-pill bg-lavender-soft">
         <div className="absolute inset-y-0 left-0 rounded-pill bg-teal" style={{ width: `${Math.min(accX, 100)}%` }} />
         <div className="absolute -top-1 left-0 h-4 w-4 rounded-full border-[3px] border-white bg-teal shadow-pop" />

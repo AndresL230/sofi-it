@@ -11,7 +11,7 @@ function CarryingCost({ months, total }: Props) {
   useEffect(() => { setShown(total) }, [total])
   const maxBal = Math.max(...months.map((m) => m.balance + m.interest * 6))
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="mb-[10px] text-[13px] text-slate">If it rides the card: interest stacks monthly.</div>
       <div className="relative flex h-[110px] items-end justify-center gap-[22px]">
         {months.map((m, i) => (

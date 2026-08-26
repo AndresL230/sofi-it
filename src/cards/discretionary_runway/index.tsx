@@ -7,7 +7,7 @@ interface Props { checking: number; room: number; reserved: number; bills: { lab
 function DiscretionaryRunway({ checking, room, reserved, bills, payday }: Props) {
   const pct = (v: number) => `${Math.max(0, (v / checking) * 100)}%`
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="mb-3 text-[13px] text-slate">Your runway to the next paycheck.</div>
       <div className="relative flex h-[46px] items-stretch overflow-hidden rounded-sm2 bg-navy">
         <div className="flex items-center whitespace-nowrap pl-3 text-[12px] font-bold text-white" style={{ width: pct(room), background: 'var(--teal)', minWidth: room > 0 ? 112 : 0 }}><Money value={room} size="inline" cents="never" />&nbsp;of room</div>

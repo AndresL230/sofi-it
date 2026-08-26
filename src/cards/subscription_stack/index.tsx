@@ -8,7 +8,7 @@ function SubscriptionStack({ candidate, rows, total, newTotal }: Props) {
   const d = useDelay()
   const compress = rows.length > 6
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="mb-[10px] text-[14px] font-bold">The tower, with this one on top</div>
       <div className="overflow-hidden rounded-sm2 border border-lavender-soft tabular-nums">
         <div className="flex justify-between px-[14px] py-2 text-[13px] font-bold" style={{ background: 'rgba(254,216,128,.35)', animation: `riseIn .4s ${d(300)} both` }}><span>{candidate.name}</span><Money value={candidate.price} size="inline" cents="decimal" animated={false} /></div>

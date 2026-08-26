@@ -18,7 +18,7 @@ function PaceProjection({ usual, spent, elapsed, dim, projected, overshoot, cros
   const solid = `M0 ${y(0)} C ${xToday * 0.4} ${y(0) - (y(0) - ySpent) * 0.2} ${xToday * 0.7} ${ySpent + (y(0) - ySpent) * 0.2} ${xToday} ${ySpent}`
   const dotted = `M${xToday} ${ySpent} Q ${xToday + (W - xToday) * 0.55} ${ySpent - (ySpent - yEnd) * 0.7} ${W} ${yEnd}`
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="relative">
         <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" aria-hidden>
           <line x1="0" y1={yUsual} x2={W} y2={yUsual} stroke="var(--lavender)" strokeWidth="1.5" strokeDasharray="5 5" />

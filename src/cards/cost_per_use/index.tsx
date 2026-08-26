@@ -11,7 +11,7 @@ function CostPerUse({ amount, unit, anchor, defaultUses, min, max, good, ok }: P
   const color = per <= good ? 'var(--teal)' : per <= ok ? 'var(--gold-ink)' : 'var(--salmon-ink)'
   const tokens = Math.max(3, Math.min(12, Math.round(uses / 8)))
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="flex items-baseline justify-between">
         <div className="text-[14px] font-bold">Cost per {unit}</div>
         <div className="text-[22px] font-extrabold transition-colors duration-300" style={{ color }}><Money value={per} size="inline" cents={per < 10 ? 'decimal' : 'never'} /><span className="text-[12px] font-semibold text-slate-muted">/{unit}</span></div>

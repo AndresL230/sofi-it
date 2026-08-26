@@ -8,7 +8,7 @@ interface Props { weeks: number; dots: { week: number; amount: number }[]; today
 function ImpulseFrequency({ weeks, dots, todayWeek, label, amounts }: Props) {
   const maxAmt = Math.max(1, ...dots.map((x) => x.amount))
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <Tracker
         count={weeks}
         renderTick={(i) => {

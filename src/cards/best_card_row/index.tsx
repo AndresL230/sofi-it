@@ -9,7 +9,7 @@ interface Props { winner: RankedCard; rows: RankedCard[]; deltaVsFlat: number; f
 function BestCardRow({ winner, rows, deltaVsFlat, flatShort }: Props) {
   const [open, setOpen] = useState(false)
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="flex flex-wrap items-center gap-[14px]">
         <CardArt art={winner.card.art} label={winner.card.artLabel} last4={winner.card.last4} />
         <div className="min-w-[180px] flex-1 text-[14px]"><b>{winner.card.name}</b> — <Rich text={winner.reason} animated={false} /></div>

@@ -7,7 +7,7 @@ interface Props { merchant: string; visits: number; slots: number; ytdSpend: num
 function MerchantHabit({ merchant, visits, slots, ytdSpend }: Props) {
   const d = useDelay()
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="text-[14px] font-bold">{merchant} — regular's card</div>
       <div className="mt-[14px] grid max-w-[342px] gap-[6px]" style={{ gridTemplateColumns: `repeat(${slots}, minmax(0, 1fr))` }}>
         {Array.from({ length: slots }, (_, i) => {

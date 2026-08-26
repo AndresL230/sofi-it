@@ -10,7 +10,7 @@ function PaydayProximity({ daysToPayday, tiles, paycheck, payday, actions }: Pro
   const payIdx = tiles.findIndex((t) => t.payday)
   const from = 8, to = 8 + ((payIdx <= 0 ? 4 : payIdx) / (tiles.length - 1)) * 84 * 0.7
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="text-[15px] font-semibold text-navy">⚡ <Num value={daysToPayday} /> days to payday</div>
       <div className="relative mx-1 mb-[10px] mt-[26px]">
         <div className="absolute left-[8%] right-[8%] top-[21px] h-[2px] bg-lavender" />

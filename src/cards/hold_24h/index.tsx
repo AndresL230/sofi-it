@@ -14,14 +14,14 @@ function Hold24h({ thing, amount, cardShort, goalName, hours, verdictWord, actio
   const [phase, setPhase] = useState<Phase>('front')
   const flip = { initial: { rotateY: -90, opacity: 0 }, animate: { rotateY: 0, opacity: 1 }, exit: { rotateY: 90, opacity: 0 }, transition: { duration: 0.3, ease: 'easeInOut' } } as const
   return (
-    <div style={{ perspective: 900 }}>
+    <div className="flex h-full flex-col" style={{ perspective: 900 }}>
       <AnimatePresence mode="wait" initial={false}>
         {phase === 'front' ? (
-          <motion.div key="front" {...flip} className="pc-card px-5 py-[18px]" style={{ transformStyle: 'preserve-3d' }}>
+          <motion.div key="front" {...flip} className="pc-card flex flex-1 items-center px-5 py-[18px]" style={{ transformStyle: 'preserve-3d' }}>
             <Button variant="outline" className="w-full whitespace-normal py-[13px] text-[14.5px] h-auto" onClick={() => setPhase('held')}><span>Hold it for <Num value={hours} animated={false} /> hours — I'll re-ask you tomorrow.</span></Button>
           </motion.div>
         ) : phase === 'held' ? (
-          <motion.div key="held" {...flip} className="relative overflow-hidden rounded-card bg-navy px-5 py-[22px] text-center text-white" style={{ transformStyle: 'preserve-3d' }}>
+          <motion.div key="held" {...flip} className="relative flex flex-1 flex-col justify-center overflow-hidden rounded-card bg-navy px-5 py-[22px] text-center text-white" style={{ transformStyle: 'preserve-3d' }}>
             <div className="pointer-events-none absolute inset-x-0 top-0 h-[38%]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0))', clipPath: 'polygon(0 0, 100% 0, 50% 100%)' }} aria-hidden />
             <div className="mx-auto mb-[10px] w-11">
               <ProgressCircle value={1 / 12} size={44} strokeWidth={3} color="var(--teal-soft)" track="rgba(255,255,255,.2)" delay="0ms"><span className="text-[11px] font-bold"><Num value={hours} animated={false} />h</span></ProgressCircle>
@@ -30,7 +30,7 @@ function Hold24h({ thing, amount, cardShort, goalName, hours, verdictWord, actio
             <div className="mx-auto mt-3 h-[3px] w-11 rounded-[2px] bg-white/15" />
           </motion.div>
         ) : (
-          <motion.div key="reask" {...flip} className="pc-card flex items-center gap-4 px-5 py-[18px]" style={{ transformStyle: 'preserve-3d' }}>
+          <motion.div key="reask" {...flip} className="pc-card flex flex-1 items-center gap-4 px-5 py-[18px]" style={{ transformStyle: 'preserve-3d' }}>
             <Stamp delay="0ms" size={64} />
             <div className="flex-1">
               <div className="text-[14.5px] font-bold">Still want the <Money value={amount} size="inline" cents="never" animated={false} /> {thing}?</div>

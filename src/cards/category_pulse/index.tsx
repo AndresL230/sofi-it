@@ -8,7 +8,7 @@ interface Props { label: string; spent: number; usual: number; amount: number; p
 function CategoryPulse({ label, spent, usual, amount, projected, daysLeft, overshoot }: Props) {
   const scale = Math.max(usual * 1.18, spent + amount)
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="mb-[9px] flex justify-between text-[13.5px]"><b>{label} this month</b><span className="text-slate"><Money value={spent} size="inline" cents="never" /> of <Money value={usual} size="inline" cents="never" /> usual</span></div>
       <CategoryBar
         segments={[{ value: spent / scale, fill: 'var(--teal)' }, { value: amount / scale, fill: 'hatch' }]}

@@ -6,7 +6,7 @@ interface Props { mine: string[]; candidate: string; shared: string[] }
 /** #27 — a small Venn: two circles holding service chips; the intersection shaded salmon with the overlapping pair inside. */
 function OverlapCheck({ mine, candidate, shared }: Props) {
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="relative">
         <svg viewBox="0 0 320 140" className="block w-full" aria-hidden>
           <defs><clipPath id="ovA"><circle cx="120" cy="70" r="58" /></clipPath></defs>

@@ -10,8 +10,8 @@ function SplitCheck({ amount, tightAt, maxPeople }: Props) {
   const share = amount / people
   const tight = share >= tightAt
   return (
-    <div>
-      <div className="pc-card rounded-b-none px-5 pb-1 pt-[18px]">
+    <div className="flex h-full flex-col">
+      <div className="pc-card flex-1 rounded-b-none px-5 pb-1 pt-[18px]">
         <Caps className="text-center tracking-[.12em]">The check</Caps>
         <div className="mt-1 text-center"><Money value={amount} size="lg" /></div>
         <div className="my-[14px] border-t-[1.5px] border-dotted border-lavender" />

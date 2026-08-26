@@ -6,7 +6,7 @@ interface Props { shields: EngineContext['benefits'] }
 /** #18 — three shields, no prose: active ones outlined teal with the day count inside; inapplicable ones ghosted. */
 function BenefitsCheck({ shields }: Props) {
   return (
-    <CardShell>
+    <CardShell className="flex flex-col justify-center">
       <div className="flex justify-around gap-[10px] text-center">
         {shields.map((s) => (
           <div key={s.key} style={{ opacity: s.active ? 1 : 0.45 }}>

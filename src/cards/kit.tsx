@@ -27,7 +27,7 @@ export function useDelay() {
 
 /** White 16px-radius card with the soft shadow. */
 export function CardShell({ children, className, style, as: Tag = 'div' }: { children: ReactNode; className?: string; style?: React.CSSProperties; as?: 'div' | 'section' | 'button' }) {
-  return <Tag className={cn('pc-card px-5 py-[18px]', className)} style={style}>{children}</Tag>
+  return <Tag className={cn('pc-card h-full px-5 py-[18px]', className)} style={style}>{children}</Tag>
 }
 /** 11px letterspaced slate caps label. */
 export function Caps({ children, className }: { children: ReactNode; className?: string }) {
