@@ -45,7 +45,7 @@
   --hairline: #C4C7CC;
   --lavender-soft: #F0EEF1;   /* row borders, empty tracks */
   --lavender-deep: #D9D4DF;   /* outline circles, rank rail */
-  --shadow-card: 0 14px 34px -14px rgba(32,23,71,.14), 0 2px 10px -6px rgba(32,23,71,.06);
+  --shadow-card: none; /* flat cards: white on the warm page, no rim */
 }
 
 html { -webkit-font-smoothing: antialiased; }

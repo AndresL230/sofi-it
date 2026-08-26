@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useUser } from '@/store/profile'
 import { buildContext } from '@/engine/context'
 import { compose, explain } from '@/engine/composer'
+import { layoutRows, itemFor } from '@/engine/layout'
 import { useDemoStore } from '@/store/demo'
 import { classify } from '@/engine/classify'
 import { fallbackClassify } from '@/engine/fallbackClassifier'
@@ -16,7 +17,6 @@ import { toast } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
 
 const STAGGER_MS = 80
-const FULL: CardType[] = ['verdict_banner', 'plan_header', 'consequence_line', 'post_purchase_footer', 'track_goal_cta', 'goal_impact_chip']
 
 /** The answer is a composed stack — never a fixed template. Layout adapts to the stack's size class. */
 export function Answer() {
@@ -70,26 +70,25 @@ export function Answer() {
   }
   if (!ctx || !stack) return null
 
-  const isTwoCol = stack.layout !== 'quick'
-  const maxW = stack.layout === 'quick' ? 'max-w-quick' : stack.layout === 'recurring' ? 'max-w-plan' : ''
+  const bento = stack.layout !== 'quick'
+  const maxW = stack.layout === 'quick' ? 'max-w-quick' : ''
   const stackKey = `${q}|${goal?.id ?? 'nogoal'}|${goal?.saved ?? 0}`
-  const isFull = (type: CardType) => FULL.includes(type) || CARDS[type].meta.span === 'full'
-  const lanes = { left: stack.cards.filter((t) => !isFull(t) && CARDS[t].meta.column === 'left'), right: stack.cards.filter((t) => !isFull(t) && CARDS[t].meta.column !== 'left') }
-  // a lone column collapses to full width; an empty lane is skipped
-  const twoLanes = isTwoCol && lanes.left.length > 0 && lanes.right.length > 0
+  const rows = bento ? layoutRows(stack.cards.map(itemFor)) : null
 
   return (
     <div data-screen="answer" data-path={stack.path} className={maxW}>
       <Link to="/" className="mb-[14px] inline-block text-[14px] font-semibold" onClick={() => session.reset()}>← Insights</Link>
-      <div key={stackKey} className={cn(twoLanes ? 'grid grid-cols-1 items-start gap-4 md:grid-cols-2' : isTwoCol ? 'grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr))] items-start' : 'flex flex-col gap-[14px]')}>
-        {(twoLanes ? [...stack.cards.filter(isFull).filter((t) => stack.cards.indexOf(t) < stack.cards.findIndex((x) => !isFull(x))), '__left', '__right', ...stack.cards.filter(isFull).filter((t) => stack.cards.indexOf(t) > stack.cards.findIndex((x) => !isFull(x)))] : stack.cards).map((type, i) => {
-          if (type === '__left' || type === '__right') {
-            const lane = type === '__left' ? lanes.left : lanes.right
-            return <div key={type} className="flex flex-col gap-[14px]">{lane.map((t) => renderCard(t, stack.cards.indexOf(t)))}</div>
-          }
-          return renderCard(type as CardType, i)
-        })}
-      </div>
+      {rows ? (
+        <div key={stackKey} className="flex flex-col gap-4">
+          {rows.map((row, r) => (
+            <div key={r} className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-12" data-row={row.items.map((x) => `${(x.stack ?? [x.id]).join('+')}:${x.span}`).join(' ')}>
+              {row.items.map((x) => <div key={x.id} className="flex min-w-0 flex-col gap-4 md:[grid-column:span_var(--span)_/_span_var(--span)]" style={{ ['--span' as string]: x.span }}>{(x.stack ?? [x.id]).map((id) => renderCard(id, stack.cards.indexOf(id)))}</div>)}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div key={stackKey} className="flex flex-col gap-[14px]">{stack.cards.map((type, i) => renderCard(type, i))}</div>
+      )}
       {import.meta.env.DEV ? <div className="mt-3 text-[11px] text-slate-muted">path: {stack.path} · {stack.cards.length} cards · source: {classification.source}{stack.dropped.length ? ` · dropped: ${stack.dropped.join(', ')}` : ''}</div> : null}
     </div>
   )
@@ -101,9 +100,8 @@ export function Answer() {
           const Comp = mod.Component
           const bare = mod.meta.bare
           const delay = type === 'verdict_banner' ? 300 : i * STAGGER_MS
-          const full = isTwoCol && isFull(type)
           return (
-            <div key={type} data-card={type} className={cn(full && 'col-span-full', bare ? (full ? '' : 'contents') : 'motion-safe:[animation:riseIn_.45s_both]')} style={bare ? undefined : { animationDelay: `${delay}ms` }}>
+            <div key={type} data-card={type} className={cn('h-full', bare ? '' : 'motion-safe:[animation:riseIn_.45s_both]')} style={bare ? undefined : { animationDelay: `${delay}ms` }}>
               <DelayProvider value={delay}>
                 <Comp {...props} actions={actions} />
               </DelayProvider>
