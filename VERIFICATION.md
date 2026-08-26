@@ -108,4 +108,19 @@ After Wave 3 (gzip): entry 89 KB + vendor 53 KB + motion 38 KB + CSS 7 KB = **�
 
 - Deployed after Wave 3 at 2026-08-26T06:03:47Z via `npx wrangler deploy`, version `856b05a3-33f5-41d0-aa1a-f5e191464eba` (100%). Earlier same-day versions: `01eeb811` (05:42Z), `a3f4fff9` (05:35Z, `workers_dev: true` restored), `34d76f2d` (05:25Z, custom domain), `334d9900` (05:20Z).
 - Custom domain live: https://meridian.andresl.dev — `GET /api/health` → `{"ok":true,"model":"claude-haiku-4-5","hasKey":false}`. workers.dev live again: https://sofi-purchase-coach.andreslopez-23061.workers.dev → 200, same health body.
-- `ANTHROPIC_API_KEY` is still **unset** (`hasKey:false`); the app runs on the fallback classifier. `npx wrangler secret put ANTHROPIC_API_KEY` enables the model without a redeploy.
+- `ANTHROPIC_API_KEY` is still **unset** (`hasKey:false`); the app runs on the fallback classifier. `npx wrangler secret put ANTHROPIC_API_KEY` enables the model without a redeploy. (Since set — see below.)
+
+## (g) Later on 2026-08-26
+
+Landed after Wave 3 (commits `470551a` … `59de5ad`). Facts, not claims:
+
+- **Three profiles.** Maya (master spec, verbatim numbers), Devon (Austin, paycheck-to-paycheck) and Priya (Seattle, high income) from one `ProfileSpec` (`src/data/spec.ts`); specs in `src/data/profiles/*.spec.ts`. Nav avatar click cycles profiles; hover / long-press opens the picker. Every screen re-derives from `useUser()` without a reload.
+- **CSV migration.** Transactions now served from `src/data/profiles/<id>.transactions.csv` (`days_ago`-relative; `npm run gen:data`, Node ≥ 22.18). Row counts: maya **1,215**, devon **1,214**, priya **1,510**. Bundle cost: **+34 KB gz** for the three files. Calendar rows (payroll, rent, subscriptions) still generated at runtime. Pace copy unchanged — `$60 dinner` still reads "≈ $585, about $35 over usual" on Maya (trailing 31 days laid at `runRate / 30.44` per day).
+- **Demo panel.** `✦ Demo` pill on every page → profile list, five-step walkthrough, nine matrix queries, goal track/clear, time travel (`?now=` reload), classifier health + force-fallback switch, card inspector (`explain()` rows, click-to-flash), pages, reset. State in `purchase-coach-demo`.
+- **Bento layout.** Non-quick answers render as Knuth–Plass justified 12-column rows (`src/engine/layout.ts`) with tall+stack cells and a height-difference penalty; rows carry `data-row`. Cards stretch to row height, stacks share extra space. Width-capped showpieces pair; lone cards stretch; Venn may stretch.
+- **Flat cards.** `--shadow-card: none`; winner inset bar, gold top rule, purple goal rule and ticket dashed edge removed. "Which card" capped at the top 3 with a toggle.
+- **Transactions page.** `/transactions`: day groups, merchant search, month / account / category filters with counts, summary tiles, "Show more" paging, detail dialog with `?tx=<id>` deep link; dialog overlay fixed. Header Add / Search / Manage buttons dropped.
+- **Gallery by expense.** `/gallery?by=expense`: eleven purchase types, each with the composed stack (with and without a goal), scores and composer reasons; sort dealt / score / A–Z. On Maya **34 / 34** cards are covered; uncovered cards would be listed, not hidden.
+- **Seeded goals.** `spec.goals` → `user.seededGoals` (Maya 1, Devon 2, Priya 2). One active goal (`useGoalStore.goal`) drives verdicts; the rest sit under "Your other goals" on `/goals` with **Check purchases against this** (`activate`).
+- **Key set.** `ANTHROPIC_API_KEY` is now on production: `GET /api/health` → `hasKey:true`, model `claude-haiku-4-5`. Fallback path still exercised via the demo panel's force-fallback switch.
+- **Deploy.** Final version **`c6f6892e-d42e-4a20-ad5b-5be35a659c13`** on https://meridian.andresl.dev (and workers.dev). Smoke: `/`, `/answer?q=%2460%20dinner`, `/goals`, `/transactions`, `/gallery` → **200** each.
