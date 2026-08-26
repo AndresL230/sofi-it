@@ -70,8 +70,11 @@ export function Answer() {
   }
   if (!ctx || !stack) return null
 
-  const bento = stack.layout !== 'quick'
-  const maxW = stack.layout === 'quick' ? 'max-w-quick' : ''
+  // Every layout goes through the bento. `quick` used to bypass it for a single 640px column,
+  // which left small-purchase answers as one tall stack of full-width cards with the rest of the
+  // shell empty beside them. It keeps its narrower measure — the row engine pairs cards inside it.
+  const bento = true
+  const maxW = stack.layout === 'quick' ? 'max-w-plan' : ''
   const stackKey = `${q}|${goal?.id ?? 'nogoal'}|${goal?.saved ?? 0}`
   const rows = bento ? layoutRows(stack.cards.map(itemFor)) : null
 
