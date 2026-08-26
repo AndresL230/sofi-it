@@ -3,15 +3,25 @@ import { daysBetween, sameMonth, startOfYear } from '@/lib/dates'
 
 export function merchantHabit(user: UserModel, q: QueryFacts, now: Date): MerchantHabit | null {
   const MERCHANT_HINT: Record<string, string> = { coffee: user.habits.coffeeMerchant, latte: user.habits.coffeeMerchant, espresso: user.habits.coffeeMerchant, lunch: user.habits.lunchMerchant, salad: user.habits.lunchMerchant }
-  const hint = q.merchant ?? Object.entries(MERCHANT_HINT).find(([k]) => q.normalized.toLowerCase().includes(k))?.[1] ?? (q.category === 'coffee' ? user.habits.coffeeMerchant : null)
-  if (!hint) return null
-  const key = hint.toLowerCase()
-  const visits = user.txns.filter((t) => t.amount > 0 && t.merchant.toLowerCase().startsWith(key.split(' ').slice(0, 2).join(' ')))
-  if (!visits.length) return null
-  const thisMonth = visits.filter((t) => sameMonth(t.date, now))
-  const ytd = visits.filter((t) => t.date >= startOfYear(now))
-  const ytdSpend = Math.round(ytd.reduce((a, t) => a + t.amount, 0))
-  return { merchant: visits[0].merchant.replace(' Coffee', ''), visitsThisMonth: thisMonth.length, ytdSpend, ytdVisits: ytd.length, avgTicket: ytd.length ? ytdSpend / ytd.length : 0 }
+  // Hints in priority order, each tried against real transactions. The LLM's merchant_guess used to
+  // short-circuit this with `??`, so a generic guess ("coffee shop") matched nothing and the card
+  // vanished — but only in production, since the offline classifier leaves q.merchant null and the
+  // category hint resolved. Fall through instead of giving up on the first hint that misses.
+  const hints = [
+    q.merchant,
+    Object.entries(MERCHANT_HINT).find(([k]) => q.normalized.toLowerCase().includes(k))?.[1],
+    q.category === 'coffee' ? user.habits.coffeeMerchant : null,
+  ].filter((h): h is string => !!h)
+  for (const hint of hints) {
+    const key = hint.toLowerCase()
+    const visits = user.txns.filter((t) => t.amount > 0 && t.merchant.toLowerCase().startsWith(key.split(' ').slice(0, 2).join(' ')))
+    if (!visits.length) continue
+    const thisMonth = visits.filter((t) => sameMonth(t.date, now))
+    const ytd = visits.filter((t) => t.date >= startOfYear(now))
+    const ytdSpend = Math.round(ytd.reduce((a, t) => a + t.amount, 0))
+    return { merchant: visits[0].merchant.replace(' Coffee', ''), visitsThisMonth: thisMonth.length, ytdSpend, ytdVisits: ytd.length, avgTicket: ytd.length ? ytdSpend / ytd.length : 0 }
+  }
+  return null
 }
 
 /** Quarter dot-strip: discretionary buys ≥ $40 in this spend category over the trailing 13 weeks. */
