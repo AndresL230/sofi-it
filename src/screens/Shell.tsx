@@ -25,17 +25,7 @@ export function Shell() {
       <main className="mx-auto max-w-shell px-5 pb-[70px] pt-[26px]">
         {showInput ? (
           <>
-            <div className="mb-[18px] flex flex-wrap items-end justify-between gap-4">
-              <h1 className="m-0 text-h1 font-bold text-ink">My financial insights</h1>
-              <div className="flex gap-[22px]">
-                {[['+', 'Add'], ['⌕', 'Search'], ['⚙', 'Manage']].map(([g, l]) => (
-                  <button key={l} className="cursor-pointer text-center" aria-label={l}>
-                    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-teal text-white" style={{ fontSize: g === '+' ? 20 : 16, fontWeight: 500 }}>{g}</div>
-                    <div className="mt-[5px] text-[11.5px] text-slate">{l}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <h1 className="mb-[18px] text-h1 font-bold text-ink">My financial insights</h1>
             <CoachInput />
           </>
         ) : null}
