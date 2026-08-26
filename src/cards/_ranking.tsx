@@ -29,6 +29,6 @@ const WRAP = 'max-w-full flex-wrap whitespace-normal text-left leading-tight'
 export function RankBadge({ badge }: { badge?: RankedCard['badge'] }) {
   if (!badge) return null
   if (badge.kind === 'cap') return <Badge tone="gold" size="xs" className={WRAP}><Money value={badge.left} size="inline" cents="never" animated={false} />&nbsp;of&nbsp;<Money value={badge.cap} size="inline" cents="never" animated={false} />&nbsp;left at {badge.rate}%</Badge>
-  if (badge.kind === 'utilization') return <Badge tone="salmon" size="xs" className={WRAP}>Would hit {badge.pct}% — pay before&nbsp;<DateText date={badge.payBy} fmt="ordinal" animated={false} /></Badge>
+  if (badge.kind === 'utilization') return <Badge tone="salmon" size="xs" className={cn(WRAP, 'min-w-[96px]')}>Would hit {badge.pct}% — pay by&nbsp;<DateText date={badge.payBy} fmt="ordinal" animated={false} /></Badge>
   return <Badge tone="gray" size="xs" className={WRAP}>no bonus category</Badge>
 }

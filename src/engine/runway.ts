@@ -7,8 +7,10 @@ export function runway(user: UserModel, amount: number, now: Date): Runway {
   const rentDue = nextDayOfMonth(now, user.rent.dayOfMonth)
   const chargedThisMonth = new Set(user.txns.filter((t) => t.category === 'subscriptions' && sameMonth(t.date, now)).map((t) => t.merchant.toLowerCase()))
   const subsRemaining = user.subscriptions.filter((s) => !chargedThisMonth.has(s.name.toLowerCase())).reduce((a, s) => a + s.price, 0)
+  // Rent already posted for the month it falls due (e.g. on the 1st the generator has landed it) → paid, not a remaining bill.
+  const rentPaid = user.txns.some((t) => t.category === 'housing' && sameMonth(t.date, rentDue))
   const bills = [
-    { label: 'Rent', amount: user.rent.amount, due: rentDue },
+    ...(rentPaid ? [] : [{ label: 'Rent', amount: user.rent.amount, due: rentDue }]),
     { label: 'Subs', amount: Math.round(subsRemaining * 100) / 100, due: now },
   ]
   // Essentials you'll need before the paycheck after next (one pay cycle), so room doesn't swing with the day of month.

@@ -27,8 +27,10 @@ function PaydayProximity({ daysToPayday, tiles, paycheck, payday, actions }: Pro
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-[10px]">
         <Badge tone="salmon" size="md">buy today → tight</Badge>
-        <span className="text-slate-muted">→</span>
-        <Badge tone="teal" size="md">buy {weekdayLong(payday)} → fine</Badge>
+        <span className="inline-flex items-center gap-[10px]">
+          <span className="text-slate-muted">→</span>
+          <Badge tone="teal" size="md">buy {weekdayLong(payday)} → fine</Badge>
+        </span>
         <button onClick={() => actions.remindLater(weekdayLong(payday))} className="ml-auto cursor-pointer text-[13px] font-semibold text-teal hover:text-teal-ink">Remind me {weekdayLong(payday)}</button>
       </div>
     </CardShell>

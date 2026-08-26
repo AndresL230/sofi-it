@@ -21,7 +21,7 @@ function PostPurchaseFooter({ rows, goal }: Props) {
       </NumberFlowGroup>
       {goal ? (
         <span className="ml-auto text-[12.5px] font-bold text-purple">
-          {goal.label} {goal.delta === 0 ? 'unchanged' : <><Num value={goal.delta} /> days</>}
+          {goal.label} {goal.delta > 0 ? <><Num value={goal.delta} prefix="−" /> days</> : 'unchanged'}
         </span>
       ) : null}
     </div>

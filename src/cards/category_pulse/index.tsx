@@ -14,7 +14,7 @@ function CategoryPulse({ label, spent, usual, amount, projected, daysLeft, overs
         segments={[{ value: spent / scale, fill: 'var(--teal)' }, { value: amount / scale, fill: 'hatch' }]}
         marker={{ at: usual / scale }}
       />
-      <div className="mt-2 text-[12.5px] text-slate"><Num value={daysLeft} /> days left · pace says you finish <Money value={projected} size="inline" cents="never" approx />, {overshoot > 0 ? <>about <Money value={Math.round(overshoot)} size="inline" cents="never" /> over usual.</> : <>about <Money value={Math.round(-overshoot)} size="inline" cents="never" /> under usual.</>}</div>
+      <div className="mt-2 text-[12.5px] text-slate">{daysLeft === 0 ? 'last day of the month' : <><Num value={daysLeft} /> days left</>} · pace says you finish <Money value={projected} size="inline" cents="never" approx />, {overshoot > 0 ? <>about <Money value={Math.round(overshoot)} size="inline" cents="never" /> over usual.</> : <>about <Money value={Math.round(-overshoot)} size="inline" cents="never" /> under usual.</>}</div>
     </CardShell>
   )
 }

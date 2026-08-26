@@ -109,15 +109,18 @@ export function buildPlaidResponse(now = new Date()): PlaidResponse {
   // ---- Anchors ----
   const elapsed = today.getDate() // days elapsed this month incl. today
   const dayIn = (k: number) => new Date(today.getFullYear(), today.getMonth(), Math.max(1, Math.min(elapsed, k)))
+  // Month-to-date anchors sit at k/20 of the elapsed month; in the first week that would pile every visit onto
+  // one or two days, so spread them over the trailing 30 days instead (no rng involved → call order is unchanged).
+  const earlyMonth = elapsed < 8
+  const mtd = (k: number) => (earlyMonth ? addDays(today, -Math.round(((20 - k) / 20) * 30)) : dayIn(Math.round((k / 20) * elapsed)))
   // Blue Bottle ×4 this month (and ~4/month historically → ~$212 YTD)
-  const bbDays = [2, 6, 12, 19].map((k) => Math.max(1, Math.min(elapsed, Math.round((k / 20) * elapsed))))
-  bbDays.forEach((k) => spend('dining', 'Blue Bottle Coffee', rng.range(5.9, 7.1), dayIn(k), ACCOUNT_IDS.amexgold, ['coffee']))
+  ;[2, 6, 12, 19].forEach((k) => spend('dining', 'Blue Bottle Coffee', rng.range(5.9, 7.1), mtd(k), ACCOUNT_IDS.amexgold, ['coffee']))
   for (let m = 1; m <= 13; m++) {
     const base = addMonths(startOfMonth(today), -m)
     for (let v = 0; v < 4; v++) spend('dining', 'Blue Bottle Coffee', rng.range(5.9, 7.1), addDays(base, rng.int(1, 27)), ACCOUNT_IDS.amexgold, ['coffee'])
   }
   // Sweetgreen ×4 this month
-  ;[3, 8, 13, 18].forEach((k) => spend('dining', 'Sweetgreen', rng.range(12.2, 14.4), dayIn(Math.round((k / 20) * elapsed)), ACCOUNT_IDS.amexgold, ['lunch']))
+  ;[3, 8, 13, 18].forEach((k) => spend('dining', 'Sweetgreen', rng.range(12.2, 14.4), mtd(k), ACCOUNT_IDS.amexgold, ['lunch']))
   // Two apparel buys this quarter
   spend('shopping', 'Nike', 95, addDays(today, -42), ACCOUNT_IDS.sofi2, ['apparel', 'sneakers'])
   spend('shopping', 'Blundstone', 120, addDays(today, -70), ACCOUNT_IDS.sofi2, ['apparel', 'boots'])
