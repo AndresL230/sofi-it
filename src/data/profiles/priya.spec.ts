@@ -9,7 +9,7 @@ export const priyaSpec: ProfileSpec = {
   id: 'priya',
   persona: { firstName: 'Priya', lastName: 'Nair', city: 'Seattle', initials: 'PN' },
   blurb: 'Seattle · high income, twelve subscriptions, cash-rich and about to overpay for a trip.',
-  starters: ['$18 latte', '$1,200 flight to Tokyo in May', '$15/mo Crunchyroll', '$180 concert tickets'],
+  starters: ['$8 oat latte', '$1,200 flight to Tokyo in May', '$15/mo Crunchyroll', '$180 concert tickets'],
   accounts: { checking: 7850, savings: 22400, vaults: [{ name: 'Tokyo', balance: 3100 }, { name: 'House', balance: 15000 }], brokerage: 41200, masks: { checking: '1180', savings: '6642', brokerage: '0937' } },
   payroll: { amount: 4420, daysUntilNext: 3, intervalDays: 14, employer: 'Cascade Cloud' },
   rent: { amount: 2650, dayOfMonth: 1, landlord: 'Pike Place Lofts' },

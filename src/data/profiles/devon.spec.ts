@@ -9,7 +9,7 @@ export const devonSpec: ProfileSpec = {
   id: 'devon',
   persona: { firstName: 'Devon', lastName: 'Reyes', city: 'Austin', initials: 'DR' },
   blurb: 'Austin · paycheck-to-paycheck renter, one card near its limit, no cushion yet.',
-  starters: ['$14 lunch', '$140 running shoes', '$450 monitor', '$12/mo Hulu'],
+  starters: ['$52 team dinner', '$140 running shoes', '$450 monitor', '$12/mo Hulu'],
   accounts: { checking: 2380, savings: 1200, vaults: [{ name: 'Denver', balance: 180 }, { name: 'Emergency', balance: 900 }], brokerage: 640, masks: { checking: '3312', savings: '9081', brokerage: '5570' } },
   payroll: { amount: 1890, daysUntilNext: 3, intervalDays: 14, employer: 'Lonestar Logistics' },
   rent: { amount: 1450, dayOfMonth: 1, landlord: 'Barton Creek Apartments' },

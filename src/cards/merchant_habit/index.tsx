@@ -43,7 +43,12 @@ function MerchantHabit({ merchant, visits, slots, ytdSpend }: Props) {
   )
 }
 
-export const select = (ctx: EngineContext): Props => ({ merchant: ctx.merchantHabit!.merchant, visits: ctx.merchantHabit!.visitsThisMonth, slots: 8, ytdSpend: ctx.merchantHabit!.ytdSpend })
+/** Slots grow with the habit: 8 normally, but always one empty past a heavy month so the card
+ *  reads "this would be the next stamp" instead of saturating. Capped at 12 — beyond that the row
+ *  stops being a punch card. A visits count above the cap still prints in full beside it. */
+const slotsFor = (visits: number) => Math.max(8, Math.min(12, visits + 1))
+
+export const select = (ctx: EngineContext): Props => ({ merchant: ctx.merchantHabit!.merchant, visits: ctx.merchantHabit!.visitsThisMonth, slots: slotsFor(ctx.merchantHabit!.visitsThisMonth), ytdSpend: ctx.merchantHabit!.ytdSpend })
 
 export { meta, condition } from './meta'
 export default MerchantHabit
