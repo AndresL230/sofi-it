@@ -133,7 +133,7 @@ export function Home() {
               </div>
             ))}
           </div>
-          <a className="mt-[10px] inline-block cursor-pointer text-[14px] font-semibold">View all transactions</a>
+          <Link to="/transactions" className="mt-[10px] inline-block cursor-pointer text-[14px] font-semibold">View all transactions</Link>
         </section>
       </div>
       <div className="mt-[18px] flex justify-center gap-4 text-[12px]">

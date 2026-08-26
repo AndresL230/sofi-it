@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui/sonner'
 /** Lazy so the `qrcode` library only ships with the /qr chunk, not the main bundle. */
 const SharePage = lazy(() => import('@/screens/SharePage'))
 const DemoPanel = lazy(() => import('@/demo/DemoPanel'))
+const Transactions = lazy(() => import('@/screens/Transactions'))
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="answer" element={<Answer />} />
           <Route path="goals" element={<Goals />} />
+          <Route path="transactions" element={<Suspense fallback={null}><Transactions /></Suspense>} />
           <Route path="gallery" element={<CardGallery />} />
         </Route>
         <Route path="share" element={<Suspense fallback={null}><SharePage /></Suspense>} />

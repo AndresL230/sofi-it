@@ -84,7 +84,7 @@ function TxnDetail({ txn, user, now, onClose }: { txn: Txn | null; user: UserMod
 
   return (
     <Dialog open={!!t} onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent data-screen="txn-detail" className="max-h-[calc(100vh-32px)] overflow-y-auto p-0">
+      <DialogContent data-screen="txn-detail" className="max-h-[calc(100vh-32px)] overflow-y-auto p-0 shadow-[0_16px_48px_rgba(32,23,71,.22)]">
         {t ? (
           <>
             <div className="px-6 pb-5 pt-6">
@@ -208,7 +208,7 @@ export default function Transactions() {
       <Link to="/" className="mb-[10px] inline-block text-[14px] font-semibold">← Insights</Link>
       <h1 className="mb-[18px] text-h1 font-bold">Transactions</h1>
 
-      <section className="pc-card grid grid-cols-3 gap-3 px-5 py-4 sm:px-6 sm:py-5" aria-label="Summary">
+      <section className="pc-card grid grid-cols-2 gap-x-3 gap-y-4 px-5 py-4 sm:grid-cols-3 sm:py-5 sm:px-6" aria-label="Summary">
         <div className="min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-muted">Spent</div>
           <div className="mt-1"><Money value={summary.spend} size="md" cents="never" className="text-[20px] sm:text-[24px]" /></div>
@@ -219,7 +219,7 @@ export default function Transactions() {
           <div className="mt-1 text-[20px] font-extrabold leading-none tracking-[-0.01em] text-ink sm:text-[24px]"><Num value={summary.count} /></div>
           <div className="mt-[3px] truncate text-[12px] text-slate-muted">{cat === 'all' ? 'all categories' : CAT_LABEL[cat]}</div>
         </div>
-        <div className="min-w-0">
+        <div className="col-span-2 min-w-0 border-t border-lavender-soft pt-3 sm:col-span-1 sm:border-0 sm:pt-0">
           <div className="text-[11px] font-semibold uppercase tracking-[.08em] text-slate-muted">Top category</div>
           {summary.top ? (
             <>
@@ -259,9 +259,9 @@ export default function Transactions() {
           </div>
         ) : groups.map((g) => (
           <div key={g.key}>
-            <div className="sticky top-[var(--nav-h,58px)] z-10 -mx-5 flex items-center justify-between bg-white px-5 pb-[6px] pt-[14px] sm:-mx-6 sm:px-6">
+            <div className="sticky top-[63px] z-10 -mx-5 flex items-center justify-between bg-white px-5 pb-[6px] pt-[14px] sm:-mx-6 sm:px-6">
               <div className="text-[12px] font-semibold uppercase tracking-[.08em] text-slate-muted">{dayLabel(g.date, now)}</div>
-              {g.total > 0 ? <div className="text-[12px] text-slate-muted">−<Money value={g.total} size="inline" cents="never" animated={false} /></div> : null}
+              {g.total > 0 ? <div className="text-[12px] text-slate-muted">−<Money value={g.total} size="inline" cents="decimal" animated={false} /></div> : null}
             </div>
             <div className="border-t border-lavender">
               {g.rows.map((t) => <Row key={t.id} t={t} account={acctById.get(t.accountId)} onClick={() => open(t.id)} />)}
