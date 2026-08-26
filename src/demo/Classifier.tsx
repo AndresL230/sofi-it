@@ -42,14 +42,14 @@ export function Classifier({ open }: { open: boolean }) {
 
   return (
     <div className="space-y-3">
-      <div data-demo="health" className="flex items-center gap-2 text-[13px] text-ink" title={health.state === 'live' ? health.model : undefined}>
+      <div data-demo="health" className="flex items-center gap-2 text-body text-ink" title={health.state === 'live' ? health.model : undefined}>
         <span aria-hidden className={cn('h-2 w-2 shrink-0 rounded-full', forceFallback ? 'bg-gold' : status.dot)} />
         <span className={cn(forceFallback && 'text-slate line-through')}>{status.text}</span>
         {forceFallback ? <span className="font-semibold">{effective}</span> : null}
       </div>
       <Switch id="demo-force-fallback" label="Force keyword fallback (no API)" checked={forceFallback} onChange={setForceFallback} />
       <div className="rounded-sm2 bg-lavender-soft px-3 py-2">
-        <div className="flex items-center gap-2 text-[12px] text-slate">
+        <div className="flex items-center gap-2 text-meta text-slate">
           <span>Last answer</span>
           {source ? <Badge tone={SOURCE[source].tone} size="xs" data-demo="source">{SOURCE[source].label}</Badge> : <span className="text-slate-muted">— none yet</span>}
         </div>

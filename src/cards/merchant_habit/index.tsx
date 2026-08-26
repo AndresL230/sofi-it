@@ -1,21 +1,44 @@
 import type { EngineContext } from '@/engine/types'
-import { CardShell, Money, Num, useDelay } from '../kit'
+import { CardShell, Money, Num, T, cn, useDelay } from '../kit'
 
 interface Props { merchant: string; visits: number; slots: number; ytdSpend: number }
 
-/** #19 — loyalty punch card: 8 rings, this month's visits punched (inner shadow), the rest empty. Zero judgment. */
+/** #19 — loyalty punch card: 8 slots, this month's visits stamped navy, the rest empty. Zero judgment. */
 function MerchantHabit({ merchant, visits, slots, ytdSpend }: Props) {
   const d = useDelay()
   return (
-    <CardShell className="flex flex-col justify-center">
-      <div className="text-[14px] font-bold">{merchant} — regular's card</div>
-      <div className="mt-[14px] grid max-w-[342px] gap-[6px]" style={{ gridTemplateColumns: `repeat(${slots}, minmax(0, 1fr))` }}>
-        {Array.from({ length: slots }, (_, i) => {
-          const punched = i < visits
-          return <div key={i} className="flex aspect-square w-full max-w-[34px] items-center justify-center rounded-full border-2 text-[13px] text-slate-muted" style={{ borderColor: punched ? 'var(--lavender)' : 'var(--lavender-deep)', background: punched ? '#EDEBF0' : '#fff', boxShadow: punched ? 'inset 1px 2px 4px rgba(0,0,0,.2)' : 'none', animation: punched ? `popIn .25s ${d(200 + i * 60)} both` : undefined }}>{punched ? '●' : ''}</div>
-        })}
+    <CardShell className="flex flex-col gap-3">
+      {/* The stamp row is capped: on a wide bento span the extra width goes to the figures moving
+          beside it, so the row stays a punch card instead of spreading into isolated dots. */}
+      <div className="flex max-w-[320px] items-baseline justify-between gap-2">
+        <div className={T.lede}>{merchant}</div>
+        <div className="shrink-0 text-micro font-semibold uppercase tracking-[.1em] text-slate-muted">Regular&rsquo;s card</div>
       </div>
-      <div className="mt-3 text-[13px] text-slate"><Num value={visits} /> visits this month · <Money value={ytdSpend} size="inline" cents="never" /> YTD</div>
+
+      <div className="flex flex-1 flex-wrap content-center items-center gap-x-6 gap-y-3">
+        <div className="grid min-w-[250px] max-w-[320px] flex-1 gap-1.5" style={{ gridTemplateColumns: `repeat(${slots}, minmax(0, 1fr))` }} aria-hidden>
+          {Array.from({ length: slots }, (_, i) => {
+            const punched = i < visits
+            return (
+              <div
+                key={i}
+                className={cn('aspect-square w-full max-w-7 rounded-full', punched ? 'bg-navy' : 'border-2 border-lavender-deep bg-white')}
+                style={punched ? { animation: `popIn .25s ${d(200 + i * 60)} both` } : undefined}
+              />
+            )
+          })}
+        </div>
+
+        <div className="flex min-w-[200px] flex-1 flex-wrap items-baseline gap-x-2 text-navy">
+          <span className="flex items-baseline gap-1.5">
+            <Num value={visits} className="text-metric font-extrabold" />
+            <span className={`${T.lede} text-slate`}>{visits === 1 ? 'visit' : 'visits'} this month</span>
+          </span>
+          <span className="whitespace-nowrap text-meta text-slate-muted">
+            · <Money value={ytdSpend} size="inline" cents="never" /> here this year
+          </span>
+        </div>
+      </div>
     </CardShell>
   )
 }

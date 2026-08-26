@@ -1,32 +1,75 @@
 import type { EngineContext } from '@/engine/types'
-import { CardShell, Num, DateText, useDelay } from '../kit'
+import { CardShell, Num, DateText, T, cn, useDelay } from '../kit'
 
 interface Props { cardName: string; after: number; threshold: number; payBy: Date }
 
-/** #14 — half-arc speedometer banded green→gold→red, tick at the threshold, needle at the post-purchase utilization. */
+/** The verdict is carried by the word first and the hue second — never by hue alone. */
+const VERDICT = {
+  fine: { word: 'Fine.', color: 'var(--teal)', ink: 'var(--teal-ink)' },
+  tight: { word: 'Tight.', color: 'var(--salmon)', ink: 'var(--salmon-ink)' },
+  over: { word: 'Over.', color: 'var(--red)', ink: 'var(--red-ink)' },
+} as const
+
+/** #14 — half-dial: neutral track, one coloured fill to the post-purchase utilization, a notch at the safe line. */
 function UtilizationWatch({ cardName, after, threshold, payBy }: Props) {
   const d = useDelay()
-  const cx = 100, cy = 92, R = 74
+  const v = after <= threshold ? VERDICT.fine : after < 0.5 ? VERDICT.tight : VERDICT.over
+  const pct = Math.round(after * 100)
+  const line = Math.round(threshold * 100)
+  const fill = Math.max(2, Math.min(100, after * 100))
+
+  const cx = 100, cy = 104, R = 74
   const pt = (frac: number, r: number) => { const a = Math.PI * (1 - Math.min(1, Math.max(0, frac))); return [cx + r * Math.cos(a), cy - r * Math.sin(a)] as const }
-  const [nx, ny] = pt(after, 55)
-  const [tx1, ty1] = pt(threshold, R + 5), [tx2, ty2] = pt(threshold, R + 17)
   const arc = `M${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`
+  const [mx1, my1] = pt(threshold, R - 10), [mx2, my2] = pt(threshold, R + 10)
+  const [lx, ly] = pt(threshold, R + 21)
+
   return (
-    <CardShell className="flex items-center gap-4">
-      <svg viewBox="0 0 200 100" className="w-[150px] shrink-0" aria-hidden>
-        <path d={arc} fill="none" stroke="var(--green)" strokeWidth="9" pathLength={100} strokeDasharray={`${threshold * 100} 100`} opacity=".8" />
-        <path d={arc} fill="none" stroke="var(--gold-deep)" strokeWidth="9" pathLength={100} strokeDasharray="30 100" strokeDashoffset={-threshold * 100} opacity=".8" />
-        <path d={arc} fill="none" stroke="var(--red)" strokeWidth="9" pathLength={100} strokeDasharray={`${100 - threshold * 100 - 30} 100`} strokeDashoffset={-(threshold * 100 + 30)} opacity=".8" />
-        <line x1={tx1} y1={ty1} x2={tx2} y2={ty2} stroke="var(--navy)" strokeWidth="1.5" />
-        <text x={tx2 - 12} y={ty2 - 6} fontSize="9" fill="var(--slate)" fontWeight="600">{Math.round(threshold * 100)}%</text>
-        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--navy)" strokeWidth="2.5" strokeLinecap="round" style={{ transformOrigin: `${cx}px ${cy}px`, animation: `popIn .4s ${d(300)} both` }} />
-        <circle cx={cx} cy={cy} r="4.5" fill="var(--navy)" />
-      </svg>
-      <div>
-        <div className="text-[13px] text-slate">{cardName} lands at <b className="text-salmon-ink"><Num value={Math.round(after * 100)} suffix="%" /></b> with this.</div>
-        <div className="mt-1 text-[13.5px] font-bold text-navy">Pay it before <DateText date={payBy} fmt="ordinal" /> and your score never sees it.</div>
+    <CardShell className="flex h-full flex-col">
+      <div className="flex items-center gap-3">
+        <div className="w-[120px] shrink-0">
+          <div className="relative">
+          <svg viewBox="0 0 200 116" className="w-full" role="img" aria-label={`${pct} percent utilization; ${line} percent is the safe line`}>
+            <path d={arc} fill="none" stroke="var(--lavender)" strokeWidth="13" strokeLinecap="round" />
+            <path
+              d={arc} fill="none" stroke={v.color} strokeWidth="13" strokeLinecap="round"
+              pathLength={100} strokeDasharray={`${fill} 100`} strokeDashoffset={fill}
+              style={{ animation: `draw .7s ${d(250)} ease-out forwards` }}
+            />
+            {/* A notch cut through the ring marks the safe line — it survives greyscale. */}
+            <line x1={mx1} y1={my1} x2={mx2} y2={my2} stroke="var(--navy)" strokeWidth="2" strokeLinecap="round" />
+            <text x={lx} y={ly} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="var(--slate)">{line}%</text>
+          </svg>
+          {/* The readout sits in the widest part of the arc mouth; its caption stays outside it. */}
+          <div className="absolute inset-x-0 bottom-0 text-center text-metric font-extrabold tabular-nums leading-none text-navy"><Num value={pct} suffix="%" /></div>
+          </div>
+          <div className={cn(T.micro, 'mt-1.5 text-center')}>utilization after this</div>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <Alert color={v.ink} />
+            <span className="text-title font-extrabold leading-none" style={{ color: v.ink }}>{v.word}</span>
+          </div>
+          <p className={cn(T.caption, 'mt-2 leading-snug')}>{cardName} crosses its {line}% line with this.</p>
+        </div>
+      </div>
+      {/* The escape hatch is the payoff line: it sits under the gauge at natural height and
+          sinks to the card floor when a tall bento row stretches the card. */}
+      <div className="mt-3 flex flex-1 flex-col justify-end">
+        <p className={cn(T.body, 'border-t border-lavender pt-2.5 font-semibold text-navy')}>
+          Pay it before <DateText date={payBy} fmt="ordinal" /> and your score never sees it.
+        </p>
       </div>
     </CardShell>
+  )
+}
+
+function Alert({ color }: { color: string }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" aria-hidden className="shrink-0">
+      <circle cx="8" cy="8" r="6.6" />
+      <path d="M8 4.6v4.2M8 11.3v.3" />
+    </svg>
   )
 }
 

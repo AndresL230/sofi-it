@@ -67,15 +67,15 @@ export function ProfileSwitcher() {
         onPointerCancel={cancelPress}
         onPointerLeave={cancelPress}
         onContextMenu={(e) => { if (longPressed.current) e.preventDefault() }}
-        className="flex h-9 w-9 shrink-0 cursor-pointer select-none items-center justify-center rounded-full bg-navy text-[13px] font-bold text-white transition-shadow hover:shadow-pop focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 focus-visible:ring-offset-2"
+        className="flex h-9 w-9 shrink-0 cursor-pointer select-none items-center justify-center rounded-full bg-navy text-body font-bold text-white transition-shadow hover:shadow-pop focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 focus-visible:ring-offset-2"
       >
         {profile.initials}
       </button>
       {open ? (
         <div data-demo="profile-popover" className="pc-card absolute right-0 top-[calc(100%+10px)] z-30 w-[300px] p-2 motion-safe:[animation:popIn_.16s_ease-out_both]" style={{ transformOrigin: 'top right' }}>
-          <div className="flex items-baseline justify-between px-3 pb-1 pt-[6px]">
-            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate">Profile</span>
-            <span className="text-[11px] text-slate-muted">click the avatar to cycle</span>
+          <div className="flex items-baseline justify-between px-3 pb-1 pt-1.5">
+            <span className="text-caption font-bold uppercase tracking-[0.08em] text-slate">Profile</span>
+            <span className="text-caption text-slate-muted">click the avatar to cycle</span>
           </div>
           <ProfileList onSelect={pick} />
         </div>

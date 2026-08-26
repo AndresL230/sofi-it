@@ -66,14 +66,14 @@ export function CardGallery() {
 
   return (
     <div data-screen="gallery">
-      <Link to="/" className="mb-[10px] inline-block text-[14px] font-semibold">← Insights</Link>
+      <Link to="/" className="-ml-1 mb-2.5 inline-flex min-h-6 items-center rounded-sm2 px-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">← Insights</Link>
       <h1 className="mb-1 text-h1 font-bold">Card gallery</h1>
-      <div className="mb-[14px] text-[13.5px] text-slate">
+      <div className="mb-3.5 max-w-[68ch] text-body text-slate">
         {view === 'expense' ? "Everything the coach can deal, grouped by what you're buying — with the stack it would actually compose." : 'Every card the composer can deal, with sample data straight from the engine. Interactive cards work here.'}
       </div>
-      <div role="group" aria-label="Gallery view" className="mb-[18px] flex gap-[6px]">
+      <div role="group" aria-label="Gallery view" className="mb-4.5 flex gap-1.5">
         {VIEWS.map((v) => (
-          <button key={v.key} onClick={() => setView(v.key)} aria-pressed={view === v.key} data-gallery-view={v.key} className={cn('cursor-pointer rounded-pill px-[14px] py-[7px] text-[13px] font-semibold transition-colors', view === v.key ? 'bg-teal text-white' : 'bg-teal-tint text-teal-ink hover:bg-teal-tint2')}>{v.label}</button>
+          <button key={v.key} onClick={() => setView(v.key)} aria-pressed={view === v.key} data-gallery-view={v.key} className={cn('cursor-pointer rounded-pill px-3.5 py-1.5 text-body font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60 focus-visible:ring-offset-2 focus-visible:ring-offset-page', view === v.key ? 'bg-teal text-white' : 'bg-teal-tint text-teal-ink hover:bg-teal-tint2')}>{v.label}</button>
         ))}
       </div>
 
@@ -83,20 +83,20 @@ export function CardGallery() {
         <div className="[column-gap:18px] [columns:340px]">
           {SECTIONS.map((section) => (
             <div key={section} className="contents">
-              <div className="mb-[14px] mt-2 text-[16px] font-extrabold text-navy [column-span:all]">{section}</div>
+              <div className="mb-3.5 mt-2 text-title font-extrabold text-navy [column-span:all]">{section}</div>
               {CARD_LIST.filter((c) => c.meta.group === section).map(({ meta: mod, select, Component: Comp }) => (
                 <div key={mod.id} data-gallery-card={mod.id} className="mb-5 break-inside-avoid">
-                  <div className="mb-[6px] text-[11px] font-bold uppercase tracking-[.1em] text-slate">{mod.id}{mod.label ? ` — ${mod.label}` : ''}</div>
+                  <div className="mb-1.5 text-caption font-bold uppercase tracking-[.1em] text-slate">{mod.id}{mod.label ? ` — ${mod.label}` : ''}</div>
                   <div className="flex flex-col gap-2">
                     {mod.samples.map((s, i) => {
                       const { ctx, borrowed } = ctxFor(s.query, s.goal, mod.condition)
-                      if (!mod.condition(ctx) && !s.override) return <div key={i} className="rounded-card border border-dashed border-lavender p-3 text-[12px] text-salmon-ink">condition false for "{s.query}"</div>
+                      if (!mod.condition(ctx) && !s.override) return <div key={i} className="rounded-card border border-dashed border-lavender p-3 text-meta text-salmon-ink">condition false for "{s.query}"</div>
                       let props = select(ctx)
                       if (s.override) props = s.override(props) as Record<string, unknown>
                       return (
                         <div key={i} className={cn(mod.bare && 'py-1')}>
                           <DelayProvider value={0}><Comp {...props} actions={actions} /></DelayProvider>
-                          {s.label || borrowed ? <div className="mt-1 text-[10.5px] text-slate-muted">{[s.label, borrowed ? `previewed with ${profileById(DEFAULT_PROFILE_ID).name.split(' ')[0]}'s data` : ''].filter(Boolean).join(' · ')}</div> : null}
+                          {s.label || borrowed ? <div className="mt-1 text-micro text-slate-muted">{[s.label, borrowed ? `previewed with ${profileById(DEFAULT_PROFILE_ID).name.split(' ')[0]}'s data` : ''].filter(Boolean).join(' · ')}</div> : null}
                         </div>
                       )
                     })}

@@ -12,11 +12,12 @@ import { cn } from '@/lib/utils'
 export type MoneySize = 'hero' | 'lg' | 'md' | 'sm' | 'inline'
 export type CentsMode = 'raised' | 'decimal' | 'never' | 'auto'
 
+/** Snapped onto the named metric scale in tailwind.config.ts — no arbitrary sizes. */
 const SIZE: Record<MoneySize, string> = {
-  hero: 'text-[38px] font-extrabold leading-none tracking-[-0.02em]',
-  lg: 'text-[34px] font-extrabold leading-none tracking-[-0.02em]',
-  md: 'text-[24px] font-extrabold leading-none tracking-[-0.01em]',
-  sm: 'text-[18px] font-extrabold leading-none',
+  hero: 'text-metric-hero font-extrabold tracking-[-0.02em]',
+  lg: 'text-metric-lg font-extrabold tracking-[-0.02em]',
+  md: 'text-metric font-extrabold tracking-[-0.01em]',
+  sm: 'text-metric-sm font-extrabold',
   inline: 'font-[inherit]',
 }
 

@@ -1,30 +1,83 @@
 import type { EngineContext, PaymentOption } from '@/engine/types'
-import { CardShell, Money, Rich, useDelay } from '../kit'
+import { CardShell, Money, Rich, T, useDelay } from '../kit'
 
 interface Props { amount: number; options: PaymentOption[] }
 
-/** #32 — the branching paths: one navy dot splits into three bezier branches feeding three cost bars proportional to true total. The bars argue. */
+/** Heat ramp: nothing added → some → most. Never colour alone — every branch prints its own delta. */
+const TONE: Record<PaymentOption['key'], string> = { cash: 'var(--teal)', loan: 'var(--salmon)', card: 'var(--red)' }
+/** Branch-graph geometry (px): gutter width, trunk x inside it, node y inside each row. */
+const GUTTER = 30
+const SPINE = 7
+const NODE = 15
+/** A comparison row has a natural measure: past this the label and its total stop reading as a pair. */
+const ROW = 'max-w-[520px]'
+
+/**
+ * #32 — one decision splits into three branches, and each lands on a row of a shared grid:
+ * totals in one column, interest bars on one capped scale, terms on one baseline. The rows argue.
+ * Wide spans grow the branch spacing, not the artwork; the closing line anchors the bottom.
+ * NB: className strings are literal — `cn` is twMerge, which eats named font-size classes.
+ */
 function PaymentFork({ amount, options }: Props) {
   const d = useDelay()
-  const max = Math.max(...options.map((o) => o.total))
-  const COLORS: Record<PaymentOption['key'], string> = { cash: 'var(--teal)', loan: 'var(--purple)', card: 'var(--red)' }
+  const maxExtra = Math.max(1, ...options.map((o) => o.total - amount))
   return (
-    <CardShell className="px-[22px] py-5">
-      <div className="text-[15px] font-semibold text-navy">Three ways to pay <Money value={amount} size="inline" cents="never" animated={false} /></div>
-      <svg viewBox="0 0 340 64" className="mt-[6px] block w-full" aria-hidden>
-        <circle cx="170" cy="8" r="5" fill="var(--navy)" />
-        {['M170 13 v10 C170 42 60 36 60 62', 'M170 13 v49', 'M170 13 v10 C170 42 280 36 280 62'].map((p) => <path key={p} d={p} fill="none" stroke="var(--navy)" strokeWidth="2" pathLength={1} strokeDasharray="1" strokeDashoffset="1" style={{ animation: `draw .3s ${d(200)} both` }} />)}
-      </svg>
-      <div className="flex gap-[14px] text-center">
-        {options.map((o, i) => (
-          <div key={o.key} className="relative flex-1 rounded-ctl px-[6px] py-[10px]" style={{ boxShadow: o.winner ? '0 0 0 1.5px var(--teal)' : undefined }}>
-            {o.winner ? <div className="absolute -top-[9px] left-1/2 -translate-x-1/2 whitespace-nowrap rounded-pill bg-teal px-2 py-[2px] text-[9px] font-bold text-white">true cost winner</div> : null}
-            <div className="flex h-24 items-end justify-center"><div className="w-7 rounded-t-[6px]" style={{ height: `${(o.total / max) * 96}px`, background: COLORS[o.key], transformOrigin: 'bottom', animation: `growUp .2s ${d(500 + i * 200)} both` }} /></div>
-            <div className="mt-2 text-[13px] font-semibold">{o.label}</div>
-            <div className="text-[18px] font-extrabold"><Money value={o.total} size="inline" cents="never" animated={false} /></div>
-            <div className="text-[11px] text-slate"><Rich text={o.note} animated={false} /></div>
-          </div>
-        ))}
+    <CardShell className="flex flex-col">
+      <div className={`${T.title} text-navy`}>
+        Three ways to pay <Money value={amount} size="inline" cents="never" animated={false} />
+      </div>
+      <div className="mt-1 text-caption text-slate">The bars are what interest adds.</div>
+
+      {/* the trunk: one decision, before it splits */}
+      <div className="relative mt-3 h-3.5" aria-hidden>
+        <span className="absolute top-0 rounded-full bg-navy" style={{ left: SPINE - 3.5, width: 8, height: 8 }} />
+        <span className="absolute bottom-0 bg-navy" style={{ left: SPINE - 0.5, top: 7, width: 2 }} />
+      </div>
+
+      {/* the branches take any extra card height as spacing, so the tree opens up instead of leaving a void */}
+      <div className="flex grow flex-col">
+        {options.map((o, i) => {
+          const extra = Math.max(0, o.total - amount)
+          const last = i === options.length - 1
+          return (
+            <div key={o.key} className="flex grow items-start" style={{ animation: `riseIn .34s ${d(240 + i * 90)} both` }}>
+              <div className="relative shrink-0 self-stretch" style={{ width: GUTTER }} aria-hidden>
+                <div className="absolute rounded-bl-sm2 border-b-2 border-l-2 border-navy" style={{ left: SPINE - 0.5, top: 0, right: 6, height: NODE }} />
+                {last ? null : <span className="absolute bottom-0 bg-navy" style={{ left: SPINE - 0.5, top: NODE, width: 2 }} />}
+                <span className="absolute rounded-full ring-2 ring-white" style={{ right: 0, top: NODE - 4, width: 8, height: 8, background: TONE[o.key] }} />
+              </div>
+
+              <div className={`min-w-0 flex-1 rounded-ctl px-3 py-2.5 ${ROW} ${o.winner ? 'bg-teal-tint shadow-winner' : ''}`}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <div className={`${T.lede} truncate text-navy`}>{o.label}</div>
+                  <Money value={o.total} size="sm" cents="never" animated={false} className="shrink-0 text-navy" />
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3" role="img" aria-label={extra > 0 ? `${o.label}: ${extra} dollars of interest added` : `${o.label}: no interest added`}>
+                  <div className={`h-2 min-w-0 max-w-[420px] flex-1 rounded-pill ${o.winner ? 'bg-white' : 'bg-lavender-soft'}`}>
+                    <div
+                      className="h-full rounded-pill"
+                      style={{ width: extra > 0 ? `${Math.max(8, (extra / maxExtra) * 100)}%` : '8px', background: TONE[o.key], animation: `sparkReveal .5s ${d(460 + i * 90)} both` }}
+                    />
+                  </div>
+                  <div className={`w-11 shrink-0 text-right text-caption font-bold ${extra > 0 ? 'text-slate' : 'text-teal-ink'}`}>
+                    <Money value={extra} size="inline" cents="never" signed={extra > 0} animated={false} />
+                  </div>
+                </div>
+                <div className="mt-1.5 text-meta text-slate"><Rich text={o.note} animated={false} /></div>
+                {o.winner ? (
+                  <div className="mt-1.5 flex items-center gap-1 text-caption font-semibold text-teal-ink">
+                    <svg viewBox="0 0 12 12" className="h-3 w-3 shrink-0" aria-hidden><path d="M2.4 6.4 4.8 8.8 9.6 3.4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    Lowest true cost
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className={`mt-3.5 border-t border-lavender pt-3 text-meta text-slate ${ROW}`}>
+        Best to worst: <span className="font-bold text-navy"><Money value={maxExtra} size="inline" cents="never" animated={false} /></span> apart on the same purchase.
       </div>
     </CardShell>
   )

@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { fmtDate } from '@/engine/format'
 import { Num } from './Money'
 import type { RichPart } from '@/engine/types'
+import { cn } from '@/lib/utils'
 
 type Fmt = Extract<RichPart, { date: Date }>['fmt']
 
@@ -13,7 +14,7 @@ export function DateText({ date, fmt = 'md', animated = true, className }: { dat
   if (fmt !== 'md') {
     const s = fmtDate(date, fmt)
     return (
-      <span className={className + ' inline-grid'}>
+      <span className={cn('inline-grid', className)}>
         <AnimatePresence initial={false} mode="popLayout">
           <motion.span key={s} initial={animated ? { opacity: 0, y: 4 } : false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.25 }} className="[grid-area:1/1]">{s}</motion.span>
         </AnimatePresence>
@@ -22,7 +23,7 @@ export function DateText({ date, fmt = 'md', animated = true, className }: { dat
   }
   const month = fmtDate(date, 'month')
   return (
-    <span className={className + ' inline-flex items-baseline gap-[0.25em] whitespace-nowrap'}>
+    <span className={cn('inline-flex items-baseline gap-[0.25em] whitespace-nowrap', className)}>
       <span className="inline-grid">
         <AnimatePresence initial={false} mode="popLayout">
           <motion.span key={month} initial={animated ? { opacity: 0, y: 4 } : false} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.25 }} className="[grid-area:1/1]">{month}</motion.span>

@@ -88,9 +88,12 @@ export function layoutRows(rawItems: LayoutItem[]): LayoutRow[] {
 /** Distribute the leftover columns proportionally within [min, max]; largest-remainder rounding keeps the sum exactly 12. */
 function justify(row: Cell[]): { id: CardType; span: number; stack?: CardType[] }[] {
   const nat = row.reduce((a, r) => a + r.natural, 0)
-  const target = row.length === 1 ? COLS : Math.min(COLS, row.reduce((a, r) => a + r.max, 0))
+  // A card's `max` is a real design constraint (a fork or an iceberg has a natural widest form),
+  // so a lone card is stretched only up to its own max — never blindly to 12. Rows that end up
+  // short of 12 are centred by the answer grid rather than left-hugging a half-empty strip.
+  const target = row.length === 1 ? Math.min(COLS, row[0].max) : Math.min(COLS, row.reduce((a, r) => a + r.max, 0))
   const scale = target / nat
-  const cap = (r: LayoutItem) => (row.length === 1 ? COLS : r.max)
+  const cap = (r: LayoutItem) => r.max
   const raw = row.map((r) => Math.max(r.min, Math.min(cap(r), r.natural * scale)))
   const spans = raw.map((v) => Math.floor(v))
   let left = target - spans.reduce((a, b) => a + b, 0)

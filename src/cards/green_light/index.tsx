@@ -1,15 +1,23 @@
 import type { EngineContext } from '@/engine/types'
-import { CardShell, Money, useDelay } from '../kit'
+import { CardShell, Money, T, cn, useDelay } from '../kit'
 
 interface Props { label: string; under: number; plural: boolean }
 
-/** #3 — the passport-stamp seal: the unqualified yes. */
+/**
+ * #3 — the passport-stamp seal: the unqualified yes, with the margin as the figure.
+ */
 function GreenLight({ label, under, plural }: Props) {
   const d = useDelay()
   return (
-    <CardShell className="flex items-center gap-[18px]">
+    <CardShell className="flex items-center gap-4">
       <Stamp delay={d(200)} />
-      <div className="text-[14.5px] text-navy">{label} {plural ? 'are' : 'is'} <b><Money value={under} size="inline" cents="never" /> under usual</b> — enjoy it.</div>
+      <div className="min-w-0">
+        <div className="flex items-baseline gap-1.5 text-navy">
+          <Money value={under} size="md" cents="never" />
+          <span className={cn(T.meta, 'font-semibold')}>under usual</span>
+        </div>
+        <p className={cn(T.body, 'm-0 mt-1 max-w-[46ch] text-pretty text-slate')}>{label} {plural ? 'have' : 'has'} room this month&nbsp;— enjoy it.</p>
+      </div>
     </CardShell>
   )
 }
@@ -26,8 +34,8 @@ export function Stamp({ delay, size = 68 }: { delay: string; size?: number }) {
         </g>
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-teal">
-        <div className="text-[9px] font-extrabold tracking-[.12em]">COVERED</div>
-        <div className="text-[14px] font-extrabold leading-none">✓</div>
+        <div className="text-micro font-extrabold tracking-[.12em]">COVERED</div>
+        <div className="text-caption font-extrabold leading-none">✓</div>
       </div>
     </div>
   )

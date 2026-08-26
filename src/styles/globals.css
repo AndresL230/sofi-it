@@ -37,6 +37,8 @@
   --salmon-tint: #F8DFDC;
   --gold-ink: #7A5B12;
   --gold-deep: #D9AE4E;       /* dial/ring strokes where #FED880 is too light on white */
+  /* Fill vs ink discipline: shapes/bars/chips fill with --gold or --gold-deep;
+     --gold-ink is TEXT ONLY (as a fill it reads olive/brown, which is off-brand). */
   --gold-tint: rgba(254,216,128,.18);
   --gold-tint-solid: #FFF6DE;
   --tight-gradient: linear-gradient(90deg, #FFF3D6, #F8E1DD);
@@ -65,7 +67,12 @@ input[type=range] { accent-color: var(--teal); }
 /* Card shell — every card in /src/cards uses this */
 .pc-card { background: var(--card); border-radius: 16px; box-shadow: var(--shadow-card); }
 
-/* Signature motions lifted from the export (fire once, then hold) */
+/* Signature motions (fire once, then hold).
+   PITFALL: these are applied with `both` fill and end at `transform: none`, which CANCELS any
+   positioning transform on the same element — `-translate-x-1/2`, `translate(-50%,-50%)` and
+   friends silently stop applying once the animation lands, leaving markers anchored at their
+   corner instead of centred. Put the positioning transform on an un-animated wrapper and the
+   animation on an inner element. */
 @keyframes shimmer { 0% { background-position: -500px 0 } 100% { background-position: 500px 0 } }
 @keyframes riseIn { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
 @keyframes draw { to { stroke-dashoffset: 0 } }

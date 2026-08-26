@@ -1,17 +1,28 @@
 import type { EngineContext, RichText } from '@/engine/types'
 import { DateText, Rich, useDelay } from '../kit'
+import { daysBetween } from '@/engine/format'
 
 interface Props { goalName: string; emoji: string; before: Date; after: Date; paceFix: RichText }
 
-/** #29 — purple pill with a plane that nudges right as the date crossfades; the pace fix beneath. */
+/** #29 — compact purple chip: the goal's landing date before → after, with the slip labelled in days; the pace fix beneath. */
 function GoalImpactChip({ goalName, emoji, before, after, paceFix }: Props) {
   const d = useDelay()
+  const days = Math.max(0, daysBetween(before, after))
   return (
     <div>
-      <span className="inline-flex items-center gap-2 rounded-pill bg-purple px-4 py-2 text-[13px] font-semibold text-white">
-        <span className="inline-block" style={{ animation: `nudgeR .8s ${d(500)} 2` }}>{emoji}</span> {goalName} lands <DateText date={before} animated={false} /> → <DateText date={after} />
-      </span>
-      <div className="ml-[6px] mt-[6px] text-[11px] font-medium text-purple"><Rich text={paceFix} /></div>
+      <div className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-pill bg-purple py-1.5 pl-3.5 pr-1.5 text-body font-semibold text-white">
+        <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
+          <span className="inline-block" style={{ animation: `nudgeR .8s ${d(500)} 2` }}>{emoji}</span>
+          <span>{goalName} lands</span>
+          <DateText date={before} animated={false} className="text-white/55" />
+          <span className="text-white/55" aria-hidden>→</span>
+          <DateText date={after} />
+        </span>
+        <span className="rounded-pill bg-white/15 px-2 py-0.5 text-caption font-bold tabular-nums">{days} {days === 1 ? 'day' : 'days'} later</span>
+      </div>
+      <div className="ml-1 mt-1.5 flex gap-1 text-meta font-semibold text-purple">
+        <span aria-hidden>↳</span><span><Rich text={paceFix} /></span>
+      </div>
     </div>
   )
 }

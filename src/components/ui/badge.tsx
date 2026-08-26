@@ -16,7 +16,7 @@ const badgeVariants = cva('inline-flex items-center rounded-pill font-semibold w
       tealSolid: 'bg-teal text-white',
       salmonSolid: 'bg-salmon text-white',
     },
-    size: { xs: 'text-[11px] px-[9px] py-[2px]', sm: 'text-[12px] px-[11px] py-1', md: 'text-[12.5px] px-[13px] py-[5px]', lg: 'text-[13px] px-[18px] py-[6px]' },
+    size: { xs: 'text-caption px-2 py-0.5', sm: 'text-meta px-2.5 py-1', md: 'text-meta px-3 py-1', lg: 'text-body px-4.5 py-1.5' },
   },
   defaultVariants: { tone: 'teal', size: 'sm' },
 })

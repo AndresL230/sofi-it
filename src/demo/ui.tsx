@@ -5,14 +5,14 @@ import { cn } from '@/lib/utils'
 export function Section({ id, title, aside, children, collapsible, defaultOpen = true }: { id: string; title: string; aside?: ReactNode; children: ReactNode; collapsible?: boolean; defaultOpen?: boolean }) {
   const head = (
     <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-      <h3 className="m-0 text-[11px] font-bold uppercase tracking-[0.08em] text-slate">{title}</h3>
-      {aside ? <div className="shrink-0 text-[11px] text-slate-muted">{aside}</div> : null}
+      <h3 className="m-0 text-caption font-bold uppercase tracking-[0.08em] text-slate">{title}</h3>
+      {aside ? <div className="shrink-0 text-caption text-slate-muted">{aside}</div> : null}
     </div>
   )
   if (!collapsible) {
     return (
       <section data-section={id} className="border-b border-lavender-soft px-5 py-4">
-        <div className="mb-[10px]">{head}</div>
+        <div className="mb-2.5">{head}</div>
         {children}
       </section>
     )
@@ -21,9 +21,9 @@ export function Section({ id, title, aside, children, collapsible, defaultOpen =
     <details data-section={id} open={defaultOpen} className="group border-b border-lavender-soft px-5 py-4">
       <summary className="flex cursor-pointer list-none items-center gap-2 rounded-sm2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 [&::-webkit-details-marker]:hidden">
         {head}
-        <span aria-hidden className="w-3 text-center text-[14px] leading-none text-slate-muted transition-transform group-open:rotate-90">›</span>
+        <span aria-hidden className="w-3 text-center text-lede leading-none text-slate-muted transition-transform group-open:rotate-90">›</span>
       </summary>
-      <div className="mt-[10px]">{children}</div>
+      <div className="mt-2.5">{children}</div>
     </details>
   )
 }
@@ -42,7 +42,7 @@ export function Mini({ className, tone = 'ghost', ...props }: ButtonHTMLAttribut
   return (
     <button
       type="button"
-      className={cn('inline-flex h-8 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-sm2 px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 disabled:cursor-not-allowed disabled:opacity-40', TONES[tone], className)}
+      className={cn('inline-flex h-8 cursor-pointer items-center justify-center gap-1 whitespace-nowrap rounded-sm2 px-3 text-meta font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 disabled:cursor-not-allowed disabled:opacity-40', TONES[tone], className)}
       {...props}
     />
   )
@@ -51,7 +51,7 @@ export function Mini({ className, tone = 'ghost', ...props }: ButtonHTMLAttribut
 /** Accessible switch bound to a boolean. */
 export function Switch({ checked, onChange, label, id }: { checked: boolean; onChange: (v: boolean) => void; label: string; id: string }) {
   return (
-    <label htmlFor={id} className="flex cursor-pointer items-center justify-between gap-3 text-[13px] text-ink">
+    <label htmlFor={id} className="flex cursor-pointer items-center justify-between gap-3 text-body text-ink">
       <span>{label}</span>
       <button
         id={id}
@@ -67,4 +67,4 @@ export function Switch({ checked, onChange, label, id }: { checked: boolean; onC
   )
 }
 
-export const Caption = ({ children, className }: { children: ReactNode; className?: string }) => <p className={cn('m-0 text-[11.5px] leading-snug text-slate-muted', className)}>{children}</p>
+export const Caption = ({ children, className }: { children: ReactNode; className?: string }) => <p className={cn('m-0 text-caption leading-snug text-slate-muted', className)}>{children}</p>

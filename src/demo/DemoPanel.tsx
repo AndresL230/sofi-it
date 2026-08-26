@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { BRAND } from '@/brand'
 import { NOW } from '@/data'
 import { CHOREOGRAPHY, MATRIX_QUERIES } from '@/engine/queries'
+import { CARD_METAS } from '@/cards'
 import { suggestedGoal } from '@/engine/goals'
 import { fmtDate } from '@/engine/format'
 import { useDemoStore } from '@/store/demo'
@@ -17,6 +18,7 @@ import { ProfileList, useSelectProfile } from './ProfileList'
 import { TimeTravel } from './TimeTravel'
 import { Classifier } from './Classifier'
 import { Inspector } from './Inspector'
+import { BentoExamples, SpanTable } from './BentoExamples'
 import { Caption, Mini, Section } from './ui'
 
 const STORAGE_KEYS = ['purchase-coach-goals', 'purchase-coach-profile', 'purchase-coach-demo']
@@ -78,11 +80,11 @@ export default function DemoPanel() {
         aria-expanded={open}
         aria-controls="demo-panel"
         aria-label={open ? 'Close demo controls' : 'Open demo controls'}
-        className={cn('fixed bottom-4 right-4 z-[60] flex h-11 cursor-pointer items-center gap-[7px] rounded-pill bg-navy px-[18px] text-[14px] font-semibold text-white shadow-pop transition-[filter,transform,right] duration-300 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60 focus-visible:ring-offset-2 active:scale-[.98]', open && 'sm:right-[376px]')}
+        className={cn('fixed bottom-4 right-4 z-[60] flex h-11 cursor-pointer items-center gap-[7px] rounded-pill bg-navy px-4.5 text-lede font-semibold text-white shadow-pop transition-[filter,transform,right] duration-300 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60 focus-visible:ring-offset-2 active:scale-[.98]', open && 'sm:right-[376px]')}
       >
-        <span aria-hidden className="text-[13px]">✦</span>
+        <span aria-hidden className="text-body">✦</span>
         <span>Demo</span>
-        {forceFallback ? <span data-demo="pill-dot" title="keyword fallback forced" className="ml-[2px] h-2 w-2 rounded-full bg-gold" /> : null}
+        {forceFallback ? <span data-demo="pill-dot" title="keyword fallback forced" className="ml-0.5 h-2 w-2 rounded-full bg-gold" /> : null}
       </button>
       {open ? <Panel forceFallback={forceFallback} close={() => setOpen(false)} /> : null}
     </>
@@ -109,11 +111,11 @@ function Panel({ close, forceFallback }: { close: () => void; forceFallback: boo
     >
       <header className="flex shrink-0 items-center justify-between border-b border-lavender px-5 py-3">
         <div className="flex items-center gap-2">
-          <span aria-hidden className="text-[14px] text-teal">✦</span>
-          <span className="text-[15px] font-bold text-navy">Demo controls</span>
+          <span aria-hidden className="text-lede text-teal">✦</span>
+          <span className="text-lede font-bold text-navy">Demo controls</span>
           {forceFallback ? <Badge tone="gold" size="xs">fallback forced</Badge> : null}
         </div>
-        <button type="button" data-demo="close" onClick={close} aria-label="Close demo controls" className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-[18px] leading-none text-slate transition-colors hover:bg-lavender-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">×</button>
+        <button type="button" data-demo="close" onClick={close} aria-label="Close demo controls" className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-metric-sm leading-none text-slate transition-colors hover:bg-lavender-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">×</button>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-20">
         <Section id="profile" title="Profile" aside={`${user.persona.firstName} · ${user.persona.city}`}>
@@ -125,7 +127,7 @@ function Panel({ close, forceFallback }: { close: () => void; forceFallback: boo
         </Section>
 
         <Section id="matrix" title="Nine matrix queries" aside={inspector ? `showing ${inspector.path}` : undefined}>
-          <div className="grid grid-cols-3 gap-[6px]">
+          <div className="grid grid-cols-3 gap-1.5">
             {MATRIX_QUERIES.map((m) => {
               const on = inspector?.query === m.q
               return (
@@ -136,13 +138,21 @@ function Panel({ close, forceFallback }: { close: () => void; forceFallback: boo
                   aria-pressed={on}
                   onClick={() => { ask(m.q); if (isSheet()) close() }}
                   title={m.q}
-                  className={cn('min-h-[44px] cursor-pointer rounded-sm2 px-2 py-[6px] text-center text-[12px] font-medium leading-[1.25] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50', on ? 'bg-teal text-white' : 'bg-teal-tint text-teal hover:bg-teal-tint2')}
+                  className={cn('min-h-[44px] cursor-pointer rounded-sm2 px-2 py-1.5 text-center text-meta font-medium leading-[1.25] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50', on ? 'bg-teal text-white' : 'bg-teal-tint text-teal hover:bg-teal-tint2')}
                 >
                   {m.q}
                 </button>
               )
             })}
           </div>
+        </Section>
+
+        <Section id="bento" title="Bento layouts" aside="7 examples">
+          <BentoExamples ask={(q) => { ask(q); if (isSheet()) close() }} />
+        </Section>
+
+        <Section id="spans" title="Card span ranges" collapsible defaultOpen={false} aside={`${CARD_METAS.length} cards`}>
+          <SpanTable />
         </Section>
 
         <Section id="goal" title="Goal" aside={goal ? undefined : 'none'}>
@@ -168,7 +178,7 @@ function Panel({ close, forceFallback }: { close: () => void; forceFallback: boo
         <Section id="reset" title="Reset">
           <ResetRow />
         </Section>
-        <p className="px-5 pt-3 text-[11px] text-slate-muted">Esc closes · the pill toggles this panel on every page.</p>
+        <p className="px-5 pt-3 text-caption text-slate-muted">Esc closes · the pill toggles this panel on every page.</p>
       </div>
     </aside>
   )
@@ -196,8 +206,8 @@ function Walkthrough({ ask }: { ask: (q: string) => void }) {
 
   return (
     <div>
-      {profileId !== scriptedFor.id ? <Caption className="mb-2 rounded-sm2 bg-lavender-soft px-2 py-[6px] text-slate">Scripted for {scriptedFor.name} — the beats assume her accounts; switch profile above to follow along exactly.</Caption> : null}
-      <ol className="m-0 list-none space-y-[2px] p-0">
+      {profileId !== scriptedFor.id ? <Caption className="mb-2 rounded-sm2 bg-lavender-soft px-2 py-1.5 text-slate">Scripted for {scriptedFor.name} — the beats assume her accounts; switch profile above to follow along exactly.</Caption> : null}
+      <ol className="m-0 list-none space-y-0.5 p-0">
         {CHOREOGRAPHY.map((q, i) => {
           const on = step === i
           const done = step !== null && i < step
@@ -210,16 +220,16 @@ function Walkthrough({ ask }: { ask: (q: string) => void }) {
                 onClick={() => go(i)}
                 className={cn('flex w-full cursor-pointer items-start gap-3 rounded-ctl px-2 py-[7px] text-left transition-colors hover:bg-lavender-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50', on && 'bg-teal-tint hover:bg-teal-tint')}
               >
-                <span className={cn('mt-[1px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11.5px] font-bold', on ? 'bg-teal text-white' : done ? 'bg-teal-tint2 text-teal-ink' : 'bg-lavender-soft text-slate')}>{done ? '✓' : i + 1}</span>
+                <span className={cn('mt-[1px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-caption font-bold', on ? 'bg-teal text-white' : done ? 'bg-teal-tint2 text-teal-ink' : 'bg-lavender-soft text-slate')}>{done ? '✓' : i + 1}</span>
                 <span className="min-w-0 flex-1">
-                  <span className={cn('block text-[13.5px] font-semibold leading-tight', on ? 'text-teal-ink' : 'text-ink')}>{q}</span>
-                  <span className="mt-[2px] block text-[12px] leading-snug text-slate">{BEATS[i]}</span>
+                  <span className={cn('block text-body font-semibold leading-tight', on ? 'text-teal-ink' : 'text-ink')}>{q}</span>
+                  <span className="mt-0.5 block text-meta leading-snug text-slate">{BEATS[i]}</span>
                 </span>
               </button>
               {i === TRACK_STEP ? (
-                <div className={cn('ml-[44px] mr-2 mt-[2px] flex items-center justify-between gap-2 rounded-sm2 px-2 py-[6px] text-[12px]', blocked ? 'bg-salmon-tint text-salmon-ink' : 'text-slate')}>
+                <div className={cn('ml-[44px] mr-2 mt-0.5 flex items-center justify-between gap-2 rounded-sm2 px-2 py-1.5 text-meta', blocked ? 'bg-salmon-tint text-salmon-ink' : 'text-slate')}>
                   {goal ? <span className="font-medium text-purple">✓ {goal.name} is tracked</span> : <span>{blocked ? 'track the goal on step 3 first' : 'or track it from here'}</span>}
-                  {goal ? null : <Mini tone="purple" data-demo="track-lisbon" onClick={track} className="h-7 px-[10px] text-[12px]">Track {short}</Mini>}
+                  {goal ? null : <Mini tone="purple" data-demo="track-lisbon" onClick={track} className="h-7 px-2.5 text-meta">Track {short}</Mini>}
                 </div>
               ) : null}
             </li>
@@ -249,11 +259,11 @@ function GoalRow() {
     <div className="flex items-center justify-between gap-3">
       {goal ? (
         <div className="min-w-0 rounded-sm2 bg-purple-tint px-3 py-2">
-          <div className="truncate text-[14px] font-bold text-purple">{goal.emoji ?? '✦'} {goal.name}</div>
-          <div className="text-[12px] text-slate"><Money value={goal.saved} size="inline" cents="never" animated={false} /> of <Money value={goal.target} size="inline" cents="never" animated={false} /> · by {fmtDate(goal.deadline)}</div>
+          <div className="truncate text-lede font-bold text-purple">{goal.emoji ?? '✦'} {goal.name}</div>
+          <div className="text-meta text-slate"><Money value={goal.saved} size="inline" cents="never" animated={false} /> of <Money value={goal.target} size="inline" cents="never" animated={false} /> · by {fmtDate(goal.deadline)}</div>
         </div>
       ) : (
-        <div className="text-[13px] text-slate-muted">No goal tracked — small purchases won't check against anything.</div>
+        <div className="text-body text-slate-muted">No goal tracked — small purchases won't check against anything.</div>
       )}
       <div className="flex shrink-0 gap-2">
         {goal ? (
@@ -271,16 +281,16 @@ function Pages({ onNavigate }: { onNavigate: () => void }) {
   const copy = async () => {
     try { await navigator.clipboard.writeText(BRAND.publicUrl); toast('Copied the production URL.') } catch { toast('Copy failed — the URL is ' + BRAND.publicUrl) }
   }
-  const link = 'flex h-9 items-center justify-between rounded-sm2 px-3 text-[13.5px] font-semibold text-teal transition-colors hover:bg-teal-tint hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50'
+  const link = 'flex h-9 items-center justify-between rounded-sm2 px-3 text-body font-semibold text-teal transition-colors hover:bg-teal-tint hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50'
   return (
     <div className="-mx-3">
-      <Link to="/" className={link} onClick={onNavigate}>Home <span className="text-[11px] font-normal text-slate-muted">/</span></Link>
-      <Link to="/gallery" className={link} onClick={onNavigate}>Card gallery <span className="text-[11px] font-normal text-slate-muted">/gallery</span></Link>
-      <Link to="/goals" className={link} onClick={onNavigate}>Goals <span className="text-[11px] font-normal text-slate-muted">/goals</span></Link>
-      <a href="/share" target="_blank" rel="noreferrer" className={link}>Share / QR <span className="text-[11px] font-normal text-slate-muted">/share · new tab ↗</span></a>
+      <Link to="/" className={link} onClick={onNavigate}>Home <span className="text-caption font-normal text-slate-muted">/</span></Link>
+      <Link to="/gallery" className={link} onClick={onNavigate}>Card gallery <span className="text-caption font-normal text-slate-muted">/gallery</span></Link>
+      <Link to="/goals" className={link} onClick={onNavigate}>Goals <span className="text-caption font-normal text-slate-muted">/goals</span></Link>
+      <a href="/share" target="_blank" rel="noreferrer" className={link}>Share / QR <span className="text-caption font-normal text-slate-muted">/share · new tab ↗</span></a>
       <div className="mt-2 flex items-center justify-between gap-2 rounded-sm2 bg-lavender-soft px-3 py-2">
-        <a href={BRAND.publicUrl} target="_blank" rel="noreferrer" className="min-w-0 truncate text-[13px] font-semibold text-navy hover:text-teal-ink" title={BRAND.publicUrl}>{host}</a>
-        <Mini tone="outline" onClick={copy} className="h-7 px-[10px] text-[12px]">Copy</Mini>
+        <a href={BRAND.publicUrl} target="_blank" rel="noreferrer" className="min-w-0 truncate text-body font-semibold text-navy hover:text-teal-ink" title={BRAND.publicUrl}>{host}</a>
+        <Mini tone="outline" onClick={copy} className="h-7 px-2.5 text-meta">Copy</Mini>
       </div>
     </div>
   )
@@ -297,10 +307,10 @@ function ResetRow() {
     <div className="space-y-2">
       {armed ? (
         <div className="flex items-center justify-between gap-2 rounded-sm2 bg-red-tint px-3 py-2">
-          <span className="text-[12.5px] font-medium text-red-ink">Clear goal, profile and demo state?</span>
+          <span className="text-meta font-medium text-red-ink">Clear goal, profile and demo state?</span>
           <div className="flex shrink-0 gap-2">
-            <Mini tone="ghost" onClick={() => setArmed(false)} className="h-7 px-[10px] text-[12px]">Cancel</Mini>
-            <Mini tone="danger" data-demo="reset-confirm" onClick={doReset} className="h-7 px-[10px] text-[12px]">Yes, reset</Mini>
+            <Mini tone="ghost" onClick={() => setArmed(false)} className="h-7 px-2.5 text-meta">Cancel</Mini>
+            <Mini tone="danger" data-demo="reset-confirm" onClick={doReset} className="h-7 px-2.5 text-meta">Yes, reset</Mini>
           </div>
         </div>
       ) : (

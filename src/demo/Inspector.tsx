@@ -41,18 +41,18 @@ export function Inspector({ onFlash }: { onFlash?: () => void }) {
   const kept = rows.filter((r) => r.kept).length
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between gap-2 text-[12px] text-slate">
+      <div className="mb-2 flex items-center justify-between gap-2 text-meta text-slate">
         <span>path <b className="text-ink">{inspector.path}</b> · layout <b className="text-ink">{inspector.stack.layout}</b></span>
         <span><b className="text-ink">{kept}</b> of {rows.length} kept</span>
       </div>
       <div className="overflow-x-auto rounded-sm2 border border-lavender-soft">
-        <table className="w-full border-collapse text-[12px]">
+        <table className="w-full border-collapse text-meta">
           <thead>
-            <tr className="bg-lavender-soft text-left text-[10.5px] uppercase tracking-[0.06em] text-slate">
-              <th className="px-2 py-[6px] font-semibold">card</th>
-              <th className="px-1 py-[6px] font-semibold">kind</th>
-              <th className="px-1 py-[6px] text-right font-semibold" title="relevance × priority / priority">score</th>
-              <th className="px-2 py-[6px] font-semibold">status</th>
+            <tr className="bg-lavender-soft text-left text-micro uppercase tracking-[0.06em] text-slate">
+              <th className="px-2 py-1.5 font-semibold">card</th>
+              <th className="px-1 py-1.5 font-semibold">kind</th>
+              <th className="px-1 py-1.5 text-right font-semibold" title="relevance × priority / priority">score</th>
+              <th className="px-2 py-1.5 font-semibold">status</th>
             </tr>
           </thead>
           <tbody>
@@ -81,8 +81,8 @@ function Row({ row: r, onFlash }: { row: InspectorRow; onFlash?: () => void }) {
       role={click ? 'button' : undefined}
       className={cn('border-t border-lavender-soft', r.kept ? 'cursor-pointer hover:bg-teal-tint focus-visible:bg-teal-tint focus-visible:outline-none' : 'text-slate-muted')}
     >
-      <td className={cn('max-w-[104px] truncate px-2 py-[5px] font-mono text-[11px]', r.kept ? 'text-ink' : 'text-slate-muted')} title={r.id}>{r.id}</td>
-      <td className="px-1 py-[5px]"><Badge tone={KIND_TONE[kind]} size="xs" className={cn('px-[7px] text-[10px]', !r.kept && 'opacity-60')}>{r.kind}</Badge></td>
+      <td className={cn('max-w-[104px] truncate px-2 py-[5px] font-mono text-caption', r.kept ? 'text-ink' : 'text-slate-muted')} title={r.id}>{r.id}</td>
+      <td className="px-1 py-[5px]"><Badge tone={KIND_TONE[kind]} size="xs" className={cn('px-[7px] text-micro', !r.kept && 'opacity-60')}>{r.kind}</Badge></td>
       <td className="whitespace-nowrap px-1 py-[5px] text-right tabular-nums" title={`relevance ${r.relevance.toFixed(2)} × priority ${r.priority}`}>
         <b className={r.kept ? 'text-ink' : 'text-slate-muted'}>{r.score}</b><span className="text-slate-muted">/{r.priority}</span>
       </td>

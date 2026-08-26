@@ -1,23 +1,50 @@
 import type { EngineContext } from '@/engine/types'
-import { CardShell, Money, Num } from '../kit'
+import { CardShell, Money, Num, T, cn } from '../kit'
 
 interface Props { priorLabel: string; priorAmount: number; weeksAgo: number; thisLabel: string; thisAmount: number; count: number; kind: string }
 
-/** #22 — two polaroid tiles rotated ∓2° with a VS chip on the seam. Data only. */
-function DuplicateCheck({ priorLabel, priorAmount, weeksAgo, thisLabel, thisAmount, count, kind }: Props) {
-  const tile = (rot: string, top: React.ReactNode, bottom: React.ReactNode) => (
-    <div className="w-32 border border-lavender bg-white px-2 pb-[10px] pt-2 shadow-polaroid" style={{ transform: `rotate(${rot})` }}>
-      <div className="h-[74px]" style={{ background: 'repeating-linear-gradient(45deg, #F0EEF1 0 6px, #FAFAF9 6px 12px)' }} />
-      <div className="mt-[7px] text-center text-[10.5px] text-slate">{top}<br />{bottom}</div>
+/** One polaroid in the side-by-side: the amount is the "photo", the caption says what and when. */
+function Tile({ rot, label, when, amount, fill, ink }: { rot: string; label: string; when: React.ReactNode; amount: number; fill: string; ink: string }) {
+  return (
+    <div className="flex-1 border border-lavender bg-white p-2 pb-3 shadow-polaroid" style={{ transform: `rotate(${rot})` }}>
+      <div className={cn('flex h-14 items-center justify-center', fill)}>
+        <Money value={amount} size="md" cents="never" animated={false} className={ink} />
+      </div>
+      <div className="mt-2 text-center">
+        <div className={cn(T.caption, 'line-clamp-2 font-semibold text-navy')} title={label}>{label}</div>
+        <div className={cn(T.micro, 'mt-0.5')}>{when}</div>
+      </div>
     </div>
   )
+}
+
+/**
+ * #22 — two polaroid tiles rotated ∓2° with a VS chip on the seam. Data only.
+ *
+ * The polaroid pair has a natural maximum (312px): past that the paper stops growing and the
+ * extra span goes to layout instead — at ≥524px of content the verdict text moves beside the
+ * comparison rather than above it. Both arrangements come from one wrapping flex row.
+ */
+function DuplicateCheck({ priorLabel, priorAmount, weeksAgo, thisLabel, thisAmount, count, kind }: Props) {
+  const delta = Math.round(thisAmount - priorAmount)
   return (
     <CardShell className="flex flex-col justify-center">
-      <div className="mb-3 text-[13px] text-slate"><Num value={count} suffix={count === 2 ? 'nd' : count === 3 ? 'rd' : 'th'} /> {kind} purchase this quarter.</div>
-      <div className="relative flex items-stretch justify-center gap-1">
-        {tile('-2deg', <><Num value={weeksAgo} animated={false} /> weeks ago</>, <>{priorLabel} · <b><Money value={priorAmount} size="inline" cents="never" animated={false} /></b></>)}
-        <div className="absolute left-1/2 top-[42%] z-[2] flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-navy text-[10px] font-extrabold text-white">VS</div>
-        {tile('2deg', 'today', <>{thisLabel} · <b><Money value={thisAmount} size="inline" cents="never" animated={false} /></b></>)}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+        <div className="grow basis-[200px]">
+          <div className={cn(T.title, 'text-navy')}>You've been here before.</div>
+          <div className={cn(T.meta, 'mt-1')}><Num value={count} suffix={count === 2 ? 'nd' : count === 3 ? 'rd' : 'th'} /> {kind} purchase this quarter.</div>
+          <div className={cn(T.body, 'mt-2 text-slate')}>
+            {delta === 0 ? 'Same price as last time.' : (
+              <><b className="font-bold text-navy"><Money value={Math.abs(delta)} size="inline" cents="never" animated={false} /></b> {delta > 0 ? 'more' : 'less'} than last time.</>
+            )}
+          </div>
+        </div>
+
+        <div className="flex w-full max-w-[312px] grow basis-[300px] items-stretch">
+          <Tile rot="-2deg" label={priorLabel} when={<><Num value={weeksAgo} animated={false} /> weeks ago</>} amount={priorAmount} fill="bg-lavender-soft" ink="text-slate" />
+          <div className="z-[2] -mx-2.5 mt-5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white bg-navy text-caption font-extrabold tracking-[.06em] text-white shadow-pop">VS</div>
+          <Tile rot="2deg" label={thisLabel} when="today" amount={thisAmount} fill="bg-salmon-tint" ink="text-salmon-ink" />
+        </div>
       </div>
     </CardShell>
   )

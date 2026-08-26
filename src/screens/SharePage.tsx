@@ -32,8 +32,8 @@ export default function SharePage() {
   return (
     <div data-screen="qr" className="flex min-h-screen items-center justify-center bg-page px-5 py-8">
       <section className="pc-card relative w-full max-w-[480px] px-8 pb-10 pt-12 text-center sm:px-10">
-        <Link to="/" className="absolute left-5 top-4 text-[12px] text-slate-muted hover:text-slate">← Insights</Link>
-        <div className="text-[16px] font-extrabold tracking-[-0.03em] text-navy">
+        <Link to="/" className="absolute left-5 top-4 text-meta text-slate-muted hover:text-slate">← Insights</Link>
+        <div className="text-title font-extrabold tracking-[-0.03em] text-navy">
           {BRAND.wordmark}<span className="text-teal">.</span>
         </div>
         <h1 className="mt-1 text-h1 font-bold text-navy">{BRAND.product}</h1>
@@ -44,8 +44,8 @@ export default function SharePage() {
           aria-label={`QR code for ${host}`}
           dangerouslySetInnerHTML={{ __html: svg }}
         />
-        <a href={BRAND.publicUrl} className="mt-6 inline-block text-[17px] font-semibold text-navy hover:text-teal-ink">{host}</a>
-        <p className="mt-2 text-[13px] text-slate">{'Scan to try it — type a thing and a price, like "$60 dinner".'}</p>
+        <a href={BRAND.publicUrl} className="mt-6 inline-block text-title font-semibold text-navy hover:text-teal-ink">{host}</a>
+        <p className="mt-2 text-body text-slate">{'Scan to try it — type a thing and a price, like "$60 dinner".'}</p>
       </section>
     </div>
   )

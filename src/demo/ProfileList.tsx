@@ -42,12 +42,12 @@ export function ProfileList({ onSelect }: { onSelect: (id: string) => void }) {
               onClick={() => onSelect(p.id)}
               className={cn('flex w-full cursor-pointer items-center gap-3 rounded-ctl px-3 py-2 text-left transition-colors hover:bg-lavender-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50', on && 'bg-teal-tint hover:bg-teal-tint')}
             >
-              <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-bold', on ? 'bg-navy text-white' : 'bg-lavender text-slate')}>{p.initials}</span>
+              <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-meta font-bold', on ? 'bg-navy text-white' : 'bg-lavender text-slate')}>{p.initials}</span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[14px] font-semibold leading-tight text-ink">{p.name}</span>
-                <span className="mt-[2px] block text-[12px] leading-snug text-slate">{p.blurb}</span>
+                <span className="block text-lede font-semibold leading-tight text-ink">{p.name}</span>
+                <span className="mt-0.5 block text-meta leading-snug text-slate">{p.blurb}</span>
               </span>
-              <span aria-hidden className={cn('w-4 shrink-0 text-center text-[14px] font-bold text-teal', !on && 'invisible')}>✓</span>
+              <span aria-hidden className={cn('w-4 shrink-0 text-center text-lede font-bold text-teal', !on && 'invisible')}>✓</span>
             </button>
           </li>
         )
@@ -56,11 +56,11 @@ export function ProfileList({ onSelect }: { onSelect: (id: string) => void }) {
         <>
           {COMING.map((c) => (
             <li key={c.name} aria-disabled className="flex items-center gap-3 px-3 py-2 opacity-50">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[1.5px] border-dashed border-lavender-deep text-[12px] font-bold text-slate-muted">{c.initials}</span>
-              <span className="text-[14px] font-semibold text-slate">{c.name}</span>
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[1.5px] border-dashed border-lavender-deep text-meta font-bold text-slate-muted">{c.initials}</span>
+              <span className="text-lede font-semibold text-slate">{c.name}</span>
             </li>
           ))}
-          <li className="px-3 pb-1 pt-[2px] text-[11px] text-slate-muted">profiles arrive with the addendum</li>
+          <li className="px-3 pb-1 pt-0.5 text-caption text-slate-muted">profiles arrive with the addendum</li>
         </>
       ) : null}
     </ul>

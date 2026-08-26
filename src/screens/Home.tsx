@@ -58,17 +58,17 @@ export function Home() {
 
   return (
     <>
-      <div data-screen="home" className="grid gap-[22px]" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))' }}>
+      <div data-screen="home" className="grid gap-5.5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))' }}>
         <section className="pc-card p-6">
-          <div className="text-[15px] font-semibold text-slate">Net worth</div>
-          <div className="mt-[6px]"><Money value={netWorth + 0.06} size="hero" /></div>
-          <div className="mt-[2px] text-[13px] font-semibold text-green">▲ <Money value={sixMonthDelta} size="inline" cents="never" /> past 6 months</div>
+          <div className="text-lede font-semibold text-slate">Net worth</div>
+          <div className="mt-1.5"><Money value={netWorth + 0.06} size="hero" /></div>
+          <div className="mt-0.5 text-body font-semibold text-green">▲ <Money value={sixMonthDelta} size="inline" cents="never" /> past 6 months</div>
           <svg viewBox="0 0 300 72" preserveAspectRatio="none" className="mt-3 h-[72px] w-full" aria-hidden>
             <path d={path} fill="none" stroke="var(--teal)" strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
           </svg>
-          <div className="mt-[10px] flex gap-[6px]">
+          <div className="mt-2.5 flex gap-1.5">
             {RANGES.map((r) => (
-              <button key={r} onClick={() => setRange(r)} className={cn('cursor-pointer rounded-pill px-[11px] py-[5px] text-[12px] font-semibold', r === range ? 'bg-navy text-white' : 'bg-lavender-soft text-slate')}>{r}</button>
+              <button key={r} onClick={() => setRange(r)} className={cn('cursor-pointer rounded-pill px-[11px] py-[5px] text-meta font-semibold', r === range ? 'bg-navy text-white' : 'bg-lavender-soft text-slate')}>{r}</button>
             ))}
           </div>
           <div className="mt-4 border-t border-lavender">
@@ -77,8 +77,8 @@ export function Home() {
               return (
                 <div key={g.key} className={cn(i < groups.length - 1 && 'border-b border-lavender')}>
                   <button onClick={() => toggle(g.key)} aria-expanded={isOpen} className="flex w-full cursor-pointer items-center justify-between py-[13px] text-left">
-                    <span className="text-[14.5px]">{g.label} <span className="text-slate-muted">· {g.accounts.length}</span></span>
-                    <span className={cn('text-[14.5px] font-bold', g.neg && 'text-red')}>{g.neg ? '−' : ''}<Money value={sum(g.accounts)} size="inline" cents="never" /> <span className={cn('inline-block text-slate-hair transition-transform', isOpen && 'rotate-90')}>›</span></span>
+                    <span className="text-lede">{g.label} <span className="text-slate-muted">· {g.accounts.length}</span></span>
+                    <span className={cn('text-lede font-bold', g.neg && 'text-red')}>{g.neg ? '−' : ''}<Money value={sum(g.accounts)} size="inline" cents="never" /> <span className={cn('inline-block text-slate-hair transition-transform', isOpen && 'rotate-90')}>›</span></span>
                   </button>
                   {isOpen ? (
                     <div className="mb-3 rounded-sm2 bg-lavender-soft/60 px-3 py-1" style={{ animation: 'fadeIn .2s both' }}>
@@ -88,14 +88,14 @@ export function Home() {
                         return (
                           <div key={a.id} className="border-b border-white/70 py-2 last:border-b-0">
                             <div className="flex items-center justify-between gap-3">
-                              <div className="min-w-0"><div className="truncate text-[13.5px] font-semibold">{a.name}</div><div className="text-[11.5px] text-slate-muted">{a.officialName} ··{a.mask}{card?.apr ? <> · APR <Num value={card.apr * 100} fraction={2} suffix="%" animated={false} /></> : null}</div></div>
-                              <div className="shrink-0 text-right"><div className={cn('text-[13.5px] font-bold', g.neg && 'text-red')}>{g.neg ? '−' : ''}<Money value={a.balance} size="inline" cents="never" animated={false} /></div>{a.limit ? <div className="text-[11px] text-slate-muted">of <Money value={a.limit} size="inline" cents="never" animated={false} /> limit</div> : null}</div>
+                              <div className="min-w-0"><div className="truncate text-body font-semibold">{a.name}</div><div className="text-caption text-slate-muted">{a.officialName} ··{a.mask}{card?.apr ? <> · APR <Num value={card.apr * 100} fraction={2} suffix="%" animated={false} /></> : null}</div></div>
+                              <div className="shrink-0 text-right"><div className={cn('text-body font-bold', g.neg && 'text-red')}>{g.neg ? '−' : ''}<Money value={a.balance} size="inline" cents="never" animated={false} /></div>{a.limit ? <div className="text-caption text-slate-muted">of <Money value={a.limit} size="inline" cents="never" animated={false} /> limit</div> : null}</div>
                             </div>
-                            {util !== null ? <div className="mt-[6px] h-[4px] overflow-hidden rounded-pill bg-lavender"><div className="h-full rounded-pill" style={{ width: `${Math.min(100, util * 100)}%`, background: util > 0.3 ? 'var(--salmon)' : 'var(--teal)' }} /></div> : null}
+                            {util !== null ? <div className="mt-1.5 h-[4px] overflow-hidden rounded-pill bg-lavender"><div className="h-full rounded-pill" style={{ width: `${Math.min(100, util * 100)}%`, background: util > 0.3 ? 'var(--salmon)' : 'var(--teal)' }} /></div> : null}
                             {a.vaults?.length ? (
-                              <div className="mt-[6px] flex flex-col gap-[3px]">
+                              <div className="mt-1.5 flex flex-col gap-[3px]">
                                 {a.vaults.map((v) => (
-                                  <div key={v.name} className="flex items-center justify-between text-[12px] text-slate"><span><span className={cn('mr-[6px] inline-block h-[6px] w-[6px] rounded-full', /lisbon/i.test(v.name) ? 'bg-purple' : 'bg-teal')} />{v.name} vault</span><Money value={v.balance} size="inline" cents="never" animated={false} /></div>
+                                  <div key={v.name} className="flex items-center justify-between text-meta text-slate"><span><span className={cn('mr-1.5 inline-block h-[6px] w-[6px] rounded-full', /lisbon/i.test(v.name) ? 'bg-purple' : 'bg-teal')} />{v.name} vault</span><Money value={v.balance} size="inline" cents="never" animated={false} /></div>
                                 ))}
                               </div>
                             ) : null}
@@ -108,37 +108,37 @@ export function Home() {
               )
             })}
           </div>
-          <button onClick={() => setOpen(open.size === groups.length ? new Set() : new Set(groups.map((g) => g.key)))} className="mt-2 inline-block cursor-pointer text-[14px] font-semibold text-teal hover:text-teal-ink">{open.size === groups.length ? 'View less' : 'View more'}</button>
+          <button onClick={() => setOpen(open.size === groups.length ? new Set() : new Set(groups.map((g) => g.key)))} className="-mx-1.5 mt-1.5 inline-flex min-h-6 cursor-pointer items-center rounded-sm2 px-1.5 py-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">{open.size === groups.length ? 'View less' : 'View more'}</button>
         </section>
         <section className="pc-card p-6">
-          <div className="text-[15px] font-semibold text-slate">Spending</div>
-          <div className="mt-[6px]"><Money value={mtd} size="hero" /></div>
-          <div className="mt-[2px] text-[13px] text-slate">this month so far</div>
-          <div className="mt-[14px] flex h-[88px] items-end gap-[14px]">
+          <div className="text-lede font-semibold text-slate">Spending</div>
+          <div className="mt-1.5"><Money value={mtd} size="hero" /></div>
+          <div className="mt-0.5 text-body text-slate">this month so far</div>
+          <div className="mt-3.5 flex h-[88px] items-end gap-3.5">
             {months.map((m) => (
               <div key={m.label} className="flex-1 text-center">
                 <div className="rounded-[8px]" style={{ height: `${Math.max(8, (m.total / maxMonth) * 74)}px`, background: m.current ? 'var(--teal)' : 'var(--teal-pale)' }} />
-                <div className={cn('mt-[5px] text-[11.5px]', m.current ? 'font-semibold text-navy' : 'text-slate-muted')}>{m.label}</div>
+                <div className={cn('mt-[5px] text-caption', m.current ? 'font-semibold text-navy' : 'text-slate-muted')}>{m.label}</div>
               </div>
             ))}
           </div>
-          <div className="mt-[14px] border-t border-lavender">
+          <div className="mt-3.5 border-t border-lavender">
             {recent.map((t) => (
               <div key={t.id} className="flex items-center gap-3 border-b border-lavender-soft py-[11px]">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lavender text-[13px] font-bold text-slate">{initials(t.merchant)}</div>
-                <div className="min-w-0 flex-1"><div className="truncate text-[14px] font-bold">{t.merchant}</div><div className="text-[12px] text-slate-muted">{user.accounts.find((a) => a.id === t.accountId)?.name ?? 'Checking'} ··{user.accounts.find((a) => a.id === t.accountId)?.mask}</div></div>
-                <div className="shrink-0 text-[12.5px] text-slate">{CAT_LABEL[t.category]}</div>
-                <div className="shrink-0 text-[14px] font-bold">−<Money value={t.amount} size="inline" cents="decimal" animated={false} /></div>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lavender text-body font-bold text-slate">{initials(t.merchant)}</div>
+                <div className="min-w-0 flex-1"><div className="truncate text-lede font-bold">{t.merchant}</div><div className="text-meta text-slate-muted">{user.accounts.find((a) => a.id === t.accountId)?.name ?? 'Checking'} ··{user.accounts.find((a) => a.id === t.accountId)?.mask}</div></div>
+                <div className="shrink-0 text-meta text-slate">{CAT_LABEL[t.category]}</div>
+                <div className="shrink-0 text-lede font-bold">−<Money value={t.amount} size="inline" cents="decimal" animated={false} /></div>
                 <div className="shrink-0 text-slate-hair">›</div>
               </div>
             ))}
           </div>
-          <Link to="/transactions" className="mt-[10px] inline-block cursor-pointer text-[14px] font-semibold">View all transactions</Link>
+          <Link to="/transactions" className="-mx-1.5 mt-2 inline-flex min-h-6 cursor-pointer items-center rounded-sm2 px-1.5 py-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">View all transactions</Link>
         </section>
       </div>
-      <div className="mt-[18px] flex justify-center gap-4 text-[12px]">
-        <Link to="/gallery" className="text-slate-muted hover:text-slate">card gallery</Link>
-        <Link to="/share" className="text-slate-muted hover:text-slate">share</Link>
+      <div className="mt-4.5 flex justify-center gap-3 text-meta">
+        <Link to="/gallery" className="inline-flex min-h-6 items-center rounded-sm2 px-1.5 text-slate-muted hover:text-slate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">card gallery</Link>
+        <Link to="/share" className="inline-flex min-h-6 items-center rounded-sm2 px-1.5 text-slate-muted hover:text-slate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">share</Link>
       </div>
       <span className="sr-only"><Num value={0} animated={false} /></span>
     </>

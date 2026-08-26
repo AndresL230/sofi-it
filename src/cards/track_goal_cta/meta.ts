@@ -11,5 +11,8 @@ export const meta: CardMeta = {
   condition,
   relevance: (ctx) => (condition(ctx) ? 1 : 0),
   span: 'full',
-  samples: [{ query: '$1,200 flight to Lisbon in March' }],
+  samples: [
+    { query: '$1,200 flight to Lisbon in March' },
+    { query: '$1,200 flight to Lisbon in March', label: 'already tracked', override: (p) => ({ ...(p as Record<string, unknown>), tracked: true }) },
+  ],
 }

@@ -60,10 +60,10 @@ export function Answer() {
   if (!classification.is_purchase) {
     return (
       <div data-screen="answer" className="max-w-quick">
-        <Link to="/" className="mb-[14px] inline-block text-[14px] font-semibold" onClick={() => session.reset()}>← Insights</Link>
-        <div className="pc-card px-5 py-[18px]" style={{ animation: 'riseIn .45s both' }}>
-          <div className="text-[16px] font-bold text-ink">{NON_PURCHASE_REPLY}</div>
-          <div className="mt-1 text-[14px] text-slate">I only check purchases — a thing plus a price, and I'll read your accounts.</div>
+        <Link to="/" className="-ml-1 mb-3.5 inline-flex min-h-6 items-center rounded-sm2 px-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60" onClick={() => session.reset()}>← Insights</Link>
+        <div className="pc-card px-5 py-4.5" style={{ animation: 'riseIn .45s both' }}>
+          <div className="text-title font-bold text-ink">{NON_PURCHASE_REPLY}</div>
+          <div className="mt-1 text-lede text-slate">I only check purchases — a thing plus a price, and I'll read your accounts.</div>
         </div>
       </div>
     )
@@ -77,19 +77,33 @@ export function Answer() {
 
   return (
     <div data-screen="answer" data-path={stack.path} className={maxW}>
-      <Link to="/" className="mb-[14px] inline-block text-[14px] font-semibold" onClick={() => session.reset()}>← Insights</Link>
+      <Link to="/" className="-ml-1 mb-3.5 inline-flex min-h-6 items-center rounded-sm2 px-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60" onClick={() => session.reset()}>← Insights</Link>
       {rows ? (
         <div key={stackKey} className="flex flex-col gap-4">
-          {rows.map((row, r) => (
-            <div key={r} className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-12" data-row={row.items.map((x) => `${(x.stack ?? [x.id]).join('+')}:${x.span}`).join(' ')}>
-              {row.items.map((x) => <div key={x.id} className="flex min-w-0 flex-col gap-4 md:[grid-column:span_var(--span)_/_span_var(--span)] [&>*]:flex-[1_1_auto] [&>*]:min-h-fit" style={{ ['--span' as string]: x.span }}>{(x.stack ?? [x.id]).map((id) => renderCard(id, stack.cards.indexOf(id)))}</div>)}
-            </div>
-          ))}
+          {rows.map((row, r) => {
+            // A row whose cards cap out below 12 columns is centred, so a lone width-capped card
+            // (payment_fork, total_cost_of_event…) sits in the middle rather than hugging the left.
+            const used = row.items.reduce((a, x) => a + x.span, 0)
+            const offset = Math.max(0, Math.floor((12 - used) / 2))
+            return (
+              <div key={r} className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-12" data-row={row.items.map((x) => `${(x.stack ?? [x.id]).join('+')}:${x.span}`).join(' ')}>
+                {row.items.map((x, i) => (
+                  <div
+                    key={x.id}
+                    className="flex min-w-0 flex-col gap-4 md:[grid-column:var(--start)_/_span_var(--span)] [&>*]:flex-[1_1_auto] [&>*]:min-h-fit"
+                    style={{ ['--span' as string]: x.span, ['--start' as string]: i === 0 ? offset + 1 : 'auto' }}
+                  >
+                    {(x.stack ?? [x.id]).map((id) => renderCard(id, stack.cards.indexOf(id)))}
+                  </div>
+                ))}
+              </div>
+            )
+          })}
         </div>
       ) : (
-        <div key={stackKey} className="flex flex-col gap-[14px]">{stack.cards.map((type, i) => renderCard(type, i))}</div>
+        <div key={stackKey} className="flex flex-col gap-3.5">{stack.cards.map((type, i) => renderCard(type, i))}</div>
       )}
-      {import.meta.env.DEV ? <div className="mt-3 text-[11px] text-slate-muted">path: {stack.path} · {stack.cards.length} cards · source: {classification.source}{stack.dropped.length ? ` · dropped: ${stack.dropped.join(', ')}` : ''}</div> : null}
+      {import.meta.env.DEV ? <div className="mt-3 text-caption text-slate-muted">path: {stack.path} · {stack.cards.length} cards · source: {classification.source}{stack.dropped.length ? ` · dropped: ${stack.dropped.join(', ')}` : ''}</div> : null}
     </div>
   )
 

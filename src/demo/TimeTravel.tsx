@@ -32,8 +32,8 @@ export function TimeTravel() {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <div className="text-[11px] text-slate-muted">The app thinks today is</div>
-          <div data-demo="now" className="text-[15px] font-bold text-ink">{fmtDate(NOW, 'weekdayLong')}, {fmtDate(NOW)}, {NOW.getFullYear()}</div>
+          <div className="text-caption text-slate-muted">The app thinks today is</div>
+          <div data-demo="now" className="text-lede font-bold text-ink">{fmtDate(NOW, 'weekdayLong')}, {fmtDate(NOW)}, {NOW.getFullYear()}</div>
         </div>
         <Badge tone={override ? 'gold' : 'gray'} size="xs">{override ? 'overridden' : 'real clock'}</Badge>
       </div>
@@ -43,13 +43,13 @@ export function TimeTravel() {
           value={date}
           onChange={(e) => setDate(e.target.value)}
           aria-label="Travel to date"
-          className="h-8 min-w-0 flex-1 rounded-sm2 border-[1.5px] border-lavender bg-white px-2 text-[13px] text-ink outline-none focus:border-teal"
+          className="h-8 min-w-0 flex-1 rounded-sm2 border-[1.5px] border-lavender bg-white px-2 text-body text-ink outline-none focus:border-teal"
         />
         <Mini tone="teal" type="submit" disabled={!date}>Go</Mini>
       </form>
-      <div className="flex flex-wrap gap-[6px]">
+      <div className="flex flex-wrap gap-1.5">
         {quick.map(([label, d]) => (
-          <Mini key={label} onClick={() => travel(d)} className="h-7 px-[10px] text-[12px]" title={d ?? 'remove ?now'} disabled={!d && !override}>{label}</Mini>
+          <Mini key={label} onClick={() => travel(d)} className="h-7 px-2.5 text-meta" title={d ?? 'remove ?now'} disabled={!d && !override}>{label}</Mini>
         ))}
       </div>
       <Caption>Time travel reloads the page — paydays, paces and every date re-derive from the new clock.</Caption>

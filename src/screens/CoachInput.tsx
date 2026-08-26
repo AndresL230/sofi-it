@@ -53,33 +53,33 @@ export function CoachInput() {
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') submit(query) }
 
   return (
-    <section data-screen="coach-input" className="pc-card mb-[22px] px-6 py-[22px]">
+    <section data-screen="coach-input" className="pc-card mb-5.5 px-6 py-5.5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="text-[19px] font-bold text-ink">About to buy something?</div>
-          <div className="mt-[3px] text-[14px] text-slate">Check it before you swipe.</div>
+          <div className="text-metric-sm font-bold text-ink">About to buy something?</div>
+          <div className="mt-[3px] text-lede text-slate">Check it before you swipe.</div>
         </div>
-        <div className="flex flex-wrap items-center gap-[10px]">
+        <div className="flex flex-wrap items-center gap-2.5">
           {goal ? (
-            <button onClick={() => nav('/goals')} className="group cursor-pointer rounded-pill bg-purple px-[14px] py-[7px] text-left text-[12.5px] font-semibold text-white" aria-label="Open goals">
+            <button onClick={() => nav('/goals')} className="group cursor-pointer rounded-pill bg-purple px-3.5 py-[7px] text-left text-meta font-semibold text-white" aria-label="Open goals">
               <Rich text={goalPill(goal)} animated={false} />
               <span className="mt-[5px] block h-[3px] w-full overflow-hidden rounded-pill bg-white/30"><span className="block h-full rounded-pill bg-white" style={{ width: `${Math.min(100, Math.round((goal.saved / goal.target) * 100))}%` }} /></span>
             </button>
           ) : (
-            <button onClick={() => nav('/goals')} className="cursor-pointer rounded-pill bg-purple-tint px-[14px] py-[7px] text-[13px] font-semibold text-purple hover:bg-purple hover:text-white">✦ Set a goal</button>
+            <button onClick={() => nav('/goals')} className="cursor-pointer rounded-pill bg-purple-tint px-3.5 py-[7px] text-body font-semibold text-purple hover:bg-purple hover:text-white">✦ Set a goal</button>
           )}
-          <button onClick={() => nav('/goals')} className="cursor-pointer text-[14px] font-semibold text-teal hover:text-teal-ink">Goals</button>
+          <button onClick={() => nav('/goals')} className="inline-flex min-h-6 cursor-pointer items-center rounded-sm2 px-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">Goals</button>
         </div>
       </div>
       <div className="relative mt-4">
         <AnimatePresence initial={false} mode="wait">
           {loading ? (
-            <motion.div key="shimmer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="anim-shimmer flex h-[52px] items-center rounded-ctl px-[18px] text-[14.5px] text-slate" aria-live="polite">
+            <motion.div key="shimmer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="anim-shimmer flex h-[52px] items-center rounded-ctl px-4.5 text-lede text-slate" aria-live="polite">
               Reading your accounts…
             </motion.div>
           ) : (
-            <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="flex gap-[10px]">
-              <Input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={onKey} maxLength={200} placeholder='Try "$60 dinner" or "$1,200 flight to Lisbon in March"' className="h-[52px] rounded-ctl bg-[#FDFDFC] px-[18px] text-[15px]" aria-label="What are you about to buy?" />
+            <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="flex gap-2.5">
+              <Input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={onKey} maxLength={200} placeholder='Try "$60 dinner" or "$1,200 flight to Lisbon in March"' className="h-[52px] rounded-ctl bg-[#FDFDFC] px-4.5 text-lede" aria-label="What are you about to buy?" />
               <Button size="lg" onClick={() => submit(query)} className="rounded-ctl">Check</Button>
             </motion.div>
           )}
@@ -87,7 +87,7 @@ export function CoachInput() {
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {chips.map((c) => (
-          <button key={c} onClick={() => submit(c)} disabled={loading && pending !== c} className="cursor-pointer rounded-pill bg-teal-tint px-[14px] py-[7px] text-[13px] font-medium text-teal transition-colors hover:bg-teal-tint2 disabled:opacity-60">{c}</button>
+          <button key={c} onClick={() => submit(c)} disabled={loading && pending !== c} className="cursor-pointer rounded-pill bg-teal-tint px-3.5 py-[7px] text-body font-medium text-teal transition-colors hover:bg-teal-tint2 disabled:opacity-60">{c}</button>
         ))}
       </div>
     </section>

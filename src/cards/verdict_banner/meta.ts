@@ -16,6 +16,7 @@ export const meta: CardMeta = {
   samples: [
       { query: '$60 dinner', label: 'fine' },
       { query: '$60 dinner', goal: true, label: 'tight — goal exists' },
+      { query: '$60 dinner', label: 'fine, with a caveat — longest copy', override: (p) => ({ ...(p as any), word: 'Fine, with a caveat.', clause: ['$610 of discretionary room left before your next paycheck (Fri) after rent and subscriptions.'] }) },
       { query: '$60 dinner', label: 'over', override: (p) => ((p: any) =>  ({ ...p, word: 'Over.', tone: 'over', clause: ["This clears out the month's room."], amount: p.amount * 8 }) )(p)},
     ],
 }

@@ -1,31 +1,48 @@
-import { useEffect, useState } from 'react'
 import type { EngineContext } from '@/engine/types'
-import { CardShell, Money, useDelay } from '../kit'
+import { CardShell, Caps, Money, T, cn, useDelay } from '../kit'
 
 interface Props { months: { label: string; balance: number; interest: number }[]; total: number; cardName: string }
 
-/** #9 — three month columns: remaining balance with a red interest cap; cumulative tag counts up above the third. */
-function CarryingCost({ months, total }: Props) {
+/**
+ * #9 — interest stacking month by month. The bars are CUMULATIVE interest (truthful scale:
+ * the last bar is the headline figure), each one labelled with its running total, so the
+ * reader sees the cost pile up rather than a balance that barely moves.
+ */
+function CarryingCost({ months, total, cardName }: Props) {
   const d = useDelay()
-  const [shown, setShown] = useState(0)
-  useEffect(() => { setShown(total) }, [total])
-  const maxBal = Math.max(...months.map((m) => m.balance + m.interest * 6))
+  let run = 0
+  const bars = months.map((m) => ({ label: m.label, cum: (run += m.interest), balance: m.balance }))
+  const maxCum = Math.max(1, bars[bars.length - 1]?.cum ?? 1)
+  const last = bars[bars.length - 1]
+  const card = cardName.replace('Chase ', '').replace(' Unlimited', '')
   return (
     <CardShell className="flex flex-col justify-center">
-      <div className="mb-[10px] text-[13px] text-slate">If it rides the card: interest stacks monthly.</div>
-      <div className="relative flex h-[110px] items-end justify-center gap-[22px]">
-        {months.map((m, i) => (
-          <div key={m.label} className="relative text-center">
-            {i === months.length - 1 ? (
-              <div className="absolute left-1/2 top-[2px] -translate-x-1/2 whitespace-nowrap rounded-pill bg-red px-2 py-[2px] text-[10.5px] font-bold text-white" style={{ animation: `popIn .3s ${d(900)} both` }}><Money value={shown} size="inline" cents="never" signed delayMs={parseInt(d(900))} /></div>
-            ) : null}
-            <div className="mx-auto mt-6 flex w-[34px] flex-col justify-end" style={{ height: 72 }}>
-              <div className="rounded-t-[4px] bg-red" style={{ height: Math.max(4, (m.interest * 6 / maxBal) * 72), transformOrigin: 'bottom', animation: `growUp .25s ${d(300 + i * 150)} both` }} />
-              <div className="bg-lavender" style={{ height: (m.balance / maxBal) * 72, transformOrigin: 'bottom', animation: `growUp .25s ${d(200 + i * 150)} both` }} />
-            </div>
-            <div className="mt-[5px] text-[10.5px] text-slate-muted">{m.label}</div>
+      {/* Three bars have a natural maximum width — past it the chart would read as three lonely
+          columns, so wide spans move the figure beside it instead of spreading it. */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3.5">
+        <div className="min-w-0 flex-1 basis-[200px]">
+          <Caps>Carried on the {card}</Caps>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-2">
+            <Money value={total} size="md" cents="never" signed className="text-red-ink" delayMs={parseInt(d(600))} />
+            <span className={T.meta}>of interest in {months.length} months</span>
           </div>
-        ))}
+        </div>
+
+        <div className="min-w-0 flex-1 basis-[240px] max-w-[300px]">
+          <div className="grid border-b border-lavender" style={{ gridTemplateColumns: `repeat(${bars.length}, minmax(0, 1fr))` }} role="img" aria-label={`Interest stacks to ${Math.round(total)} dollars over ${months.length} months`}>
+            {bars.map((b, i) => (
+              <div key={b.label} className="flex h-20 flex-col justify-end">
+                <div className={cn(T.micro, 'mb-1 text-center')}><Money value={Math.round(b.cum)} size="inline" cents="never" animated={false} /></div>
+                <div className="mx-auto rounded-t-[3px] bg-red" style={{ width: '66%', maxWidth: 56, height: Math.max(3, (b.cum / maxCum) * 58), transformOrigin: 'bottom', animation: `growUp .3s ${d(250 + i * 160)} both` }} />
+              </div>
+            ))}
+          </div>
+          <div className="grid" style={{ gridTemplateColumns: `repeat(${bars.length}, minmax(0, 1fr))` }}>
+            {bars.map((b) => <div key={b.label} className={cn(T.micro, 'mt-1.5 text-center')}>{b.label}</div>)}
+          </div>
+        </div>
+
+        <p className={cn(T.body, 'min-w-0 flex-1 basis-[260px] text-slate')}>Minimum payments barely dent it — still <Money value={last?.balance ?? 0} size="inline" cents="never" /> owed in {last?.label}.</p>
       </div>
     </CardShell>
   )
