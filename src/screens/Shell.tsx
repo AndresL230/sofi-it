@@ -1,5 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { BRAND } from '@/brand'
+import { useSession } from '@/store'
 import { CoachInput } from './CoachInput'
 import { ProfileSwitcher } from '@/demo/ProfileSwitcher'
 
@@ -8,6 +9,9 @@ export function Shell() {
   const nav = useNavigate()
   const { pathname } = useLocation()
   const showInput = pathname === '/' || pathname === '/answer'
+  /** While a query is in flight CoachInput renders the morphing skeleton in the outlet's place,
+   *  so the answer arrives into the space its own skeleton was just occupying. */
+  const loading = useSession((s) => s.loading)
   return (
     <div className="min-h-screen bg-page">
       <div data-screen="nav" className="sticky top-0 z-20 border-b border-lavender bg-white">
@@ -29,7 +33,7 @@ export function Shell() {
             <CoachInput />
           </>
         ) : null}
-        <Outlet />
+        <div className={loading ? 'hidden' : undefined}><Outlet /></div>
       </main>
     </div>
   )

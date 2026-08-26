@@ -113,3 +113,54 @@ number-flow-react { --number-flow-mask-height: 0.2em; }
 
 /* price_creep: the line draws left→right without depending on rAF */
 @keyframes sparkReveal { from { clip-path: inset(0 100% 0 0) } to { clip-path: inset(0 0 0 0) } }
+
+/* ---------------------------------------------------------------------------
+   The "SoFi It" press moment — beats 2 and 3.
+
+   Everything here moves transform/opacity only. Both sweeps are a translateX on an
+   absolutely-positioned bar, NOT background-position: the existing .anim-shimmer repaints its
+   gradient every frame, which is exactly what drops frames on a mid-range phone. These composite.
+
+   PITFALL: these rules sit AFTER @tailwind utilities, so a bare `.pc-*` class would beat a Tailwind
+   utility of the same specificity — a `position` declared here once silently overrode `absolute`
+   from the markup and dropped an element out of its own row. They live in @layer components so
+   utilities always win; keep any new class in here.
+
+   The sweep is the SKELETON's, and only the skeleton's. Nothing inside the coach input card wears
+   it: the input keeps its own box while the query is in flight.
+   --------------------------------------------------------------------------- */
+
+/* Beat 2 — classify skeleton. Turquoise sweeping over a pale-blue base, one eased pass per 900ms. */
+@keyframes skelSweep { from { transform: translate3d(-115%, 0, 0) } to { transform: translate3d(115%, 0, 0) } }
+/* Beat 3 — cards arriving beneath the banner. No overshoot here: the banner is the only thing
+   that gets to land with weight, and eleven cards bouncing behind it reads as noise. */
+@keyframes cardIn { from { opacity: 0; transform: translate3d(0, 12px, 0) scale(.988) } to { opacity: 1; transform: none } }
+/* …and one pass of light across each card as it lands. <CardSheen> unmounts the layer when its
+   own pass is over, so nothing is left animating (or compositing) on the answer screen. */
+@keyframes cardSheen { from { transform: translate3d(-110%, 0, 0) } to { transform: translate3d(320%, 0, 0) } }
+
+@layer components {
+  .pc-skel { position: relative; overflow: hidden; background: rgba(191, 231, 242, .5); }
+  .pc-skel::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,162,199,0) 0%, rgba(0,162,199,.26) 45%, rgba(0,162,199,.10) 62%, rgba(0,162,199,0) 100%);
+    transform: translate3d(-115%, 0, 0);
+    animation: skelSweep .9s cubic-bezier(.45,.05,.35,1) infinite;
+  }
+
+  .anim-card-in { animation: cardIn .38s cubic-bezier(.22,1,.36,1) both; }
+
+  .pc-sheen-bar {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 42%;
+    background: linear-gradient(100deg, rgba(0,162,199,0) 0%, rgba(0,162,199,.12) 38%, rgba(191,231,242,.55) 50%, rgba(0,162,199,.10) 62%, rgba(0,162,199,0) 100%);
+    transform: translate3d(-110%, 0, 0);
+    animation: cardSheen .62s cubic-bezier(.22,1,.36,1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* Hard requirement: no sweep, no sheen, cards at their final state. The blanket rule near the
+       top only collapses the duration, which parks a sweeping bar mid-pass — these have to be gone. */
+    .pc-skel::after, .pc-sheen-bar { animation-name: none; opacity: 0; }
+    .anim-card-in { animation-name: none; }
+  }
+}

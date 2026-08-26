@@ -1,4 +1,8 @@
+import { useEffect, useState } from 'react'
 import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
+import { useReducedMotion } from 'framer-motion'
+import { COUNT_UP_START_MS } from '@/motion/tokens'
+import { useCountUpReveal } from '@/motion/reveal'
 import { cn } from '@/lib/utils'
 
 /**
@@ -40,10 +44,39 @@ export interface MoneyProps {
   /** Delay the roll (ms) — count-ups that should land after a signature motion. */
   delayMs?: number
 }
+/** Sizes big enough to carry a roll. A count-up on an 11px row figure is noise, not a reveal. */
+const COUNTS_UP: Record<MoneySize, boolean> = { hero: true, lg: true, md: true, sm: false, inline: false }
+
+/**
+ * Start at 0 on mount and roll to the real figure — but ONLY inside an answer reveal
+ * (<CountUpProvider>), only for a figure big enough to carry it, and never under
+ * prefers-reduced-motion, where the value must simply be there.
+ * NumberFlow animates on change, not on first paint, so the zero-then-set is what makes it roll.
+ */
+function useRolledValue(value: number, size: MoneySize, animated: boolean) {
+  const reveal = useCountUpReveal()
+  const reduced = useReducedMotion()
+  const on = reveal && animated && !reduced && COUNTS_UP[size]
+  const [shown, setShown] = useState(on ? 0 : value)
+  useEffect(() => {
+    // Deliberately no "is this the first run?" ref. React.StrictMode mounts, tears down and
+    // mounts again in development, and a ref like that gets consumed by the discarded pass — the
+    // roll then silently never happened in dev while still working in production. This effect is
+    // idempotent instead. Delaying every change is harmless: the only figure inside a
+    // <CountUpProvider> is the verdict's amount, and a new amount means a new query, which
+    // remounts the whole stack via its revealKey.
+    if (!on) { setShown(value); return }
+    const t = setTimeout(() => setShown(value), COUNT_UP_START_MS)
+    return () => clearTimeout(t)
+  }, [value, on])
+  return on ? shown : value
+}
+
 const timing = (delayMs?: number) => (delayMs ? { transformTiming: { duration: 750, delay: delayMs, easing: 'ease-out' }, spinTiming: { duration: 750, delay: delayMs, easing: 'ease-out' }, opacityTiming: { duration: 350, delay: delayMs, easing: 'ease-out' } } : {})
 
 export function Money({ value, size = 'md', cents = 'auto', signed, prefix = '', suffix = '', approx, className, animated = true, title, delayMs }: MoneyProps) {
-  const v = approx ? Math.round(value) : Math.round(value * 100) / 100
+  const rolled = useRolledValue(value, size, animated)
+  const v = approx ? Math.round(rolled) : Math.round(rolled * 100) / 100
   const mode: Exclude<CentsMode, 'auto'> =
     cents === 'auto' ? (size === 'inline' ? (Number.isInteger(v) ? 'never' : 'decimal') : 'raised') : cents
   const pre = (approx ? '≈ ' : '') + prefix
