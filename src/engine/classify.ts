@@ -21,9 +21,9 @@ const ApiSchema = z.object({
  * Any failure (network, 429, timeout, schema mismatch, {fallback:true}) degrades silently to the
  * keyword classifier, so the demo never breaks.
  */
-export async function classify(query: string, opts: { timeoutMs?: number; signal?: AbortSignal } = {}): Promise<Classification> {
+export async function classify(query: string, opts: { timeoutMs?: number; signal?: AbortSignal; forceFallback?: boolean } = {}): Promise<Classification> {
   const fb = fallbackClassify(query)
-  if (query.trim().length === 0 || query.length > 200) return fb
+  if (opts.forceFallback || query.trim().length === 0 || query.length > 200) return fb
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs ?? 3500)
   opts.signal?.addEventListener('abort', () => ctrl.abort())

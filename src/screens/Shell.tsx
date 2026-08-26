@@ -1,6 +1,7 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { BRAND } from '@/brand'
 import { CoachInput } from './CoachInput'
+import { ProfileSwitcher } from '@/demo/ProfileSwitcher'
 
 /** Nav + the coach input card (which stays put across Home ↔ Answer, like the export). */
 export function Shell() {
@@ -18,7 +19,7 @@ export function Shell() {
             <span className="whitespace-nowrap border-b-2 border-teal pb-[2px] font-bold text-navy">{BRAND.navSection}</span>
           </div>
           <div className="shrink-0 rounded-pill bg-purple px-[15px] py-[7px] text-[13px] font-semibold text-white">{BRAND.plusPill}</div>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-navy text-[13px] font-bold text-white" aria-label="Account">{BRAND.avatarInitials}</div>
+          <ProfileSwitcher />
         </div>
       </div>
       <main className="mx-auto max-w-shell px-5 pb-[70px] pt-[26px]">

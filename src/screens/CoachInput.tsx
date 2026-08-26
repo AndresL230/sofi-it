@@ -6,6 +6,7 @@ import { fallbackClassify } from '@/engine/fallbackClassifier'
 import { CHIPS } from '@/engine/queries'
 import { goalPill } from '@/engine/goals'
 import { useGoalStore, useSession } from '@/store'
+import { useDemoStore } from '@/store/demo'
 import { Rich } from '@/components/Rich'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -31,7 +32,7 @@ export function CoachInput() {
     setPending(q)
     const started = Date.now()
     try {
-      const [c] = await Promise.all([classify(q, { signal: ctrl.signal }), new Promise((r) => setTimeout(r, SHIMMER_MS))])
+      const [c] = await Promise.all([classify(q, { signal: ctrl.signal, forceFallback: useDemoStore.getState().forceFallback }), new Promise((r) => setTimeout(r, SHIMMER_MS))])
       if (ctrl.signal.aborted) return
       void started
       setResult(q, c)

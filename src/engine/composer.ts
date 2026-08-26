@@ -81,3 +81,31 @@ export function compose(ctx: EngineContext, metas: CardMeta[]): CardStack {
   const cards = kept.sort((a, b) => rank(a) - rank(b)).map((m) => m.id)
   return { path: pathName ?? `${layout}-generic`, layout, cards, dropped: pool.filter((id) => !cards.includes(id)) }
 }
+
+/** Card-inspector view of a composition: every candidate with its condition, score, and why it was kept or dropped. */
+export function explain(ctx: EngineContext, metas: CardMeta[]): { path: string; rows: { id: CardType; kind: string; condition: boolean; relevance: number; priority: number; score: number; kept: boolean; reason: string }[]; stack: CardStack } {
+  const stack = compose(ctx, metas)
+  const byId = new Map(metas.map((m) => [m.id, m]))
+  const pathName = matrixPath(ctx)
+  const pool = pathName ? MATRIX_PATHS[pathName].cards : genericPool(ctx)
+  const showpieceCap = ctx.q.size === 'large' ? 2 : 1
+  const kept = new Set(stack.cards)
+  let interactiveSeen = 0, showpieceSeen = 0
+  const rows = pool.map((id) => {
+    const m = byId.get(id)!
+    const condition = m.condition(ctx)
+    const relevance = condition ? Math.max(0, Math.min(1, m.relevance(ctx))) : 0
+    const score = condition ? Math.round(relevance * m.priority) : 0
+    const isKept = kept.has(id)
+    let reason = isKept ? (m.anchor ? `anchor (${m.anchor})` : 'kept') : !condition ? 'condition false' : ''
+    if (!isKept && condition) {
+      if (m.kind === 'interactive' && interactiveSeen >= 1) reason = 'cap: 1 interactive'
+      else if (m.kind === 'showpiece' && showpieceSeen >= showpieceCap) reason = `cap: ${showpieceCap} showpiece`
+      else reason = 'cap: 7 cards (lower priority)'
+    }
+    if (isKept && m.kind === 'interactive') interactiveSeen++
+    if (isKept && m.kind === 'showpiece') showpieceSeen++
+    return { id, kind: m.kind, condition, relevance, priority: m.priority, score, kept: isKept, reason }
+  })
+  return { path: stack.path, rows, stack }
+}

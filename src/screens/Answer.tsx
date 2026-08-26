@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useUser } from '@/store/profile'
 import { buildContext } from '@/engine/context'
-import { compose } from '@/engine/composer'
+import { compose, explain } from '@/engine/composer'
+import { useDemoStore } from '@/store/demo'
 import { classify } from '@/engine/classify'
 import { fallbackClassify } from '@/engine/fallbackClassifier'
 import { NON_PURCHASE_REPLY } from '@/engine/queries'
@@ -32,7 +33,7 @@ export function Answer() {
     if (!q) { nav('/', { replace: true }); return }
     if (session.lastQuery === q && session.classification) return
     let alive = true
-    classify(q)
+    classify(q, { forceFallback: useDemoStore.getState().forceFallback })
       .then((c) => { if (alive) { setLocal(c); session.setResult(q, c) } })
       .catch(() => { if (alive) { const c = fallbackClassify(q); setLocal(c); session.setResult(q, c) } })
     return () => { alive = false }
@@ -40,6 +41,13 @@ export function Answer() {
 
   const ctx = useMemo<EngineContext | null>(() => (classification && classification.is_purchase ? buildContext(classification, goal, user, now) : null), [classification, goal, user, now])
   const stack = useMemo(() => (ctx ? compose(ctx, CARD_METAS) : null), [ctx])
+  const setInspector = useDemoStore((s) => s.setInspector)
+  useEffect(() => {
+    if (!ctx || !stack) { setInspector(null); return }
+    const ex = explain(ctx, CARD_METAS)
+    setInspector({ query: q, path: ex.path, rows: ex.rows, stack, ctx })
+    return () => setInspector(null)
+  }, [ctx, stack, q, setInspector])
 
   const actions: CardActions = useMemo(() => ({
     toast: (m) => toast(m),
