@@ -6,7 +6,7 @@ interface Props { rows: EngineContext['ledger']; goal: EngineContext['goalLedger
 /** #5 — before→after ledger strip; the "after" values roll in via NumberFlow; goal delta in purple at the far right. */
 function PostPurchaseFooter({ rows, goal }: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-x-[18px] gap-y-[6px] rounded-sm2 border border-lavender bg-white px-4 py-3">
+    <div className="pc-card flex flex-wrap items-center gap-x-[18px] gap-y-[6px] !rounded-sm2 px-4 py-3">
       <Caps className="text-[10px] font-bold text-slate-muted">If you buy</Caps>
       <NumberFlowGroup>
         {rows.map((r) => (

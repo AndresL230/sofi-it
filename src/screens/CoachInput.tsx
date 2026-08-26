@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { classify } from '@/engine/classify'
 import { fallbackClassify } from '@/engine/fallbackClassifier'
-import { CHIPS } from '@/engine/queries'
+import { profileById } from '@/data/profiles'
+import { useUser } from '@/store/profile'
 import { goalPill } from '@/engine/goals'
 import { useGoalStore, useSession } from '@/store'
 import { useDemoStore } from '@/store/demo'
@@ -17,6 +18,8 @@ export const SHIMMER_MS = 600
 export function CoachInput() {
   const nav = useNavigate()
   const goal = useGoalStore((s) => s.goal)
+  const { profileId } = useUser()
+  const chips = profileById(profileId).starters
   const { query, loading, setQuery, setLoading, setResult } = useSession()
   const [pending, setPending] = useState<string | null>(null)
   const inflight = useRef<AbortController | null>(null)
@@ -78,7 +81,7 @@ export function CoachInput() {
         </AnimatePresence>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        {CHIPS.map((c) => (
+        {chips.map((c) => (
           <button key={c} onClick={() => submit(c)} disabled={loading && pending !== c} className="cursor-pointer rounded-pill bg-teal-tint px-[14px] py-[7px] text-[13px] font-medium text-teal transition-colors hover:bg-teal-tint2 disabled:opacity-60">{c}</button>
         ))}
       </div>

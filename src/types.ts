@@ -130,6 +130,10 @@ export interface UserModel {
   netWorthHistory: { date: Date; value: number }[]
   redirectPlan: { category: SpendCategory; to: number }[]
   serviceCatalog: Record<string, string[]>
+  /** The goal the app suggests for this persona (vault balance looked up by name). */
+  goalTemplate: { name: string; emoji: string; target: number; vaultName: string; weekly: number; weeksOut: number }
+  /** Anchor merchants for the behavior lens. */
+  habits: { coffeeMerchant: string; lunchMerchant: string }
 }
 
 // ---------- Goals ----------

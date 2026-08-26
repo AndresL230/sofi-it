@@ -8,10 +8,10 @@
  * Noise transactions come from a seeded PRNG (seed 42); anchors are hand-authored on top.
  */
 import { makeRng } from './seed'
-import { BASELINES } from './baselines'
-import { SUBSCRIPTIONS } from './subscriptions'
+import { buildBaselines } from './baselines'
+import type { ProfileSpec } from './spec'
 import { addDays, addMonths, daysInMonth, iso, startOfMonth, startOfDay } from '@/lib/dates'
-import type { SpendCategory } from '@/engine/types'
+import type { SpendCategory } from '@/types'
 
 export interface PlaidBalances { available: number | null; current: number; limit: number | null; iso_currency_code: 'USD' }
 export interface PlaidAccount {
@@ -30,20 +30,10 @@ export interface PlaidTransaction {
 }
 export interface PlaidResponse { accounts: PlaidAccount[]; transactions: PlaidTransaction[]; request_id: string }
 
-export const ACCOUNT_IDS = { checking: 'acc_chk_4021', savings: 'acc_sav_7788', brokerage: 'acc_inv_2201', sofi2: 'acc_cc_4021', amexgold: 'acc_cc_1005', citicc: 'acc_cc_8834', csp: 'acc_cc_5512', cfu: 'acc_cc_7290' } as const
-
-export const PERSONA = { firstName: 'Maya', lastName: 'Chen', city: 'Boston', initials: 'MC' }
-export const PAYROLL = { amount: 2610, daysUntilNext: 3, intervalDays: 14 }
-export const RENT = { amount: 1850, dayOfMonth: 1 }
-export const CASH = { bufferFloor: 450, cushion: 300 }
-export const ALLOWANCE = { monthly: 150, spent: 65 }
-export const POINTS = [
-  { program: 'UR' as const, balance: 48000, label: 'Chase UR', transferPartner: 'Iberia', transferValueCents: 1.104 },
-  { program: 'MR' as const, balance: 22000, label: 'Amex MR', transferValueCents: 1.0, transferPartner: 'Air France' },
-]
-export const LOAN = { apr: 0.1099, termMonths: 12 }
-/** Prior trip: $380 flight, the trip ran 2.1× the flight all-in. */
-export const PRIOR_TRIP = { flight: 380, around: { stay: 206, food: 136, local: 78 }, label: 'Montréal', monthsAgo: 4 }
+export const accountIds = (spec: ProfileSpec) => ({
+  checking: `acc_chk_${spec.accounts.masks.checking}`, savings: `acc_sav_${spec.accounts.masks.savings}`, brokerage: `acc_inv_${spec.accounts.masks.brokerage}`,
+  card: (id: string) => `acc_cc_${id}`,
+})
 
 // Plaid PFC mapping per engine spend category
 const PFC: Record<SpendCategory, { primary: string; detailed: string }> = {
@@ -73,26 +63,34 @@ const MERCHANTS: Record<Exclude<SpendCategory, 'income' | 'transfer' | 'housing'
 let txCounter = 0
 const tid = () => `txn_${(++txCounter).toString(36).padStart(6, '0')}`
 
-export function buildPlaidResponse(now = new Date()): PlaidResponse {
+export function buildPlaidResponse(spec: ProfileSpec, now = new Date()): PlaidResponse {
   txCounter = 0
-  const rng = makeRng()
+  const rng = makeRng(spec.seed)
+  const IDS = accountIds(spec)
+  const BASELINES = buildBaselines(spec)
+  const SUBSCRIPTIONS = spec.subscriptions
+  const PAYROLL = spec.payroll, RENT = spec.rent, PRIOR_TRIP = spec.priorTrip
+  const cardAcct = (i: number) => IDS.card(spec.cards[Math.min(i, spec.cards.length - 1)].id)
+  const flatAcct = IDS.card((spec.cards.find((c) => c.isFlatHouseCard) ?? spec.cards[0]).id)
+  const diningAcct = IDS.card((spec.cards.find((c) => (c.bonus.dining ?? 0) > 1) ?? spec.cards[0]).id)
+  const travelAcct = IDS.card((spec.cards.find((c) => c.benefits.tripProtection) ?? spec.cards[0]).id)
   const today = startOfDay(now)
   const horizonStart = addMonths(startOfMonth(today), -13)
   const txns: PlaidTransaction[] = []
   const push = (t: Omit<PlaidTransaction, 'transaction_id' | 'iso_currency_code' | 'pending' | 'authorized_date' | 'name'> & { name?: string }) =>
     txns.push({ transaction_id: tid(), iso_currency_code: 'USD', pending: false, authorized_date: t.date, name: t.name ?? (t.merchant_name ?? 'Payment'), ...t })
-  const spend = (cat: SpendCategory, merchant: string, amount: number, date: Date, accountId: string = ACCOUNT_IDS.sofi2, tags?: string[]) =>
+  const spend = (cat: SpendCategory, merchant: string, amount: number, date: Date, accountId: string = flatAcct, tags?: string[]) =>
     push({ account_id: accountId, amount: Math.round(amount * 100) / 100, date: iso(date), merchant_name: merchant, personal_finance_category: { ...PFC[cat], confidence_level: 'VERY_HIGH' }, _tags: tags })
 
   // ---- Payroll: biweekly, next one in 3 days ----
   const nextPayday = addDays(today, PAYROLL.daysUntilNext)
   for (let d = nextPayday; d >= horizonStart; d = addDays(d, -PAYROLL.intervalDays)) {
-    if (d <= today) push({ account_id: ACCOUNT_IDS.checking, amount: -PAYROLL.amount, date: iso(d), merchant_name: 'Acme Analytics Payroll', name: 'ACME ANALYTICS DIRECT DEP', personal_finance_category: { ...PFC.income, confidence_level: 'VERY_HIGH' } })
+    if (d <= today) push({ account_id: IDS.checking, amount: -PAYROLL.amount, date: iso(d), merchant_name: `${PAYROLL.employer} Payroll`, name: `${PAYROLL.employer.toUpperCase()} DIRECT DEP`, personal_finance_category: { ...PFC.income, confidence_level: 'VERY_HIGH' } })
   }
   // ---- Rent on the 1st ----
   for (let m = 0; m <= 13; m++) {
     const d = addMonths(startOfMonth(horizonStart), m)
-    if (d <= today) spend('housing', 'Beacon Hill Realty', RENT.amount, d, ACCOUNT_IDS.checking)
+    if (d <= today) spend('housing', RENT.landlord, RENT.amount, d, IDS.checking)
   }
   // ---- Subscriptions: monthly on a fixed day; year-ago prices before the raise ----
   SUBSCRIPTIONS.forEach((s, i) => {
@@ -102,37 +100,32 @@ export function buildPlaidResponse(now = new Date()): PlaidResponse {
       if (d > today) continue
       const monthsFromYearAgo = m - 1 // m=1 is "a year ago" relative to this month
       const price = s.raisedAtMonth !== null && monthsFromYearAgo >= s.raisedAtMonth ? s.price : s.priceYearAgo
-      spend('subscriptions', s.name, price, d, s.kind === 'fitness' ? ACCOUNT_IDS.checking : ACCOUNT_IDS.sofi2, ['subscription'])
+      spend('subscriptions', s.name, price, d, s.kind === 'fitness' ? IDS.checking : flatAcct, ['subscription'])
     }
   })
 
-  // ---- Anchors ----
+  // ---- Anchors (from the profile spec) ----
   const elapsed = today.getDate() // days elapsed this month incl. today
-  const dayIn = (k: number) => new Date(today.getFullYear(), today.getMonth(), Math.max(1, Math.min(elapsed, k)))
-  // Month-to-date anchors sit at k/20 of the elapsed month; in the first week that would pile every visit onto
-  // one or two days, so spread them over the trailing 30 days instead (no rng involved → call order is unchanged).
   const earlyMonth = elapsed < 8
-  const mtd = (k: number) => (earlyMonth ? addDays(today, -Math.round(((20 - k) / 20) * 30)) : dayIn(Math.round((k / 20) * elapsed)))
-  // Blue Bottle ×4 this month (and ~4/month historically → ~$212 YTD)
-  ;[2, 6, 12, 19].forEach((k) => spend('dining', 'Blue Bottle Coffee', rng.range(5.9, 7.1), mtd(k), ACCOUNT_IDS.amexgold, ['coffee']))
+  const dayIn = (k: number) => new Date(today.getFullYear(), today.getMonth(), Math.max(1, Math.min(elapsed, k)))
+  // Month-to-date visits: spread across the elapsed days; in the first week, spread over the trailing 30 days instead so they don't pile up.
+  const mtd = (k: number, n: number) => (earlyMonth ? addDays(today, -Math.round(((n - k) / n) * 30)) : dayIn(Math.max(1, Math.round((k / n) * elapsed))))
+  const visitDays = (n: number) => Array.from({ length: n }, (_, i) => Math.round(((i + 0.5) / n) * 20))
+  const coffee = spec.habits.coffee, lunch = spec.habits.lunch
+  visitDays(coffee.visitsPerMonth).forEach((k) => spend('dining', coffee.merchant, rng.range(coffee.ticket[0], coffee.ticket[1]), mtd(k, 20), diningAcct, ['coffee']))
   for (let m = 1; m <= 13; m++) {
     const base = addMonths(startOfMonth(today), -m)
-    for (let v = 0; v < 4; v++) spend('dining', 'Blue Bottle Coffee', rng.range(5.9, 7.1), addDays(base, rng.int(1, 27)), ACCOUNT_IDS.amexgold, ['coffee'])
+    for (let v = 0; v < coffee.visitsPerMonth; v++) spend('dining', coffee.merchant, rng.range(coffee.ticket[0], coffee.ticket[1]), addDays(base, rng.int(1, 27)), diningAcct, ['coffee'])
   }
-  // Sweetgreen ×4 this month
-  ;[3, 8, 13, 18].forEach((k) => spend('dining', 'Sweetgreen', rng.range(12.2, 14.4), mtd(k), ACCOUNT_IDS.amexgold, ['lunch']))
-  // Two apparel buys this quarter
-  spend('shopping', 'Nike', 95, addDays(today, -42), ACCOUNT_IDS.sofi2, ['apparel', 'sneakers'])
-  spend('shopping', 'Blundstone', 120, addDays(today, -70), ACCOUNT_IDS.sofi2, ['apparel', 'boots'])
-  // Entertainment this quarter (impulse_frequency dots for the tickets query)
-  spend('entertainment', 'Ticketmaster', 85, addDays(today, -49), ACCOUNT_IDS.sofi2, ['tickets'])
-  spend('entertainment', 'Sunset Cinema', 52, addDays(today, -22), ACCOUNT_IDS.sofi2, ['tickets'])
-  // Prior trip cluster (~4 months ago): flight booked earlier, the rest during the trip
+  visitDays(lunch.visitsPerMonth).forEach((k) => spend('dining', lunch.merchant, rng.range(lunch.ticket[0], lunch.ticket[1]), mtd(k, 20), diningAcct, ['lunch']))
+  spec.habits.apparel.forEach((a) => spend('shopping', a.merchant, a.amount, addDays(today, -a.daysAgo), flatAcct, ['apparel', ...a.tags]))
+  spec.habits.entertainment.forEach((a) => spend('entertainment', a.merchant, a.amount, addDays(today, -a.daysAgo), flatAcct, ['tickets', ...a.tags]))
+  // Prior trip cluster: flight booked earlier, the rest during the trip
   const trip = addMonths(today, -PRIOR_TRIP.monthsAgo)
-  spend('travel', 'JetBlue', PRIOR_TRIP.flight, addDays(trip, -35), ACCOUNT_IDS.csp, ['trip', 'flight'])
-  spend('travel', 'Airbnb', PRIOR_TRIP.around.stay, addDays(trip, -2), ACCOUNT_IDS.csp, ['trip', 'stay'])
-  rng.split(PRIOR_TRIP.around.food, 4).forEach((a, i) => spend('dining', ['Schwartz\'s', 'Olive et Gourmando', 'Joe Beef', 'La Banquise'][i], a, addDays(trip, i), ACCOUNT_IDS.csp, ['trip', 'food']))
-  rng.split(PRIOR_TRIP.around.local, 3).forEach((a, i) => spend('transport', ['STM Métro', 'Bixi', 'Uber'][i], a, addDays(trip, i), ACCOUNT_IDS.csp, ['trip', 'local']))
+  spend('travel', 'JetBlue', PRIOR_TRIP.flight, addDays(trip, -35), travelAcct, ['trip', 'flight'])
+  spend('travel', 'Airbnb', PRIOR_TRIP.around.stay, addDays(trip, -2), travelAcct, ['trip', 'stay'])
+  rng.split(PRIOR_TRIP.around.food, PRIOR_TRIP.foodMerchants.length).forEach((a, i) => spend('dining', PRIOR_TRIP.foodMerchants[i], a, addDays(trip, i), travelAcct, ['trip', 'food']))
+  rng.split(PRIOR_TRIP.around.local, PRIOR_TRIP.localMerchants.length).forEach((a, i) => spend('transport', PRIOR_TRIP.localMerchants[i], a, addDays(trip, i), travelAcct, ['trip', 'local']))
 
   // ---- Seeded noise: fill each category to its monthly target ----
   const noiseCats: (keyof typeof MERCHANTS)[] = ['dining', 'groceries', 'transport', 'shopping', 'entertainment', 'other']
@@ -152,22 +145,19 @@ export function buildPlaidResponse(now = new Date()): PlaidResponse {
       const lastDay = isCurrent ? elapsed : dim
       parts.forEach((amt) => {
         const day = rng.int(1, lastDay)
-        const acct = cat === 'groceries' ? ACCOUNT_IDS.checking : cat === 'dining' ? rng.pick([ACCOUNT_IDS.amexgold, ACCOUNT_IDS.csp, ACCOUNT_IDS.sofi2]) : rng.pick([ACCOUNT_IDS.sofi2, ACCOUNT_IDS.cfu, ACCOUNT_IDS.checking])
-        spend(cat, rng.pick(MERCHANTS[cat].filter((x) => x !== 'Blue Bottle Coffee' && x !== 'Sweetgreen')), amt, new Date(first.getFullYear(), first.getMonth(), day), acct)
+        const acct = cat === 'groceries' ? IDS.checking : cat === 'dining' ? rng.pick([diningAcct, travelAcct, flatAcct]) : rng.pick([flatAcct, cardAcct(spec.cards.length - 1), IDS.checking])
+        spend(cat, rng.pick(MERCHANTS[cat].filter((x) => x !== coffee.merchant && x !== lunch.merchant)), amt, new Date(first.getFullYear(), first.getMonth(), day), acct)
       })
     }
   }
   txns.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
 
+  const A = spec.accounts
   const accounts: PlaidAccount[] = [
-    { account_id: ACCOUNT_IDS.checking, name: 'SoFi Checking', official_name: 'SoFi Checking', mask: '4021', type: 'depository', subtype: 'checking', balances: { available: 3240, current: 3240, limit: null, iso_currency_code: 'USD' } },
-    { account_id: ACCOUNT_IDS.savings, name: 'SoFi Savings', official_name: 'SoFi Savings', mask: '7788', type: 'depository', subtype: 'savings', balances: { available: 8900, current: 8900, limit: null, iso_currency_code: 'USD' }, vaults: [{ name: 'Lisbon', balance: 1150 }, { name: 'Emergency', balance: 6000 }] },
-    { account_id: ACCOUNT_IDS.brokerage, name: 'SoFi Invest', official_name: 'SoFi Active Invest', mask: '2201', type: 'investment', subtype: 'brokerage', balances: { available: null, current: 8952, limit: null, iso_currency_code: 'USD' } },
-    { account_id: ACCOUNT_IDS.sofi2, name: 'SoFi Unlimited 2%', official_name: 'SoFi Credit Card', mask: '4021', type: 'credit', subtype: 'credit card', balances: { available: 9660, current: 340, limit: 10000, iso_currency_code: 'USD' } },
-    { account_id: ACCOUNT_IDS.amexgold, name: 'Amex Gold', official_name: 'American Express Gold Card', mask: '1005', type: 'credit', subtype: 'credit card', balances: { available: null, current: 290, limit: null, iso_currency_code: 'USD' } },
-    { account_id: ACCOUNT_IDS.citicc, name: 'Citi Custom Cash', official_name: 'Citi Custom Cash Card', mask: '8834', type: 'credit', subtype: 'credit card', balances: { available: 2790, current: 210, limit: 3000, iso_currency_code: 'USD' } },
-    { account_id: ACCOUNT_IDS.csp, name: 'Chase Sapphire Preferred', official_name: 'Chase Sapphire Preferred', mask: '5512', type: 'credit', subtype: 'credit card', balances: { available: 11380, current: 620, limit: 12000, iso_currency_code: 'USD' } },
-    { account_id: ACCOUNT_IDS.cfu, name: 'Chase Freedom Unlimited', official_name: 'Chase Freedom Unlimited', mask: '7290', type: 'credit', subtype: 'credit card', balances: { available: 2780, current: 1220, limit: 4000, iso_currency_code: 'USD' } },
+    { account_id: IDS.checking, name: 'SoFi Checking', official_name: 'SoFi Checking', mask: A.masks.checking, type: 'depository', subtype: 'checking', balances: { available: A.checking, current: A.checking, limit: null, iso_currency_code: 'USD' } },
+    { account_id: IDS.savings, name: 'SoFi Savings', official_name: 'SoFi Savings', mask: A.masks.savings, type: 'depository', subtype: 'savings', balances: { available: A.savings, current: A.savings, limit: null, iso_currency_code: 'USD' }, vaults: A.vaults },
+    { account_id: IDS.brokerage, name: 'SoFi Invest', official_name: 'SoFi Active Invest', mask: A.masks.brokerage, type: 'investment', subtype: 'brokerage', balances: { available: null, current: A.brokerage, limit: null, iso_currency_code: 'USD' } },
+    ...spec.cards.map((c): PlaidAccount => ({ account_id: IDS.card(c.id), name: c.name, official_name: c.name, mask: c.last4, type: 'credit', subtype: 'credit card', balances: { available: c.limit === null ? null : c.limit - c.balance, current: c.balance, limit: c.limit, iso_currency_code: 'USD' } })),
   ]
-  return { accounts, transactions: txns, request_id: 'req_demo_seed42' }
+  return { accounts, transactions: txns, request_id: `req_demo_${spec.id}_seed${spec.seed}` }
 }

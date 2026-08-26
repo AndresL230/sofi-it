@@ -24,11 +24,12 @@ export function ProfileSwitcher() {
 
   useEffect(() => {
     if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    // Capture phase + stopImmediatePropagation: Escape closes the popover only, not the demo panel behind it.
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopImmediatePropagation(); setOpen(false) } }
     const onDown = (e: PointerEvent) => { if (!root.current?.contains(e.target as Node)) setOpen(false) }
-    document.addEventListener('keydown', onKey)
+    document.addEventListener('keydown', onKey, true)
     document.addEventListener('pointerdown', onDown)
-    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('pointerdown', onDown) }
+    return () => { document.removeEventListener('keydown', onKey, true); document.removeEventListener('pointerdown', onDown) }
   }, [open])
   useEffect(() => () => { window.clearTimeout(hoverTimer.current); window.clearTimeout(pressTimer.current) }, [])
 

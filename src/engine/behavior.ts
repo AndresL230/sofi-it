@@ -1,10 +1,9 @@
 import type { CreditItem, DuplicateFind, ImpulseHistory, MerchantHabit, QueryFacts, RankedCard, SubscriptionView, Txn, UserModel } from './types'
 import { daysBetween, sameMonth, startOfYear } from '@/lib/dates'
 
-const MERCHANT_HINT: Record<string, string> = { coffee: 'Blue Bottle Coffee', latte: 'Blue Bottle Coffee', espresso: 'Blue Bottle Coffee', lunch: 'Sweetgreen', salad: 'Sweetgreen' }
-
 export function merchantHabit(user: UserModel, q: QueryFacts, now: Date): MerchantHabit | null {
-  const hint = q.merchant ?? Object.entries(MERCHANT_HINT).find(([k]) => q.normalized.toLowerCase().includes(k))?.[1] ?? (q.category === 'coffee' ? 'Blue Bottle Coffee' : null)
+  const MERCHANT_HINT: Record<string, string> = { coffee: user.habits.coffeeMerchant, latte: user.habits.coffeeMerchant, espresso: user.habits.coffeeMerchant, lunch: user.habits.lunchMerchant, salad: user.habits.lunchMerchant }
+  const hint = q.merchant ?? Object.entries(MERCHANT_HINT).find(([k]) => q.normalized.toLowerCase().includes(k))?.[1] ?? (q.category === 'coffee' ? user.habits.coffeeMerchant : null)
   if (!hint) return null
   const key = hint.toLowerCase()
   const visits = user.txns.filter((t) => t.amount > 0 && t.merchant.toLowerCase().startsWith(key.split(' ').slice(0, 2).join(' ')))

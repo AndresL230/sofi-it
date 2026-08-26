@@ -1,8 +1,6 @@
-import { buildUser } from './plaidAdapter'
 import { PROFILES, DEFAULT_PROFILE_ID, profileById } from './profiles'
 export { buildUser } from './plaidAdapter'
 export { SERVICE_CATALOG } from './subscriptions'
-export { REDIRECT_PLAN } from './baselines'
 export { PROFILES, DEFAULT_PROFILE_ID, profileById }
 /**
  * "Now" for the whole app, fixed at module load (arch spec: all dates relative to Date.now()).
@@ -15,4 +13,4 @@ function resolveNow(): Date {
   return new Date()
 }
 export const NOW = resolveNow()
-export const USER = buildUser(NOW)
+export const USER = profileById(DEFAULT_PROFILE_ID).build(NOW)

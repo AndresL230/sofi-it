@@ -48,7 +48,7 @@ export default {
       },
       borderRadius: { card: '16px', banner: '14px', ctl: '12px', sm2: '10px', pill: '999px' },
       boxShadow: {
-        card: '0 6px 24px rgba(32,23,71,.06)',
+        card: 'var(--shadow-card)',
         winner: 'inset 3px 0 0 var(--teal), 0 4px 16px rgba(0,162,199,.16)',
         pop: '0 2px 8px rgba(32,23,71,.15)',
         polaroid: '0 4px 10px rgba(32,23,71,.1)',

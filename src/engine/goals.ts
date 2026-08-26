@@ -2,10 +2,11 @@ import type { CategoryPace, Collision, Goal, GoalImpact, QueryFacts, Runway, Use
 import { addDays, daysBetween, startOfDay } from '@/lib/dates'
 import { num, money } from './format'
 
-/** The suggested goal from the master spec: Lisbon $2,400 by today + 10 weeks, vault already at $1,150, $125/wk. */
+/** The persona's suggested goal (Maya: Lisbon $2,400 by today + 10 weeks, vault at $1,150, $125/wk). */
 export function suggestedGoal(user: UserModel, now: Date): Goal {
-  const vault = user.accounts.find((a) => a.subtype === 'savings')?.vaults?.find((v) => v.name.toLowerCase() === 'lisbon')
-  return { id: 'lisbon', name: 'Lisbon trip', emoji: '✈', target: 2400, saved: vault?.balance ?? 0, deadline: addDays(startOfDay(now), 70), weekly: 125, createdAt: now }
+  const t = user.goalTemplate
+  const vault = user.accounts.find((a) => a.subtype === 'savings')?.vaults?.find((v) => v.name.toLowerCase() === t.vaultName.toLowerCase())
+  return { id: t.vaultName.toLowerCase(), name: t.name, emoji: t.emoji, target: t.target, saved: vault?.balance ?? 0, deadline: addDays(startOfDay(now), t.weeksOut * 7), weekly: t.weekly, createdAt: now }
 }
 
 /** When the goal lands at its weekly pace (independent of the deadline). */
