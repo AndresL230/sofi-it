@@ -4,6 +4,7 @@ import { useUser } from '@/store/profile'
 import { buildContext } from '@/engine/context'
 import { compose } from '@/engine/composer'
 import { classify } from '@/engine/classify'
+import { fallbackClassify } from '@/engine/fallbackClassifier'
 import { NON_PURCHASE_REPLY } from '@/engine/queries'
 import type { CardType, Classification, EngineContext } from '@/engine/types'
 import { useGoalStore, useSession } from '@/store'
@@ -31,7 +32,9 @@ export function Answer() {
     if (!q) { nav('/', { replace: true }); return }
     if (session.lastQuery === q && session.classification) return
     let alive = true
-    classify(q).then((c) => { if (alive) { setLocal(c); session.setResult(q, c) } })
+    classify(q)
+      .then((c) => { if (alive) { setLocal(c); session.setResult(q, c) } })
+      .catch(() => { if (alive) { const c = fallbackClassify(q); setLocal(c); session.setResult(q, c) } })
     return () => { alive = false }
   }, [q])
 

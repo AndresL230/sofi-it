@@ -13,16 +13,32 @@ const KEYWORDS: [Category, RegExp][] = [
   ['entertainment', /\b(concert|tickets?|show|movie|cinema|theater|theatre|festival|museum|comedy|game|games|gig|club|karaoke|bowling|arcade|streaming)\b/],
 ]
 
+/**
+ * Amount parsing. A `$`-anchored figure wins; a bare number is only a fallback when no `$` figure
+ * matches. Both forms share the same guards: no leading `-` (`$-50` is a credit, not a purchase),
+ * no exponent (`$1e9` must not truncate to $1), and a bare number may not start mid-token (so the
+ * `9` in `1e9` or the `1` in `alert(1)` never wins). `k` scales ×1000 (`$1.2k`). Anything above
+ * MAX_AMOUNT is rejected, mirroring the Worker's sanity cap (worker/index.ts rejects > 1e7).
+ */
+const MAX_AMOUNT = 1_000_000
+const DOLLAR_AMOUNT = /(?<!-)\$ ?(\d[\d,]*(?:\.\d+)?) ?(k\b)?(?![\d.,]*e\d)/i
+const BARE_AMOUNT = /(?<![-\w.,$])(\d[\d,]*(?:\.\d+)?) ?(k\b)?(?![\d.,]*e\d)/i
+
+function parseAmount(text: string): number {
+  const m = text.match(DOLLAR_AMOUNT) ?? text.match(BARE_AMOUNT)
+  if (!m) return NaN
+  const n = parseFloat(m[1].replace(/,/g, ''))
+  return m[2] ? n * 1000 : n
+}
+
 const ROUTINE: Category[] = ['coffee', 'transport', 'groceries']
 const OCCASIONAL: Category[] = ['dining', 'entertainment']
 
 /** Regex/keyword classifier — the whole app must work on this alone (no API). */
 export function fallbackClassify(input: string): Classification {
   const text = input.trim().slice(0, 200)
-  const m = text.match(/\$?\s?(\d[\d,]*\.?\d*)\s?(k\b)?/i)
-  let amount = m ? parseFloat(m[1].replace(/,/g, '')) : NaN
-  if (m && m[2]) amount *= 1000
-  if (!m || !Number.isFinite(amount) || amount <= 0) return { is_purchase: false, source: 'fallback' }
+  const amount = parseAmount(text)
+  if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_AMOUNT) return { is_purchase: false, source: 'fallback' }
   const t = text.toLowerCase()
   const recurring = /\/\s?mo\b|per month|monthly|a month|subscription|membership/.test(t)
   let category: Category = 'other'

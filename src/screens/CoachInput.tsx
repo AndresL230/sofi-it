@@ -2,6 +2,7 @@ import { useRef, useState, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { classify } from '@/engine/classify'
+import { fallbackClassify } from '@/engine/fallbackClassifier'
 import { CHIPS } from '@/engine/queries'
 import { goalPill } from '@/engine/goals'
 import { useGoalStore, useSession } from '@/store'
@@ -29,12 +30,21 @@ export function CoachInput() {
     setLoading(true)
     setPending(q)
     const started = Date.now()
-    const [c] = await Promise.all([classify(q, { signal: ctrl.signal }), new Promise((r) => setTimeout(r, SHIMMER_MS))])
-    if (ctrl.signal.aborted) return
-    void started
-    setResult(q, c)
-    setPending(null)
-    nav(`/answer?q=${encodeURIComponent(q)}`)
+    try {
+      const [c] = await Promise.all([classify(q, { signal: ctrl.signal }), new Promise((r) => setTimeout(r, SHIMMER_MS))])
+      if (ctrl.signal.aborted) return
+      void started
+      setResult(q, c)
+      nav(`/answer?q=${encodeURIComponent(q)}`)
+    } catch {
+      // classify() already degrades to the keyword classifier internally; this is the last line of
+      // defence so a thrown error can never strand the shimmer. setResult also flips loading to false.
+      const c = fallbackClassify(q)
+      setResult(q, c)
+      nav(`/answer?q=${encodeURIComponent(q)}`)
+    } finally {
+      setPending(null)
+    }
   }
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') submit(query) }
 
