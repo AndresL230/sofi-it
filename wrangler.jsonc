@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "purchase-coach",
+  "compatibility_date": "2026-08-01",
+  // Frontend-only for now: Vite's `dist/` is served as static assets from Workers.
+  // Add a `main` script later when a backend is needed.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
