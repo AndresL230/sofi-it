@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sofi-purchase-coach",
+  "account_id": "0bda3a2560ca48711ef7336cc421abed",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "observability": { "enabled": true },
+  "kv_namespaces": [
+    { "binding": "CACHE", "id": "48f11cfa827c40acae13bb56fa4e2b02" }
+  ],
+  "vars": { "RATE_LIMIT_PER_HOUR": "20" }
+}
