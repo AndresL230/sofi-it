@@ -1,4 +1,4 @@
-import type { Category, EngineContext, Goal, PurchaseClassification, QueryFacts, RichText, SpendCategory, UserModel } from './types'
+import type { Category, EngineContext, Goal, ProfileEffect, PurchaseClassification, QueryFacts, RichText, SpendCategory, UserModel } from './types'
 import { categoryPace } from './paces'
 import { runway } from './runway'
 import { rankCards, utilizationWatch } from './cardMath'
@@ -6,7 +6,9 @@ import { verdict } from './verdicts'
 import { goalImpact, collision, suggestedGoal } from './goals'
 import { affordability, carryingCost, eventCost, paymentOptions, pointsOffset } from './money'
 import { benefitsFor, duplicateFind, impulseHistory, merchantHabit, subscriptionView, unusedCredits } from './behavior'
-import { money, num, ordinalWord, cap } from './format'
+import { money, num, ordinalWord, cap, fmtMoney, pct } from './format'
+import { CREDIT_EVENT_BOOST, PRIORITY_LABEL, UTILIZATION_LINE, VARIABLE_BUFFER_MULTIPLIER, bufferMultiplier, nearCreditEvent, revolves } from './profile'
+import { CADENCE_LABEL, CHECKS_PER_YEAR } from '@/lib/payroll'
 
 export const SPEND_OF: Record<Category, SpendCategory> = {
   dining: 'dining', coffee: 'dining', groceries: 'groceries', transport: 'transport', shopping_apparel: 'shopping', shopping_electronics: 'shopping',
@@ -29,10 +31,11 @@ export function queryFacts(c: PurchaseClassification): QueryFacts {
 /** Assemble everything a card could need. Pure: (classification, goal, user, now) → context. */
 export function buildContext(c: PurchaseClassification, goal: Goal | null, user: UserModel, now: Date): EngineContext {
   const q = queryFacts(c)
+  const fp = user.financialProfile
   const pace = categoryPace(user, q.spendCategory, q.amount, now)
   const rw = runway(user, q.amount, now)
   const ranking = rankCards(user, q)
-  const utilization = utilizationWatch(ranking, q)
+  const utilization = utilizationWatch(ranking, q, fp)
   const habit = merchantHabit(user, q, now)
   const impulse = impulseHistory(user, q, now)
   const duplicate = q.isDiscretionary && q.size !== 'small' ? duplicateFind(user, q, now) : null
@@ -43,11 +46,24 @@ export function buildContext(c: PurchaseClassification, goal: Goal | null, user:
   const points = pointsOffset(user, q)
   const aff = affordability(user, q, rw, points, now, goal?.weekly ?? 125)
   const options = paymentOptions(q.amount, user)
-  const carrying = rw.roomAfter < rw.cushion && q.frequency !== 'recurring' ? carryingCost(q.amount, user, now) : null
+  // carrying_cost fires when the purchase can't clear checking after bills — and, for a revolver, whenever
+  // the ranked winner would still leave a balance behind. It models the winner when that card's APR is known,
+  // and otherwise the card the purchase would realistically ride. The revolver branch also needs a full
+  // dollar of projected interest: a purchase the minimum payment clears outright has nothing to show.
+  const carrying = (() => {
+    if (q.frequency === 'recurring') return null
+    const shortOfCushion = rw.roomAfter < rw.cushion
+    const winnerCarries = revolves(fp) && ranking.winner.card.limit !== null
+    if (!shortOfCushion && !winnerCarries) return null
+    const c = carryingCost(q.amount, user, now, 3, ranking.winner.card.apr !== null ? ranking.winner.card : undefined)
+    return shortOfCushion || c.totalInterest >= 1 ? c : null
+  })()
   const ev = q.category === 'travel' ? eventCost(user, q.amount) : null
   const credits = unusedCredits(user, now)
   const allowanceLeft = Math.max(0, user.allowance.monthly - user.allowance.spent)
-  const allowance = { monthly: user.allowance.monthly, left: allowanceLeft, covers: Math.min(allowanceLeft, q.amount), remainder: Math.max(0, q.amount - allowanceLeft) }
+  // Variable income holds back the extra half-cushion before fun money counts as pre-approved (1× → no effect).
+  const guiltFree = Math.max(0, allowanceLeft - Math.round(user.cash.cushion * (bufferMultiplier(fp) - 1)))
+  const allowance = { monthly: user.allowance.monthly, left: allowanceLeft, covers: Math.min(guiltFree, q.amount), remainder: Math.max(0, q.amount - guiltFree) }
   const costPerUse = (() => {
     const electronics = q.category === 'shopping_electronics'
     const unit = q.category === 'shopping_apparel' ? 'wear' : electronics ? 'workday' : 'use'
@@ -82,8 +98,27 @@ export function buildContext(c: PurchaseClassification, goal: Goal | null, user:
   const goalLedger = goal ? { label: goal.name.split(' ')[0], delta: gi ? gi.daysPushed : 0 } : null
 
   return {
-    now, q, user, verdict: v, pace, runway: rw, ranking, utilization, goal, goalImpact: gi, collision: col, affordability: aff, paymentOptions: options,
+    now, q, user, financialProfile: fp, profileEffects: profileEffects(fp, ranking, utilization, carrying !== null),
+    verdict: v, pace, runway: rw, ranking, utilization, goal, goalImpact: gi, collision: col, affordability: aff, paymentOptions: options,
     carrying, points, eventCost: ev, credits, merchantHabit: habit, impulse, duplicate, subs, allowance, consequence, ledger, goalLedger, netWorth,
     benefits: benefitsFor(ranking.ranked, q), costPerUse, splitTightAt, suggestedGoal: suggestedGoal(user, now),
   }
+}
+
+/**
+ * Which of the five profile effects actually changed this answer. Rendered as the `profileEffects` row of
+ * the demo score table so the selection stays inspectable, and logged to the console in demo mode.
+ */
+function profileEffects(fp: EngineContext['financialProfile'], ranking: EngineContext['ranking'], utilization: EngineContext['utilization'], carrying: boolean): ProfileEffect[] {
+  const out: ProfileEffect[] = []
+  if (revolves(fp)) {
+    const dear = ranking.ranked.filter((r) => r.costNote).length
+    out.push({ key: 'cost_ranking', label: 'revolves → ranked by cost', detail: `net of one month's interest${dear ? `; ${dear} card(s) cost more than they earn` : ''}${carrying ? '; carrying_cost on' : ''}` })
+  }
+  const ev = nearCreditEvent(fp)
+  if (ev) out.push({ key: 'credit_event', label: `${ev.label} in ${ev.monthsAway} mo`, detail: `utilization line ${pct(UTILIZATION_LINE.normal)}% → ${pct(UTILIZATION_LINE.creditEvent)}%, relevance ×${CREDIT_EVENT_BOOST}${utilization ? '; watch fired' : '; under the line'}` })
+  if (ranking.tieBreak) out.push({ key: 'priority_tiebreak', label: `priority: ${PRIORITY_LABEL[ranking.tieBreak.by]}`, detail: `${ranking.tieBreak.winner} over ${ranking.tieBreak.runnerUp} on a ${ranking.tieBreak.gap}% gap` })
+  if (fp.employmentType === 'variable') out.push({ key: 'variable_buffer', label: 'variable income → wider buffer', detail: `cushion and fun money ×${VARIABLE_BUFFER_MULTIPLIER} before a verdict can land on fine` })
+  out.push({ key: 'pay_cadence', label: `${CADENCE_LABEL[fp.payCadence]} · ${fmtMoney(fp.netPerCheck, 'never')} per check`, detail: `${CHECKS_PER_YEAR[fp.payCadence]} checks a year drive payday and runway math` })
+  return out
 }

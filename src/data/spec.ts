@@ -2,7 +2,7 @@
  * ProfileSpec — everything that varies between demo personas. One shape, three instances
  * (maya / devon / priya). The generator, card rules, baselines and adapter are all driven by it.
  */
-import type { PointsProgram, RewardCategory, SpendCategory, Subscription } from '@/types'
+import type { FinancialProfile, PointsProgram, RewardCategory, SpendCategory, Subscription } from '@/types'
 
 export interface CardSpec {
   id: string; name: string; artLabel: string; last4: string; art: [string, string]
@@ -21,7 +21,12 @@ export interface ProfileSpec {
   blurb: string
   starters: string[]
   accounts: { checking: number; savings: number; vaults: { name: string; balance: number }[]; brokerage: number; masks: { checking: string; savings: string; brokerage: string } }
-  payroll: { amount: number; daysUntilNext: number; intervalDays: number; employer: string }
+  /**
+   * Financial posture. `netPerCheck` + `payCadence` are the ONLY paycheck figures — `payroll` below
+   * carries the demo anchor (how many days out the next one is) and the employer name, nothing numeric.
+   */
+  financial: FinancialProfile
+  payroll: { daysUntilNext: number; employer: string }
   rent: { amount: number; dayOfMonth: number; landlord: string }
   cash: { bufferFloor: number; cushion: number }
   allowance: { monthly: number; spent: number }

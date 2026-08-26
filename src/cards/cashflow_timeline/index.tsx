@@ -1,15 +1,16 @@
 import type { EngineContext } from '@/engine/types'
+import { CADENCE_LABEL } from '@/lib/payroll'
 import { CardShell, Caps, DateText, Money, T, cn, useDelay } from '../kit'
 import { daysBetween } from '@/engine/format'
 
-interface Props { today: Date; paydays: Date[]; inFull: Date; accelerated: Date; redirectMonthly: number; paycheck: number }
+interface Props { today: Date; paydays: Date[]; inFull: Date; accelerated: Date; redirectMonthly: number; paycheck: number; cadence: string }
 
 /**
  * #10 — one line from today to the date this is affordable. The teal stretch is the
  * redirect plan (purple marker = the date it lands), the open stretch is what waiting costs.
  * Both dates are named in text, so the line never has to be read by colour alone.
  */
-function CashflowTimeline({ today, paydays, inFull, accelerated, redirectMonthly, paycheck }: Props) {
+function CashflowTimeline({ today, paydays, inFull, accelerated, redirectMonthly, paycheck, cadence }: Props) {
   const d = useDelay()
   const horizon = Math.max(14, daysBetween(today, inFull))
   const at = (dt: Date) => Math.min(100, Math.max(0, (daysBetween(today, dt) / horizon) * 100))
@@ -48,14 +49,14 @@ function CashflowTimeline({ today, paydays, inFull, accelerated, redirectMonthly
             <div className={cn(T.micro, 'absolute left-0 top-0')}>today</div>
             <div className={cn(T.micro, 'absolute top-0 whitespace-nowrap font-semibold text-purple')} style={{ left: `${accLabelX}%`, transform: 'translateX(-50%)' }}>with redirect</div>
           </div>
-          {paydays.length ? <div className={cn(T.micro, 'mt-1')}>$ = payday · <Money value={paycheck} size="inline" cents="never" animated={false} /> biweekly</div> : null}
+          {paydays.length ? <div className={cn(T.micro, 'mt-1')}>$ = payday · <Money value={paycheck} size="inline" cents="never" animated={false} /> {cadence}</div> : null}
         </div>
       </div>
     </CardShell>
   )
 }
 
-export const select = (ctx: EngineContext): Props => ({ today: ctx.now, paydays: ctx.affordability.paydays.slice(0, 8), inFull: ctx.affordability.affordableInFull, accelerated: ctx.affordability.accelerated, redirectMonthly: ctx.affordability.redirectMonthly, paycheck: ctx.runway.paycheck })
+export const select = (ctx: EngineContext): Props => ({ today: ctx.now, paydays: ctx.affordability.paydays.slice(0, 8), inFull: ctx.affordability.affordableInFull, accelerated: ctx.affordability.accelerated, redirectMonthly: ctx.affordability.redirectMonthly, paycheck: ctx.runway.paycheck, cadence: CADENCE_LABEL[ctx.financialProfile.payCadence] })
 
 export { meta, condition } from './meta'
 export default CashflowTimeline

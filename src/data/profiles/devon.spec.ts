@@ -1,17 +1,18 @@
 import type { ProfileSpec } from '../spec'
 
 /**
- * Profile 2 — Devon Reyes, Austin. Paycheck-to-paycheck: thin cushion, one card near its limit, dining already
+ * Profile 2 — Ash Core, Austin. Paycheck-to-paycheck: thin cushion, one card near its limit, dining already
  * over pace. Verdicts skew tight. Plain data (no app imports) so scripts/gen-data.mjs can load it; the flat
  * house card is renamed from BRAND.flatCard in ./devon.ts.
  */
 export const devonSpec: ProfileSpec = {
   id: 'devon',
-  persona: { firstName: 'Devon', lastName: 'Reyes', city: 'Austin', initials: 'DR' },
+  persona: { firstName: 'Ash', lastName: 'Core', city: 'Austin', initials: 'AC' },
   blurb: 'Austin · paycheck-to-paycheck renter, one card near its limit, no cushion yet.',
   starters: ['$52 team dinner', '$140 running shoes', '$450 monitor', '$12/mo Hulu'],
   accounts: { checking: 2380, savings: 1200, vaults: [{ name: 'Denver', balance: 180 }, { name: 'Emergency', balance: 900 }], brokerage: 640, masks: { checking: '3312', savings: '9081', brokerage: '5570' } },
-  payroll: { amount: 1890, daysUntilNext: 3, intervalDays: 14, employer: 'Lonestar Logistics' },
+  financial: { employmentType: 'w2', payCadence: 'biweekly', netPerCheck: 1510, annualIncome: 52000, paymentHabit: 'revolves', creditEvent: { label: 'Apartment lease application', monthsAway: 2 }, priority: 'lowest_cost', memberSince: '2025' },
+  payroll: { daysUntilNext: 3, employer: 'Lonestar Logistics' },
   rent: { amount: 1450, dayOfMonth: 1, landlord: 'Barton Creek Apartments' },
   cash: { bufferFloor: 150, cushion: 300 },
   allowance: { monthly: 60, spent: 48 },
@@ -37,7 +38,7 @@ export const devonSpec: ProfileSpec = {
     entertainment: [{ merchant: 'AMC Theatres', amount: 34, daysAgo: 20, tags: [] }, { merchant: 'Ticketmaster', amount: 68, daysAgo: 55, tags: [] }],
   },
   redirectPlan: [{ category: 'dining', to: 200 }, { category: 'entertainment', to: 60 }],
-  goals: [{ name: 'Emergency cushion', emoji: '🛟', target: 1500, vaultName: 'Emergency', weekly: 25, weeksOut: 24 }, { name: 'Pay down Freedom', emoji: '💳', target: 2150, saved: 0, weekly: 60, weeksOut: 36 }],
+  goals: [{ name: 'Pay down Freedom', emoji: '💳', target: 2150, saved: 0, weekly: 60, weeksOut: 36 }],
   goalTemplate: { name: 'Denver weekend', emoji: '🏔', target: 600, vaultName: 'Denver', weekly: 40, weeksOut: 8 },
   netWorthDelta6m: -310,
   seed: 7,

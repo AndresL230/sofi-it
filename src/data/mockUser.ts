@@ -5,7 +5,7 @@
  *
  * Two sources, both relative to `now`:
  *  - Calendar-anchored rows are generated here from the ProfileSpec because their meaning is
- *    calendar-based: biweekly payroll ending at now+3, rent on the 1st, subscriptions on fixed days
+ *    calendar-based: payroll on the persona's cadence ending at now+3, rent on the 1st, subscriptions on fixed days
  *    with year-ago prices before their raise month.
  *  - Everything else (the seeded noise plus the relative anchors — coffee/lunch visits, apparel,
  *    entertainment, the prior-trip cluster) is served from `profiles/<id>.transactions.csv` keyed by
@@ -17,6 +17,7 @@ import type { SpendCategory } from '@/types'
 import { accountIds, PFC } from './plaid'
 import type { PlaidAccount, PlaidResponse, PlaidTransaction } from './plaid'
 import { loadTransactions } from './csv'
+import { paydaysSince } from '@/lib/payroll'
 
 export type { PlaidAccount, PlaidBalances, PlaidResponse, PlaidTransaction } from './plaid'
 export { accountIds } from './plaid'
@@ -38,10 +39,10 @@ export function buildPlaidResponse(spec: ProfileSpec, now = new Date()): PlaidRe
   const spend = (cat: SpendCategory, merchant: string, amount: number, date: Date, accountId: string = flatAcct, tags?: string[]) =>
     push({ account_id: accountId, amount: Math.round(amount * 100) / 100, date: iso(date), merchant_name: merchant, personal_finance_category: { ...PFC[cat], confidence_level: 'VERY_HIGH' }, _tags: tags })
 
-  // ---- Payroll: biweekly, next one in 3 days ----
+  // ---- Payroll: the persona's cadence, next one `daysUntilNext` out ----
   const nextPayday = addDays(today, PAYROLL.daysUntilNext)
-  for (let d = nextPayday; d >= horizonStart; d = addDays(d, -PAYROLL.intervalDays)) {
-    if (d <= today) push({ account_id: IDS.checking, amount: -PAYROLL.amount, date: iso(d), merchant_name: `${PAYROLL.employer} Payroll`, name: `${PAYROLL.employer.toUpperCase()} DIRECT DEP`, personal_finance_category: { ...PFC.income, confidence_level: 'VERY_HIGH' } })
+  for (const d of paydaysSince(nextPayday, spec.financial.payCadence, horizonStart)) {
+    if (d <= today) push({ account_id: IDS.checking, amount: -spec.financial.netPerCheck, date: iso(d), merchant_name: `${PAYROLL.employer} Payroll`, name: `${PAYROLL.employer.toUpperCase()} DIRECT DEP`, personal_finance_category: { ...PFC.income, confidence_level: 'VERY_HIGH' } })
   }
   // ---- Rent on the 1st ----
   for (let m = 0; m <= 13; m++) {

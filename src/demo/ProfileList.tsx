@@ -6,8 +6,8 @@ import { useSession } from '@/store'
 import { toast } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
 
-/** Ghosted placeholders while only one profile exists (Devon and Priya arrive with the addendum). */
-const COMING = [{ name: 'Devon', initials: 'D' }, { name: 'Priya', initials: 'P' }]
+/** Ghosted placeholders while only one profile exists (Ash and Guru arrive with the addendum). */
+const COMING = [{ name: 'Ash', initials: 'A' }, { name: 'Guru', initials: 'G' }]
 
 /** Select (or cycle) the active profile: swap the store, drop the session, go Home so the numbers visibly change. */
 export function useSelectProfile() {

@@ -1,8 +1,9 @@
 import type { CategoryPace, Collision, Goal, GoalImpact, QueryFacts, Runway, UserModel } from './types'
 import { addDays, daysBetween, startOfDay } from '@/lib/dates'
 import { num, money } from './format'
+import { monthlyNet } from '@/lib/payroll'
 
-/** The persona's suggested goal (Maya: Lisbon $2,400 by today + 10 weeks, vault at $1,150, $125/wk). */
+/** The persona's suggested goal (Anna: Lisbon $2,400 by today + 10 weeks, vault at $1,150, $125/wk). */
 export function suggestedGoal(user: UserModel, now: Date): Goal {
   const t = user.goalTemplate
   const vault = user.accounts.find((a) => a.subtype === 'savings')?.vaults?.find((v) => v.name.toLowerCase() === t.vaultName.toLowerCase())
@@ -42,7 +43,7 @@ export function goalImpact(goal: Goal | null, q: QueryFacts, pace: CategoryPace,
 export function collision(goal: Goal | null, q: QueryFacts, runway: Runway, user: UserModel, now: Date): Collision | null {
   if (!goal || q.size !== 'large') return null
   const monthlyUsual = Object.values(user.baselines).filter((b) => b.category !== 'income' && b.category !== 'transfer').reduce((a, b) => a + b.usual, 0)
-  const monthlyIncome = (user.payroll.amount * 365) / user.payroll.intervalDays / 12
+  const monthlyIncome = monthlyNet(user.financialProfile.netPerCheck, user.financialProfile.payCadence)
   const surplusWeekly = Math.max(60, ((monthlyIncome - monthlyUsual) * 12) / 52)
   const weeklyFreeCash = Math.round(goal.weekly + surplusWeekly)
   const availableNow = Math.max(0, runway.room)

@@ -4,6 +4,7 @@ import { Shell } from '@/screens/Shell'
 import { Home } from '@/screens/Home'
 import { Answer } from '@/screens/Answer'
 import { Goals } from '@/screens/Goals'
+import { Profile } from '@/screens/Profile'
 import { CardGallery } from '@/screens/CardGallery'
 import { Toaster } from '@/components/ui/sonner'
 
@@ -20,6 +21,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="answer" element={<Answer />} />
           <Route path="goals" element={<Goals />} />
+          <Route path="profile" element={<Profile />} />
           <Route path="transactions" element={<Suspense fallback={null}><Transactions /></Suspense>} />
           <Route path="gallery" element={<CardGallery />} />
         </Route>

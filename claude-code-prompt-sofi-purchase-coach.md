@@ -53,7 +53,7 @@ Implement exactly the persona, accounts, five cards, baselines, merchants, subsc
 
 ## Build order (demo-first — each milestone ends in something showable)
 
-1. **M1:** scaffold, tokens, mock data + adapter, Home clone pixel-tight with Maya's numbers, input card with chips. Deploy to Cloudflare on day one so the URL/QR pipeline is proven early.
+1. **M1:** scaffold, tokens, mock data + adapter, Home clone pixel-tight with Anna's numbers, input card with chips. Deploy to Cloudflare on day one so the URL/QR pipeline is proven early.
 2. **M2:** engine math (verdicts, card ranking, utilization, paces) + all card components + composer + Card Gallery screen, driven by the keyword fallback classifier only. All nine matrix queries render correctly typed or tapped.
 3. **M3:** goals — store, Goals screen, track-goal CTA, goal_impact flip on `$60 dinner`, goal_collision on moving. The five-query choreography works end to end.
 4. **M4:** Worker classifier live — API call, zod validation, cache, rate limit, fallback path, `is_purchase:false` handling. Free text now genuinely works.

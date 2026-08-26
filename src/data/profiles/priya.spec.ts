@@ -1,17 +1,18 @@
 import type { ProfileSpec } from '../spec'
 
 /**
- * Profile 3 — Priya Nair, Seattle. High income, cash-rich, a dozen subscriptions that keep creeping; big purchases
+ * Profile 3 — Guru Ranganathan, Seattle. High income, cash-rich, a dozen subscriptions that keep creeping; big purchases
  * clear, small ones are guilt-free. Plain data (no app imports) so scripts/gen-data.mjs can load it; the flat
  * house card is renamed from BRAND.flatCard in ./priya.ts.
  */
 export const priyaSpec: ProfileSpec = {
   id: 'priya',
-  persona: { firstName: 'Priya', lastName: 'Nair', city: 'Seattle', initials: 'PN' },
+  persona: { firstName: 'Guru', lastName: 'Ranganathan', city: 'Seattle', initials: 'GR' },
   blurb: 'Seattle · high income, twelve subscriptions, cash-rich and about to overpay for a trip.',
   starters: ['$8 oat latte', '$1,200 flight to Tokyo in May', '$15/mo Crunchyroll', '$180 concert tickets'],
   accounts: { checking: 7850, savings: 22400, vaults: [{ name: 'Tokyo', balance: 3100 }, { name: 'House', balance: 15000 }], brokerage: 41200, masks: { checking: '1180', savings: '6642', brokerage: '0937' } },
-  payroll: { amount: 4420, daysUntilNext: 3, intervalDays: 14, employer: 'Cascade Cloud' },
+  financial: { employmentType: 'w2', payCadence: 'semimonthly', netPerCheck: 4180, annualIncome: 168000, paymentHabit: 'pays_in_full', creditEvent: { label: 'Mortgage refinance', monthsAway: 5 }, priority: 'cash_back', memberSince: '2019' },
+  payroll: { daysUntilNext: 3, employer: 'Cascade Cloud' },
   rent: { amount: 2650, dayOfMonth: 1, landlord: 'Pike Place Lofts' },
   cash: { bufferFloor: 800, cushion: 400 },
   allowance: { monthly: 400, spent: 90 },
@@ -49,7 +50,7 @@ export const priyaSpec: ProfileSpec = {
     entertainment: [{ merchant: 'Ticketmaster', amount: 210, daysAgo: 35, tags: [] }, { merchant: 'Seattle Symphony', amount: 95, daysAgo: 12, tags: [] }],
   },
   redirectPlan: [{ category: 'dining', to: 780 }, { category: 'entertainment', to: 180 }],
-  goals: [{ name: 'House down payment', emoji: '🏠', target: 60000, vaultName: 'House', weekly: 400, weeksOut: 110 }, { name: 'New bike', emoji: '🚲', target: 1800, saved: 640, weekly: 60, weeksOut: 20 }],
+  goals: [{ name: 'House down payment', emoji: '🏠', target: 60000, vaultName: 'House', weekly: 400, weeksOut: 110 }],
   goalTemplate: { name: 'Tokyo trip', emoji: '✈', target: 4500, vaultName: 'Tokyo', weekly: 150, weeksOut: 14 },
   netWorthDelta6m: 4200,
   seed: 11,

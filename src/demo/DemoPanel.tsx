@@ -21,7 +21,7 @@ import { Inspector } from './Inspector'
 import { BentoExamples, SpanTable } from './BentoExamples'
 import { Caption, Mini, Section } from './ui'
 
-const STORAGE_KEYS = ['purchase-coach-goals', 'purchase-coach-profile', 'purchase-coach-demo']
+const STORAGE_KEYS = ['purchase-coach-goals', 'purchase-coach-profile', 'purchase-coach-financial', 'purchase-coach-demo']
 /** Expected beat under each choreography step (index-aligned with CHOREOGRAPHY). */
 const BEATS: ReactNode[] = [
   <>Fine — merchant punch card</>,
@@ -39,7 +39,7 @@ function useAsk() {
   const nav = useNavigate()
   return useCallback((q: string) => { useSession.getState().setQuery(q); nav(answerUrl(q)) }, [nav])
 }
-/** One-click "Track Lisbon" — the active profile's suggested goal (Lisbon for Maya), stamped with the app clock. */
+/** One-click "Track Lisbon" — the active profile's suggested goal (Lisbon for Anna), stamped with the app clock. */
 function useSuggestedGoal() {
   const { user } = useUser()
   const setGoal = useGoalStore((s) => s.setGoal)
@@ -206,7 +206,7 @@ function Walkthrough({ ask }: { ask: (q: string) => void }) {
 
   return (
     <div>
-      {profileId !== scriptedFor.id ? <Caption className="mb-2 rounded-sm2 bg-lavender-soft px-2 py-1.5 text-slate">Scripted for {scriptedFor.name} — the beats assume her accounts; switch profile above to follow along exactly.</Caption> : null}
+      {profileId !== scriptedFor.id ? <Caption className="mb-2 rounded-sm2 bg-lavender-soft px-2 py-1.5 text-slate">Scripted for {scriptedFor.name} — the beats assume their accounts; switch profile above to follow along exactly.</Caption> : null}
       <ol className="m-0 list-none space-y-0.5 p-0">
         {CHOREOGRAPHY.map((q, i) => {
           const on = step === i

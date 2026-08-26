@@ -2,7 +2,7 @@
 
 ## What it is
 
-A single-page pre-purchase decision engine demo that lives inside a clone of SoFi's Coach Insights screen. You type a thing and a price ("$60 dinner", "$1,200 flight to Lisbon in March"); a Cloudflare Worker (or a local keyword fallback) classifies the text into a small JSON shape, and the client-side engine computes every number — verdict, best card, category pace, payday runway, interest, points, goal impact — from the active profile's Plaid-shaped mock user (three personas: Maya, Devon, Priya) and deals a stack of up to seven cards from a library of 34, laid out as a bento grid. The LLM never does math; nothing it returns is rendered as a number. One `wrangler deploy` serves the SPA and the API from a single Worker.
+A single-page pre-purchase decision engine demo that lives inside a clone of SoFi's Coach Insights screen. You type a thing and a price ("$60 dinner", "$1,200 flight to Lisbon in March"); a Cloudflare Worker (or a local keyword fallback) classifies the text into a small JSON shape, and the client-side engine computes every number — verdict, best card, category pace, payday runway, interest, points, goal impact — from the active profile's Plaid-shaped mock user (three personas: Anna, Ash, Guru) and deals a stack of up to seven cards from a library of 34, laid out as a bento grid. The LLM never does math; nothing it returns is rendered as a number. One `wrangler deploy` serves the SPA and the API from a single Worker.
 
 Production: **https://meridian.andresl.dev** (custom domain) and https://sofi-purchase-coach.andreslopez-23061.workers.dev (both live; `wrangler.jsonc` sets `workers_dev: true` alongside the custom-domain route). The Anthropic key is set on production — `GET /api/health` returns `hasKey:true` — so classification runs on Claude Haiku 4.5 with the keyword fallback behind it.
 
@@ -67,7 +67,7 @@ src/
     csv.ts              parses profiles/<id>.transactions.csv (days_ago rows) → Plaid transactions relative to now
     mockUser.ts         buildPlaidResponse(spec, now): accounts + calendar rows (payroll, rent, subscriptions) + CSV rows
     baselines.ts        usual / runRate per category from the spec
-    subscriptions.ts    Maya's subscription rows (+ year-ago prices), SERVICE_CATALOG
+    subscriptions.ts    Anna's subscription rows (+ year-ago prices), SERVICE_CATALOG
     cardRules.ts        CardSpec[] → earn rates, caps, credits, benefits, APR
     plaidAdapter.ts     the one adapter: Plaid shapes → engine UserModel (incl. seededGoals)
     profiles/           maya|devon|priya.spec.ts (plain data), *.transactions.csv (generated), specs.ts, withBrand.ts, index.ts (PROFILES)
@@ -209,7 +209,7 @@ From `src/engine/queries.ts`:
 | 8 | `$1,200 flight to Lisbon in March` | flight |
 | 9 | `$2,800 to move apartments` | moving |
 
-Home chips come from the active profile's `starters` (Maya: `$60 dinner`, `$140 running shoes`, `$1,200 flight to Lisbon in March`, `$15/mo Crunchyroll`; Devon and Priya have their own); `CHIPS` in `queries.ts` is Maya's set.
+Home chips come from the active profile's `starters` (Anna: `$60 dinner`, `$140 running shoes`, `$1,200 flight to Lisbon in March`, `$15/mo Crunchyroll`; Ash and Guru have their own); `CHIPS` in `queries.ts` is Anna's set.
 
 Demo choreography (`CHOREOGRAPHY`): `$6 latte` → `$60 dinner` → `$1,200 flight to Lisbon in March` (track Lisbon as a goal) → `$60 dinner` again (verdict flips to Tight, `goal_impact_chip` enters) → `$2,800 to move apartments` (`goal_collision`).
 
@@ -237,9 +237,9 @@ Three personas, one shape. `ProfileSpec` (`src/data/spec.ts`) is everything that
 
 | id | Persona | Source | Seed | Shape |
 |---|---|---|---|---|
-| `maya` | Maya Chen, Boston | master spec §2 + cards spec appendix, verbatim numbers | 42 | biweekly $2,610, five cards, Lisbon vault, ~$550 dining usual |
-| `devon` | Devon Reyes, Austin | authored as a demo persona (not from a spec) | 7 | paycheck-to-paycheck: $1,890 biweekly, Freedom at $2,150/$3,000, no points, dining over pace — verdicts skew tight |
-| `priya` | Priya Nair, Seattle | authored as a demo persona (not from a spec) | 11 | high income: $4,420 biweekly, $22.4k savings, 112k UR / 61k MR, eleven subscriptions that keep creeping |
+| `maya` | Anna Avalos, Boston | master spec §2 + cards spec appendix, verbatim numbers | 42 | biweekly $2,610, five cards, Lisbon vault, ~$550 dining usual |
+| `devon` | Ash Core, Austin | authored as a demo persona (not from a spec) | 7 | paycheck-to-paycheck: $1,890 biweekly, Freedom at $2,150/$3,000, no points, dining over pace — verdicts skew tight |
+| `priya` | Guru Ranganathan, Seattle | authored as a demo persona (not from a spec) | 11 | high income: $4,420 biweekly, $22.4k savings, 112k UR / 61k MR, eleven subscriptions that keep creeping |
 
 Files under `src/data/profiles/`: `<id>.spec.ts` is plain data with no app imports (so `scripts/gen-data.mjs` can load it with Node's native TypeScript stripping); `specs.ts` lists the three for the generator; `withBrand.ts` renames the `isFlatHouseCard` card to `BRAND.flatCard`; `<id>.ts` wraps the spec into a `Profile` (`src/types.ts`: `{ id, name, blurb, initials, build: (now) => UserModel, starters }`); `index.ts` exports `PROFILES`, `DEFAULT_PROFILE_ID` (`maya`) and `profileById()`.
 
@@ -263,7 +263,7 @@ Regenerate with `npm run gen:data` (`scripts/gen-data.mjs`, **Node ≥ 22.18** �
 
 ## Goals
 
-Each spec may seed `goals` (name, emoji, target, `vaultName` or `saved`, weekly, weeksOut). `plaidAdapter` maps them to `user.seededGoals` with ids `seed-<slug>`, the vault balance looked up by name, deadline `now + weeksOut × 7` and `createdAt = now − 30 d`. Maya seeds *Emergency fund*; Devon *Emergency cushion* and *Pay down Freedom*; Priya *House down payment* and *New bike*. `goalTemplate` (Lisbon / Denver weekend / Tokyo trip) is what `suggestedGoal()` offers when nothing is tracked.
+Each spec may seed `goals` (name, emoji, target, `vaultName` or `saved`, weekly, weeksOut). `plaidAdapter` maps them to `user.seededGoals` with ids `seed-<slug>`, the vault balance looked up by name, deadline `now + weeksOut × 7` and `createdAt = now − 30 d`. Anna seeds none (her vault is deliberately untracked until the demo adds Lisbon); Ash seeds *Pay down Freedom*; Guru *House down payment*. `goalTemplate` (Lisbon / Denver weekend / Tokyo trip) is what `suggestedGoal()` offers when nothing is tracked.
 
 `src/store/index.ts` keeps **one active goal** — `useGoalStore.goal` — and that goal alone drives verdicts, `goal_impact_chip`, the footer delta and `goal_collision`; `others: Goal[]` are tracked but never consulted. `activate(g)` swaps a goal in and moves the previous active one to `others`; `addOther(g)` files a new one without activating it; `remove(id)` deletes from either slot; `setGoal(null)` stops tracking. `/goals` shows the active goal as a hero card (saved / target, progress bar, deadline, weeks left, weekly pace, landing date, on-track badge, "Stop tracking"), the suggested-goal card and the add form when nothing is tracked, and "Your other goals" — every seeded goal plus `others` — each with a **✦ Check purchases against this** button that calls `activate`. Seeded goals cannot be removed; user-added ones can. The coach input shows the active goal as a purple pill with its progress (or "✦ Set a goal" when none is tracked); either opens `/goals`.
 
@@ -283,16 +283,16 @@ The header is wordmark · nav section · Plus pill · profile avatar; the Add / 
 
 ### Card gallery
 
-**By card** renders each card's `samples` through `buildContext` on the active profile. If a sample's `condition` cannot be met on that profile's data, the gallery previews it with the reference persona (Maya) and labels it "previewed with Maya's data"; only when neither profile satisfies the condition (and no `override` is set) does a dashed "condition false" placeholder appear. Interactive cards work here; `actions` are toast-only.
+**By card** renders each card's `samples` through `buildContext` on the active profile. If a sample's `condition` cannot be met on that profile's data, the gallery previews it with the reference persona (Anna) and labels it "previewed with Anna's data"; only when neither profile satisfies the condition (and no `override` is set) does a dashed "condition false" placeholder appear. Interactive cards work here; `actions` are toast-only.
 
-**By expense type** (`src/screens/gallery/expense.ts`, pure) builds one section per `EXPENSE_TYPES` entry — coffee `$6 latte`, dining `$60 dinner`, groceries `$54 groceries`, transport `$28 Uber`, apparel `$140 running shoes`, electronics `$450 monitor`, entertainment `$180 concert tickets`, travel `$1,200 flight to Lisbon in March`, subscription `$15/mo Crunchyroll`, moving `$2,800 to move apartments`, other `$35 gift` — from `explain()` with and without a goal. Each section shows the path and layout, the dealt stack as pills (plus the with-goal stack when it differs), candidate / dealt / cap counts, and every eligible card with its score and the composer's reason; sort by **Dealt first** (stack order, then dropped by cap), **By score** or **A–Z**. Cards that no type triggers on the active profile are listed at the top rather than silently missing; on Maya all 34 are covered.
+**By expense type** (`src/screens/gallery/expense.ts`, pure) builds one section per `EXPENSE_TYPES` entry — coffee `$6 latte`, dining `$60 dinner`, groceries `$54 groceries`, transport `$28 Uber`, apparel `$140 running shoes`, electronics `$450 monitor`, entertainment `$180 concert tickets`, travel `$1,200 flight to Lisbon in March`, subscription `$15/mo Crunchyroll`, moving `$2,800 to move apartments`, other `$35 gift` — from `explain()` with and without a goal. Each section shows the path and layout, the dealt stack as pills (plus the with-goal stack when it differs), candidate / dealt / cap counts, and every eligible card with its score and the composer's reason; sort by **Dealt first** (stack order, then dropped by cap), **By score** or **A–Z**. Cards that no type triggers on the active profile are listed at the top rather than silently missing; on Anna all 34 are covered.
 
 ## Demo controls
 
 `src/demo/DemoPanel.tsx` (lazy) mounts a floating **✦ Demo** pill bottom-right on every page; it opens a 360 px right-hand panel (a full-screen sheet below 640 px; Esc closes; the app shifts left so the nav stays reachable). State lives in `src/store/demo.ts` (`purchase-coach-demo`: `open`, `forceFallback`, `choreoStep`; the inspector is not persisted). Sections:
 
 - **Profile** — the same `ProfileList` as the avatar popover.
-- **Walkthrough** — the five `CHOREOGRAPHY` beats with expected outcomes, Start / Prev / Next / Stop; step 3 blocks Next until the suggested goal is tracked (a "Track Lisbon" button is inline). Scripted for Maya; a caption says so on other profiles.
+- **Walkthrough** — the five `CHOREOGRAPHY` beats with expected outcomes, Start / Prev / Next / Stop; step 3 blocks Next until the suggested goal is tracked (a "Track Lisbon" button is inline). Scripted for Anna; a caption says so on other profiles.
 - **Nine matrix queries** — one button per `MATRIX_QUERIES` entry; the current answer's path is highlighted.
 - **Goal** — the active goal, or "Track …" the profile's suggested goal; Clear goal.
 - **Time travel** — the app's current date, a date input and quick jumps (Today, Next payday, The 1st, Month end, +6 months); each is a full reload with `?now=`.
@@ -312,7 +312,7 @@ The header is wordmark · nav section · Plus pill · profile avatar; the Add / 
 
 `/share` (`src/screens/SharePage.tsx`, lazy chunk that also carries the `qrcode` lib) is a clean, projectable page outside the Shell with an SVG QR of `BRAND.publicUrl` (`https://meridian.andresl.dev`, overridable with `VITE_PUBLIC_URL`). `/qr` redirects to `/share`; unknown routes redirect to `/`.
 
-## Mock data notes (Maya)
+## Mock data notes (Anna)
 
 - `src/data/mockUser.ts` builds a Plaid response (`accounts[]`, `transactions[]` with `personal_finance_category`, ISO dates) from the profile's spec plus its CSV (see **Data**). Everything is relative to `NOW` at module load (`src/data/index.ts`; real clock unless `?now=` / `VITE_NOW` is set). Nothing is pinned to a calendar date, so the demo is correct in any week — verified across month and year boundaries (see `VERIFICATION.md`, Wave 3 QA).
 - Anchors (from `maya.spec.ts`): biweekly payroll of $2,610 with the next payday in 3 days; rent $1,850 on the 1st; subscription rows charged monthly with year-ago prices before their raise; Blue Bottle ×4 a month; Sweetgreen ×4 a month; two apparel buys this quarter (Nike $95 at −42 d, Blundstone $120 at −70 d); two entertainment buys this quarter (Ticketmaster $85 at −49 d, Sunset Cinema $52 at −22 d); prior trip cluster 4 months ago (Montréal: $380 flight + $206 stay + $136 food + $78 local = 2.1× the flight).
@@ -320,7 +320,7 @@ The header is wordmark · nav section · Plus pill · profile avatar; the Add / 
 - Constants: `cash = { bufferFloor: 450, cushion: 300 }`; `allowance = { monthly: 150, spent: 65 }`; `loan = { apr: 0.1099, termMonths: 12 }`; points: 48,000 Chase UR (→ Iberia) and 22,000 Amex MR.
 - Accounts: SoFi Checking $3,240 · SoFi Savings $8,900 (vaults: Lisbon $1,150, Emergency $6,000) · SoFi Invest $8,952 · five credit cards (SoFi Unlimited 2% $340/$10k, Amex Gold $290, Citi Custom Cash $210/$3k, Chase Sapphire Preferred $620/$12k, Chase Freedom Unlimited $1,220/$4k, APR 24.24% — the only APR the spec gives; the others are `null`).
 - Point valuations (`CardSpec.pointValueCents`): Amex MR at 2¢/pt, Chase UR at 1¢/pt. Citi Custom Cash carries a 5% dining cap of $500 with $487 used.
-- Devon and Priya follow the same shape with their own numbers (`devon.spec.ts`, `priya.spec.ts`); see **Profiles**.
+- Ash and Guru follow the same shape with their own numbers (`devon.spec.ts`, `priya.spec.ts`); see **Profiles**.
 
 ## Renaming
 

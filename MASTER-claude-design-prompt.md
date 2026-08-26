@@ -33,7 +33,7 @@ Build a single-page interactive prototype called **SoFi Purchase Coach** — a p
 
 ## 2. Hardcoded persona data (drives every screen)
 
-Maya Chen, Boston. Checking (SoFi) $3,240. Savings (SoFi) $8,900 — includes **Lisbon vault: $1,150**. Points: 48,000 Chase UR, 22,000 Amex MR.
+Anna Avalos, Boston. Checking (SoFi) $3,240. Savings (SoFi) $8,900 — includes **Lisbon vault: $1,150**. Points: 48,000 Chase UR, 22,000 Amex MR.
 
 **Cards (always ranked with reasons — this 5-card set appears on every answer screen):**
 | Card | Balance / Limit | Key rule for demo |
@@ -48,12 +48,54 @@ Maya Chen, Boston. Checking (SoFi) $3,240. Savings (SoFi) $8,900 — includes **
 
 **Goal (NOT pre-added — the user adds it live during the demo):** "Lisbon trip — $2,400 by [10 weeks from today]", vault already at $1,150, suggested contribution $125/week.
 
+### Financial profile (posture, not mechanics)
+
+Every persona carries a `FinancialProfile`. It is **engine input, never classifier input** — the Worker still emits classification only (`intent`, `size`, `category`, `recurring`) and still never selects cards or does arithmetic. All five effects below are deterministic TypeScript in the engine and scorer.
+
+```ts
+export type PaymentHabit = 'pays_in_full' | 'revolves';
+
+export interface FinancialProfile {
+  employmentType: 'w2' | 'variable';
+  payCadence: 'biweekly' | 'semimonthly' | 'monthly';
+  netPerCheck: number;            // the only paycheck figure — no cadence or amount literals downstream
+  annualIncome: number;
+  paymentHabit: PaymentHabit;     // the one user-editable field
+  creditEvent: { label: string; monthsAway: number } | null;
+  priority: 'points' | 'cash_back' | 'simplicity' | 'lowest_cost';
+  memberSince: string;            // display only, e.g. "2021"
+}
+```
+
+| | Anna Avalos | Ash | Guru |
+|---|---|---|---|
+| employmentType | `w2` | `w2` | `w2` |
+| payCadence | `biweekly` | `biweekly` | `semimonthly` |
+| netPerCheck | $2,610 | $1,510 | $4,180 |
+| annualIncome | $92,000 | $52,000 | $168,000 |
+| paymentHabit | **`pays_in_full`** | **`revolves`** | `pays_in_full` |
+| creditEvent | none | Apartment lease application, 2 months | Mortgage refinance, 5 months |
+| priority | `points` | `lowest_cost` | `cash_back` |
+| memberSince | 2021 | 2025 | 2019 |
+
+Ash's values are deliberate: they already carry a balance on a near-limit card, so `revolves` plus a lease application two months out makes their answers read completely differently from Anna's on the same query. Anna ships as `pays_in_full` and stays there unless a user flips the toggle live.
+
+**The five effects.**
+
+1. **`paymentHabit === 'revolves'` flips the ranking objective** from rewards-maximizing to cost-minimizing. Each card's projected one-month interest on the purchase amount at its APR is subtracted from its rewards value; ranking is by net value, then APR ascending. Any row whose projected interest exceeds its rewards value carries an explicit reason ("…costs more in interest than it earns back"). `carrying_cost` also fires whenever the ranked winner would still leave a carried balance. Cards with no revolving line (charge cards) and cards whose APR the data leaves unknown model zero interest — an APR is never invented.
+2. **`creditEvent` within 6 months tightens and promotes utilization.** The `utilization_watch` threshold drops 30% → 20%, its score is multiplied by 1.75 so it surfaces near the top of the deal, and its copy names the event and its timing. A boosted card also widens its own group cap by one, so the promotion *adds* the gauge rather than evicting `card_ranking`. Beyond 6 months, no effect.
+3. **`priority` breaks ties only.** When the top two ranked cards are within 5% of each other in value, `priority` picks the winner; it never overrides a material difference. An *exact* tie keeps the structural rule (travel prefers trip protection, otherwise the flat house card wins) so existing answers are untouched. The tie-break is logged to the console in demo mode.
+4. **`employmentType === 'variable'` widens the safety buffer.** Cushion and allowance math require 1.5× the normal buffer before a verdict can land on `fine`. No persona uses this today; it is implemented so the field is not decorative.
+5. **`payCadence` + `netPerCheck` drive payday math.** `payday_proximity`, the runway, the projected payday series and monthly-income figures all read these — no cadence literal survives in the engine.
+
+The demo-mode score table carries a `profileEffects` row listing which of the five applied to the current answer.
+
 ---
 
 ## 3. Screens
 
 ### S0 — Home (clone of SoFi "My financial insights", plus one new card)
-Recreate the Relay/Coach Insights layout faithfully: headline "My financial insights" with Add/Search/Manage teal circles at right; two-column card area — left card "Net worth" (hero number with raised cents, small line chart, 3M/6M/YTD/1Y/ALL toggle, then rows: Cash · 2, Credit cards · 5, Investments · 1 with amounts); right card "Spending" (hero number, 4-month rounded bar chart May–Aug with current month solid teal, then 4 transaction rows, "View all transactions" teal link). Populate with Maya's numbers (positive net worth ≈ $18,400; spending this month ≈ $2,340).
+Recreate the Relay/Coach Insights layout faithfully: headline "My financial insights" with Add/Search/Manage teal circles at right; two-column card area — left card "Net worth" (hero number with raised cents, small line chart, 3M/6M/YTD/1Y/ALL toggle, then rows: Cash · 2, Credit cards · 5, Investments · 1 with amounts); right card "Spending" (hero number, 4-month rounded bar chart May–Aug with current month solid teal, then 4 transaction rows, "View all transactions" teal link). Populate with Anna's numbers (positive net worth ≈ $18,400; spending this month ≈ $2,340).
 
 **The one addition:** a full-width card ABOVE the two columns — this is the new product. Title: "About to buy something?" Subtitle: "Check it before you swipe." One large input field with placeholder `Try "$60 dinner" or "$1,200 flight to Lisbon in March"`. Below it, three suggestion chips: `$60 dinner` · `$140 running shoes` · `$1,200 flight to Lisbon in March`. Small "Goals" teal text link in the card's top-right corner → S4. After a goal exists, a purple pill appears next to that link: `✦ Lisbon · $1,150 of $2,400`.
 
@@ -92,6 +134,17 @@ Simple screen in the same card language. Header "Goals". If empty: illustration-
 
 ---
 
+### S5 — Financial profile (`/profile`)
+Reached from the Coach Insights sub-navigation next to Goals. Headline: **"Your financial picture"**. Two zones on one page with different edit permissions.
+
+**Zone A — Financial profile.** A single white card, 16px radius, soft shadow, pre-filled from the persona and read-only but for one control. One line of slate body copy explains that SoFi it reads this context on every answer. Rows, label left in slate, value right in near-black: Income (annual in hero numerals, cadence and per-check as a subline — "$92,000 · biweekly, $2,610 per check"); Employment ("W2, steady" / "Variable"); Credit posture (total balances over total limits as a percentage, with the shared utilization bar, plus a purple-free informational chip naming the credit event and its timing when one is set); What you optimize for (the `priority` as a readable phrase); SoFi member since.
+
+**The one editable control:** a two-state segmented toggle, "I pay in full each month" / "I carry a balance", turquoise for the active state. It writes to the store, persists to localStorage alongside the profile selection (keyed per persona), and re-derives any answer on screen. Beneath it, one slate line states plainly what changes — carrying a balance makes interest cost outweigh rewards, so SoFi it ranks by what a purchase costs rather than what it earns.
+
+**Zone B — Goals.** Renders the same goals component as S4 (same purple treatment, same add/save flow, unchanged behavior) — not a fork. Zone A reads as context the product already has; Zone B reads as the thing the user authors. Goals stay purple, verdicts stay turquoise/gold/red; the two are never crossed. S4 remains routable.
+
+**Answer screen footnote.** At the foot of every answer, one slate line — "Based on your accounts, spending, and financial profile" — with "financial profile" a turquoise link to `/profile`. Not a card: no layout change and no effect on the 7-card cap.
+
 ## 4. Shared components
 
 **Card ranking (used in S1 expander, S2, S3):** vertical list, winner on top with turquoise left glow and reason line + $ back; each other card shows delta vs winner ("−$1.40 vs best") and, where relevant, a badge: gold "cap reached", salmon "utilization warning", gray "no bonus category". Card art: simple rounded rectangles in brand colors with the card name — do not use bank logos, just styled text.
@@ -109,4 +162,4 @@ The transition from query → answer is the product's signature ("the query is t
 - No tabs, no mode switcher, no settings — the typed query is the only mode selector.
 - No lecturing copy ("you should consider…"), no emoji in verdicts, no generic fintech gradients.
 - Don't invent extra accounts, cards, or categories beyond the data above.
-- Don't show the -$2,674 net worth from any reference material — Maya's numbers only.
+- Don't show the -$2,674 net worth from any reference material — Anna's numbers only.

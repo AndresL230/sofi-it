@@ -2,17 +2,18 @@ import type { ProfileSpec } from '../spec'
 import { SUBSCRIPTIONS } from '../subscriptions.ts'
 
 /**
- * Profile 1 — Maya Chen, Boston (MASTER spec §2 + cards spec appendix, verbatim numbers).
+ * Profile 1 — Anna Avalos, Boston (MASTER spec §2 + cards spec appendix, verbatim numbers).
  * Plain data with no app imports: scripts/gen-data.mjs loads this file with Node's native TS support
  * to write maya.transactions.csv. The flat house card is renamed from BRAND.flatCard in ./maya.ts.
  */
 export const mayaSpec: ProfileSpec = {
   id: 'maya',
-  persona: { firstName: 'Maya', lastName: 'Chen', city: 'Boston', initials: 'MC' },
-  blurb: 'Boston · biweekly paycheck, five cards, a Lisbon vault she hasn\'t made a goal yet.',
+  persona: { firstName: 'Anna', lastName: 'Avalos', city: 'Boston', initials: 'AA' },
+  blurb: 'Boston · biweekly paycheck, five cards, a Lisbon vault that is not a goal yet.',
   starters: ['$60 dinner', '$140 running shoes', '$1,200 flight to Lisbon in March', '$15/mo Crunchyroll'],
   accounts: { checking: 3240, savings: 8900, vaults: [{ name: 'Lisbon', balance: 1150 }, { name: 'Emergency', balance: 6000 }], brokerage: 8952, masks: { checking: '4021', savings: '7788', brokerage: '2201' } },
-  payroll: { amount: 2610, daysUntilNext: 3, intervalDays: 14, employer: 'Acme Analytics' },
+  financial: { employmentType: 'w2', payCadence: 'biweekly', netPerCheck: 2610, annualIncome: 92000, paymentHabit: 'pays_in_full', creditEvent: null, priority: 'points', memberSince: '2021' },
+  payroll: { daysUntilNext: 3, employer: 'Acme Analytics' },
   rent: { amount: 1850, dayOfMonth: 1, landlord: 'Beacon Hill Realty' },
   cash: { bufferFloor: 450, cushion: 300 },
   allowance: { monthly: 150, spent: 65 },
@@ -38,7 +39,6 @@ export const mayaSpec: ProfileSpec = {
     entertainment: [{ merchant: 'Ticketmaster', amount: 85, daysAgo: 49, tags: [] }, { merchant: 'Sunset Cinema', amount: 52, daysAgo: 22, tags: [] }],
   },
   redirectPlan: [{ category: 'dining', to: 460 }, { category: 'entertainment', to: 80 }],
-  goals: [{ name: 'Emergency fund', emoji: '🛟', target: 9000, vaultName: 'Emergency', weekly: 75, weeksOut: 40 }],
   goalTemplate: { name: 'Lisbon trip', emoji: '✈', target: 2400, vaultName: 'Lisbon', weekly: 125, weeksOut: 10 },
   netWorthDelta6m: 1240,
   seed: 42,

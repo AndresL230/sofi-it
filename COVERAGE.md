@@ -17,15 +17,15 @@ composed *answer stack* on `/answer?q=…`), not only in the Card Gallery.
 - **Classifier.** Every query resolved through the keyword fallback (`source: fallback`; the
   `/api/classify` 404/500 lines are the expected no-Worker path). Reachability therefore reflects
   `fallbackClassifier.ts` categorisation; an LLM classifier could only widen it.
-- **Profiles.** Only Maya exists today. The table carries one *reached* column per profile; add a
-  column (and re-run the same query list) when Devon / Priya land.
+- **Profiles.** Only Anna exists today. The table carries one *reached* column per profile; add a
+  column (and re-run the same query list) when Ash / Guru land.
 
 ## 1. Coverage table (34 cards)
 
 Legend: ✔ reached in an answer stack · ✘ not reached. "Goal" column = state of the tracked-goal
 store when the card surfaced (`none` / `Lisbon`).
 
-| # | card id | group | kind | Maya | query that surfaces it (goal state) | notes |
+| # | card id | group | kind | Anna | query that surfaces it (goal state) | notes |
 |---|---|---|---|:-:|---|---|
 | 1 | `verdict_banner` | Verdict & framing | core | ✔ | `$6 latte` (none) | Anchor on every non-large stack. |
 | 2 | `plan_header` | Verdict & framing | core | ✔ | `$1,200 flight to Lisbon in March` (none) | Anchor on every large stack. |
@@ -64,7 +64,7 @@ store when the card surfaced (`none` / `Lisbon`).
 
 ## 2. Unreached cards
 
-**None.** All 34 cards surfaced in at least one composed answer stack for Maya without touching the
+**None.** All 34 cards surfaced in at least one composed answer stack for Anna without touching the
 Card Gallery.
 
 ### Near-misses worth knowing (reachable, but on a narrow path)
@@ -80,11 +80,11 @@ diagnostic only — nothing was changed.
 | `guilt_free_balance` | Needs `verdict.tone === 'tight'` on a medium discretionary buy, and a goal flips the stack so `goal_impact_chip` pushes it out. Only `tickets`/`$200 headphones` no-goal hit it. | Give the showpiece a small relevance boost when the allowance covers < 100 %, so it outranks `impulse_frequency` on `tickets`. |
 | `pace_projection` | Priority 60 makes it the first drop on `dinner` (eligible every time, never shown). It is only visible on the `uber` path or `$20 CVS`. | Either raise to ≥ 86 or remove it from the `dinner` matrix list so the DEV "dropped" line stops advertising it. |
 | `merchant_habit` | Relies on the `MERCHANT_HINT` map (coffee/latte/espresso/lunch/salad) or a named merchant from the fallback regex; "$7 cappuccino" works only because coffee-category defaults to Blue Bottle. | Add `tatte`, `sweetgreen` variants and `breakfast` to `MERCHANT_HINT` for robustness. |
-| `overlap_check` | Only services in `SERVICE_CATALOG` with a shared non-streaming tag overlap; the fallback regex's `merchant_guess` list is short (crunchyroll/netflix/spotify/hulu), so `$10/mo Disney+` overlaps via the `thing`-derived service name. | Nothing needed for Maya; new profiles must ship a catalog entry for every subscription in their data. |
+| `overlap_check` | Only services in `SERVICE_CATALOG` with a shared non-streaming tag overlap; the fallback regex's `merchant_guess` list is short (crunchyroll/netflix/spotify/hulu), so `$10/mo Disney+` overlaps via the `thing`-derived service name. | Nothing needed for Anna; new profiles must ship a catalog entry for every subscription in their data. |
 
 ## 3. Total
 
-**34 / 34 reached for Maya.** (0 unreached.)
+**34 / 34 reached for Anna.** (0 unreached.)
 
 ## Appendix A — observed stacks (raw)
 
@@ -163,6 +163,6 @@ To test goal-dependent cards, insert after the clear:
 `{ "goto": ".../answer?q=%241%2C200%20flight%20to%20Lisbon%20in%20March" }, { "wait": 1500 }, { "click": "text=Track Lisbon as a goal" }, { "wait": 1200 }`.
 Add a `?profile=` (or whatever the profile switcher exposes) to each `goto` once more profiles exist, and add a column to the table in §1.
 
-Key data thresholds for Maya that future profiles must re-derive: room ≈ $596 before payday
+Key data thresholds for Anna that future profiles must re-derive: room ≈ $596 before payday
 (checking 3 240 − rent 1 850 − remaining subs 45 − essentials 299 − buffer 450), cushion $300,
 Freedom Unlimited utilization 30.5 % pre-purchase, Amex dining credit at +6 d, payday at +3 d.

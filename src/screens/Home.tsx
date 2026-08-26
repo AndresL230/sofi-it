@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom'
 import { NOW } from '@/data'
 import { useUser } from '@/store/profile'
 import { Money, Num } from '@/components/Money'
+import { UtilizationBar } from '@/components/UtilizationBar'
 import { addMonths, monthShort, sameMonth, startOfYear } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 
 const RANGES = ['3M', '6M', 'YTD', '1Y', 'ALL'] as const
 type Range = (typeof RANGES)[number]
 
-/** S0 — Relay "My financial insights" clone with Maya's numbers (everything derived from the mock accounts + transactions). */
+/** S0 — Relay "My financial insights" clone with Anna's numbers (everything derived from the mock accounts + transactions). */
 export function Home() {
   const [range, setRange] = useState<Range>('6M')
   const [open, setOpen] = useState<Set<string>>(new Set())
@@ -91,7 +92,7 @@ export function Home() {
                               <div className="min-w-0"><div className="truncate text-body font-semibold">{a.name}</div><div className="text-caption text-slate-muted">{a.officialName} ··{a.mask}{card?.apr ? <> · APR <Num value={card.apr * 100} fraction={2} suffix="%" animated={false} /></> : null}</div></div>
                               <div className="shrink-0 text-right"><div className={cn('text-body font-bold', g.neg && 'text-red')}>{g.neg ? '−' : ''}<Money value={a.balance} size="inline" cents="never" animated={false} /></div>{a.limit ? <div className="text-caption text-slate-muted">of <Money value={a.limit} size="inline" cents="never" animated={false} /> limit</div> : null}</div>
                             </div>
-                            {util !== null ? <div className="mt-1.5 h-[4px] overflow-hidden rounded-pill bg-lavender"><div className="h-full rounded-pill" style={{ width: `${Math.min(100, util * 100)}%`, background: util > 0.3 ? 'var(--salmon)' : 'var(--teal)' }} /></div> : null}
+                            {util !== null ? <UtilizationBar used={util} className="mt-1.5" /> : null}
                             {a.vaults?.length ? (
                               <div className="mt-1.5 flex flex-col gap-[3px]">
                                 {a.vaults.map((v) => (

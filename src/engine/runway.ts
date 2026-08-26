@@ -1,7 +1,11 @@
 import type { Runway, UserModel } from './types'
 import { daysBetween, nextDayOfMonth, sameMonth, weekdayLong } from '@/lib/dates'
+import { bufferMultiplier } from './profile'
 
-/** Discretionary room before the next paycheck: checking − rent − remaining subs − remaining essentials − buffer. */
+/**
+ * Discretionary room before the next paycheck: checking − rent − remaining subs − remaining essentials − buffer.
+ * Paycheck size and cadence come from the persona's FinancialProfile (via user.payroll) — never a literal.
+ */
 export function runway(user: UserModel, amount: number, now: Date): Runway {
   const checking = user.accounts.find((a) => a.subtype === 'checking')?.balance ?? 0
   const rentDue = nextDayOfMonth(now, user.rent.dayOfMonth)
@@ -16,8 +20,10 @@ export function runway(user: UserModel, amount: number, now: Date): Runway {
   // Essentials you'll need before the paycheck after next (one pay cycle), so room doesn't swing with the day of month.
   const essentialsRemaining = (['groceries', 'transport'] as const).reduce((a, c) => a + user.baselines[c].usual, 0) * (user.payroll.intervalDays / 30)
   const room = Math.round(checking - bills.reduce((a, b) => a + b.amount, 0) - essentialsRemaining - user.cash.bufferFloor)
+  // Variable income widens the safety buffer: a verdict has to clear 1.5× the normal cushion before it reads "fine".
+  const cushion = Math.round(user.cash.cushion * bufferMultiplier(user.financialProfile))
   return {
-    checking, bills, essentialsRemaining: Math.round(essentialsRemaining), bufferFloor: user.cash.bufferFloor, cushion: user.cash.cushion,
+    checking, bills, essentialsRemaining: Math.round(essentialsRemaining), bufferFloor: user.cash.bufferFloor, cushion,
     room, roomAfter: room - amount, nextPayday: user.payroll.nextPayday, daysToPayday: daysBetween(now, user.payroll.nextPayday),
     paydayWeekday: weekdayLong(user.payroll.nextPayday), paycheck: user.payroll.amount,
   }

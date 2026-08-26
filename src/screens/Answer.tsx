@@ -46,6 +46,15 @@ export function Answer() {
     if (!ctx || !stack) { setInspector(null); return }
     const ex = explain(ctx, CARD_METAS)
     setInspector({ query: q, path: ex.path, rows: ex.rows, stack, ctx })
+    // Demo mode mirrors the score table to the console, with the profile effects (including any
+    // priority tie-break) alongside it, so the selection is inspectable without the panel open.
+    if (useDemoStore.getState().open) {
+      console.groupCollapsed(`SoFi it · ${q} · ${ex.path}`)
+      console.table(ex.rows.map((r) => ({ card: r.id, kind: r.kind, score: r.score, kept: r.kept, why: r.reason })))
+      console.table(ctx.profileEffects.map((e) => ({ profileEffects: e.key, applied: e.label, detail: e.detail })))
+      if (ctx.ranking.tieBreak) console.log('priority tie-break:', ctx.ranking.tieBreak)
+      console.groupEnd()
+    }
     return () => setInspector(null)
   }, [ctx, stack, q, setInspector])
 
@@ -106,6 +115,10 @@ export function Answer() {
       ) : (
         <div key={stackKey} className="flex flex-col gap-3.5">{stack.cards.map((type, i) => renderCard(type, i))}</div>
       )}
+      {/* Not a card: one slate line naming the three inputs, with the new one linked. No layout change, no cap effect. */}
+      <p className="mt-4 text-body text-slate">
+        Based on your accounts, spending, and <Link to="/profile" className="rounded-sm2 font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">financial profile</Link>.
+      </p>
       {import.meta.env.DEV ? <div className="mt-3 text-caption text-slate-muted">path: {stack.path} · {stack.cards.length} cards · source: {classification.source}{stack.dropped.length ? ` · dropped: ${stack.dropped.join(', ')}` : ''}</div> : null}
     </div>
   )

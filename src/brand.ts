@@ -21,7 +21,7 @@ export const BRAND = {
   /** Premium pill in the nav. */
   plusPill: 'Get ✦ Plus',
   /** Persona initials for the avatar. */
-  avatarInitials: 'MC',
+  avatarInitials: 'AA',
   /** Where the app is publicly served (the /qr page encodes this). Override with VITE_PUBLIC_URL. */
   publicUrl: import.meta.env.VITE_PUBLIC_URL ?? 'https://meridian.andresl.dev',
 } as const

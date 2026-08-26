@@ -1,7 +1,7 @@
 import type { EngineContext } from '@/engine/types'
 import { CardShell, Num, DateText, T, cn, useDelay } from '../kit'
 
-interface Props { cardName: string; after: number; threshold: number; payBy: Date }
+interface Props { cardName: string; after: number; threshold: number; payBy: Date; event: { label: string; monthsAway: number } | null }
 
 /** The verdict is carried by the word first and the hue second — never by hue alone. */
 const VERDICT = {
@@ -10,8 +10,11 @@ const VERDICT = {
   over: { word: 'Over.', color: 'var(--red)', ink: 'var(--red-ink)' },
 } as const
 
-/** #14 — half-dial: neutral track, one coloured fill to the post-purchase utilization, a notch at the safe line. */
-function UtilizationWatch({ cardName, after, threshold, payBy }: Props) {
+/**
+ * #14 — half-dial: neutral track, one coloured fill to the post-purchase utilization, a notch at the safe line.
+ * The line is 30% normally and 20% while a credit application sits inside six months (engine-supplied).
+ */
+function UtilizationWatch({ cardName, after, threshold, payBy, event }: Props) {
   const d = useDelay()
   const v = after <= threshold ? VERDICT.fine : after < 0.5 ? VERDICT.tight : VERDICT.over
   const pct = Math.round(after * 100)
@@ -51,6 +54,12 @@ function UtilizationWatch({ cardName, after, threshold, payBy }: Props) {
             <span className="text-title font-extrabold leading-none" style={{ color: v.ink }}>{v.word}</span>
           </div>
           <p className={cn(T.caption, 'mt-2 leading-snug')}>{cardName} crosses its {line}% line with this.</p>
+          {/* A credit application in sight is why the line moved — the card says so rather than moving it silently. */}
+          {event ? (
+            <p className={cn(T.caption, 'mt-1.5 font-semibold leading-snug text-navy')}>
+              Your {event.label.toLowerCase()} is <Num value={event.monthsAway} animated={false} /> {event.monthsAway === 1 ? 'month' : 'months'} out — the line is tighter until then.
+            </p>
+          ) : null}
         </div>
       </div>
       {/* The escape hatch is the payoff line: it sits under the gauge at natural height and
@@ -73,7 +82,7 @@ function Alert({ color }: { color: string }) {
   )
 }
 
-export const select = (ctx: EngineContext): Props => ({ cardName: ctx.utilization!.card.name.replace('Chase ', ''), after: ctx.utilization!.after, threshold: ctx.utilization!.threshold, payBy: ctx.utilization!.payBy })
+export const select = (ctx: EngineContext): Props => ({ cardName: ctx.utilization!.card.name.replace('Chase ', ''), after: ctx.utilization!.after, threshold: ctx.utilization!.threshold, payBy: ctx.utilization!.payBy, event: ctx.utilization!.event })
 
 export { meta, condition } from './meta'
 export default UtilizationWatch

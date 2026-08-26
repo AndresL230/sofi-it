@@ -11,6 +11,7 @@ import { SERVICE_CATALOG } from './subscriptions'
 import type { ProfileSpec } from './spec'
 import { addDays, addMonths, fromIso, startOfDay } from '@/lib/dates'
 import { makeRng } from './seed'
+import { CADENCE_DAYS } from '@/lib/payroll'
 
 function pfcToSpend(t: PlaidTransaction): SpendCategory {
   const d = t.personal_finance_category.detailed
@@ -58,7 +59,8 @@ export function adapt(res: PlaidResponse, now: Date, spec: ProfileSpec): UserMod
     persona: spec.persona,
     accounts, cards: buildCardRules(now, spec.cards), txns,
     baselines: buildBaselines(spec), subscriptions: spec.subscriptions, points: spec.points,
-    payroll: { amount: spec.payroll.amount, nextPayday: addDays(startOfDay(now), spec.payroll.daysUntilNext), intervalDays: spec.payroll.intervalDays },
+    payroll: { amount: spec.financial.netPerCheck, nextPayday: addDays(startOfDay(now), spec.payroll.daysUntilNext), intervalDays: CADENCE_DAYS[spec.financial.payCadence], cadence: spec.financial.payCadence },
+    financialProfile: spec.financial,
     cash: spec.cash, allowance: spec.allowance,
     priorTrip: { flight: spec.priorTrip.flight, around: spec.priorTrip.around, label: spec.priorTrip.label, when: addMonths(startOfDay(now), -spec.priorTrip.monthsAgo) },
     loan: spec.loan, rent: { amount: spec.rent.amount, dayOfMonth: spec.rent.dayOfMonth }, netWorthHistory,

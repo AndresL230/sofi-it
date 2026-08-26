@@ -39,11 +39,23 @@ export function Inspector({ onFlash }: { onFlash?: () => void }) {
   if (!inspector) return <Caption>open an answer to inspect</Caption>
 
   const kept = rows.filter((r) => r.kept).length
+  const effects = inspector.ctx.profileEffects
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-2 text-meta text-slate">
         <span>path <b className="text-ink">{inspector.path}</b> · layout <b className="text-ink">{inspector.stack.layout}</b></span>
         <span><b className="text-ink">{kept}</b> of {rows.length} kept</span>
+      </div>
+      {/* profileEffects — which of the five financial-profile rules touched THIS answer. */}
+      <div data-inspector="profile-effects" className="mb-2 rounded-sm2 border border-lavender-soft bg-lavender-soft/50 px-2 py-1.5">
+        <div className="text-micro font-semibold uppercase tracking-[0.06em] text-slate">profileEffects</div>
+        <ul className="m-0 mt-1 list-none space-y-[3px] p-0">
+          {effects.map((e) => (
+            <li key={e.key} className="text-caption leading-snug text-slate">
+              <b className="font-mono text-ink">{e.key}</b> · {e.label} <span className="text-slate-muted">— {e.detail}</span>
+            </li>
+          ))}
+        </ul>
       </div>
       <div className="overflow-x-auto rounded-sm2 border border-lavender-soft">
         <table className="w-full border-collapse text-meta">

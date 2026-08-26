@@ -1,4 +1,5 @@
 import type { CardMeta, EngineContext } from '@/types'
+import { CREDIT_EVENT_BOOST } from '@/types'
 
 export const condition = (ctx: EngineContext) => ctx.utilization !== null
 
@@ -10,6 +11,8 @@ export const meta: CardMeta = {
   priority: 86,
   condition,
   relevance: (ctx) => (condition(ctx) ? 1 : 0),
+  // A credit application inside six months promotes the gauge near the top of the deal.
+  boost: (ctx) => (ctx.utilization?.event ? CREDIT_EVENT_BOOST : 1),
   column: 'left',
   samples: [{ query: '$140 running shoes' }],
 }

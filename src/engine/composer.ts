@@ -23,6 +23,23 @@ const MAX_CARDS = 7
  */
 const GROUP_CAP: Record<string, number> = { 'Cards & rewards': 1 }
 
+/**
+ * A card's profile-driven multiplier (default 1). See CardMeta.boost — today only utilization_watch
+ * declares one, when a credit application is within six months.
+ */
+const boostOf = (m: CardMeta, ctx: EngineContext) => Math.max(1, m.boost?.(ctx) ?? 1)
+
+/**
+ * Group ceilings for this answer. A boosted card widens its own group by one, so promoting
+ * utilization ahead of a lease application ADDS the gauge to the deal rather than evicting
+ * "which card" — the two answer different questions.
+ */
+function groupCaps(eligible: CardMeta[], ctx: EngineContext): Record<string, number> {
+  const caps = { ...GROUP_CAP }
+  for (const m of eligible) if (boostOf(m, ctx) > 1 && caps[m.group] !== undefined) caps[m.group] += 1
+  return caps
+}
+
 const MATRIX_PATHS: Record<string, { layout: CardStack['layout']; cards: CardType[] }> = {
   latte: { layout: 'quick', cards: ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'merchant_habit', 'category_pulse', 'green_light', 'pace_projection', 'consequence_line', 'post_purchase_footer'] },
   dinner: { layout: 'quick', cards: ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'category_pulse', 'split_check', 'credit_expiry', 'merchant_habit', 'pace_projection', 'green_light', 'consequence_line', 'post_purchase_footer'] },
@@ -68,8 +85,10 @@ export function compose(ctx: EngineContext, metas: CardMeta[]): CardStack {
 
   // 1. conditions
   const eligible = pool.map((id) => byId.get(id)).filter((m): m is CardMeta => !!m && m.condition(ctx))
-  // 2–3. score: golden paths keep their hand order (index-based score) — scoring only breaks ties / ranks generic stacks
-  const scored = eligible.map((m, i) => ({ m, score: matrix ? (pool.length - i) * 1000 + m.relevance(ctx) * m.priority : Math.max(0, Math.min(1, m.relevance(ctx))) * m.priority }))
+  const caps = groupCaps(eligible, ctx)
+  // 2–3. score: golden paths keep their hand order (index-based score) — scoring only breaks ties / ranks generic
+  // stacks. A profile boost multiplies the score either way, so a promoted card survives the 7-card cap.
+  const scored = eligible.map((m, i) => ({ m, score: (matrix ? (pool.length - i) * 1000 + m.relevance(ctx) * m.priority : Math.max(0, Math.min(1, m.relevance(ctx))) * m.priority) * boostOf(m, ctx) }))
   scored.sort((a, b) => b.score - a.score)
   // 4. caps
   let interactive = 0, showpieces = 0
@@ -78,7 +97,7 @@ export function compose(ctx: EngineContext, metas: CardMeta[]): CardStack {
   for (const { m } of scored) {
     if (m.kind === 'interactive' && interactive >= 1) continue
     if (m.kind === 'showpiece' && showpieces >= showpieceCap) continue
-    const groupCap = GROUP_CAP[m.group]
+    const groupCap = caps[m.group]
     if (groupCap !== undefined && !m.anchor && (perGroup.get(m.group) ?? 0) >= groupCap) continue
     kept.push(m)
     if (m.kind === 'interactive') interactive++
@@ -90,9 +109,10 @@ export function compose(ctx: EngineContext, metas: CardMeta[]): CardStack {
     if (idx < 0) break
     kept.splice(kept.length - 1 - idx, 1)
   }
-  // 5. anchors first/last; the rest keep pool order
+  // 5. anchors first/last; the rest keep pool order, divided by any profile boost so a promoted
+  //    card also moves UP the deal rather than only surviving the cap.
   const order = new Map(pool.map((id, i) => [id, i]))
-  const rank = (m: CardMeta) => (m.anchor === 'first' ? -1000 : m.anchor === 'last' ? 1000 + (m.id === 'post_purchase_footer' ? 1 : 0) : order.get(m.id) ?? 0)
+  const rank = (m: CardMeta) => (m.anchor === 'first' ? -1000 : m.anchor === 'last' ? 1000 + (m.id === 'post_purchase_footer' ? 1 : 0) : (order.get(m.id) ?? 0) / boostOf(m, ctx))
   const cards = kept.sort((a, b) => rank(a) - rank(b)).map((m) => m.id)
   return { path: pathName ?? `${layout}-generic`, layout, cards, dropped: pool.filter((id) => !cards.includes(id)) }
 }
@@ -110,7 +130,7 @@ export function explain(ctx: EngineContext, metas: CardMeta[]): { path: string; 
     const m = byId.get(id)!
     const condition = m.condition(ctx)
     const relevance = condition ? Math.max(0, Math.min(1, m.relevance(ctx))) : 0
-    const score = condition ? Math.round(relevance * m.priority) : 0
+    const score = condition ? Math.round(relevance * m.priority * boostOf(m, ctx)) : 0
     const isKept = kept.has(id)
     let reason = isKept ? (m.anchor ? `anchor (${m.anchor})` : 'kept') : !condition ? 'condition false' : ''
     if (!isKept && condition) {

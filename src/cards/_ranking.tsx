@@ -32,6 +32,7 @@ export function RankingRows({ rows, grow }: { rows: RankedCard[]; grow?: boolean
               </div>
               <div className="mt-1 min-w-0 space-y-1">
                 <p className={cn(T.caption, 'leading-snug')}><Rich text={r.reason} animated={false} /></p>
+                {r.costNote ? <Note dot="var(--red)" ink="var(--red-ink)"><Rich text={r.costNote} animated={false} /></Note> : null}
                 <RankNote badge={r.badge} />
               </div>
               <div className={cn(T.micro, 'mt-1 whitespace-nowrap text-right')}>{r.deltaLabel.length ? <Rich text={r.deltaLabel} animated={false} /> : null}</div>

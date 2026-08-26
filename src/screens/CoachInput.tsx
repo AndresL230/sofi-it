@@ -77,14 +77,14 @@ export function CoachInput() {
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           {goal ? (
-            <button onClick={() => nav('/goals')} className="group cursor-pointer rounded-pill bg-purple px-3.5 py-[7px] text-left text-meta font-semibold text-white" aria-label="Open goals">
+            <button onClick={() => nav('/profile')} className="group cursor-pointer rounded-pill bg-purple px-3.5 py-[7px] text-left text-meta font-semibold text-white" aria-label="Open goals">
               <Rich text={goalPill(goal)} animated={false} />
               <span className="mt-[5px] block h-[3px] w-full overflow-hidden rounded-pill bg-white/30"><span className="block h-full rounded-pill bg-white" style={{ width: `${Math.min(100, Math.round((goal.saved / goal.target) * 100))}%` }} /></span>
             </button>
           ) : (
-            <button onClick={() => nav('/goals')} className="cursor-pointer rounded-pill bg-purple-tint px-3.5 py-[7px] text-body font-semibold text-purple hover:bg-purple hover:text-white">✦ Set a goal</button>
+            <button onClick={() => nav('/profile')} className="cursor-pointer rounded-pill bg-purple-tint px-3.5 py-[7px] text-body font-semibold text-purple hover:bg-purple hover:text-white">✦ Set a goal</button>
           )}
-          <button onClick={() => nav('/goals')} className="inline-flex min-h-6 cursor-pointer items-center rounded-sm2 px-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">Goals</button>
+          <button onClick={() => nav('/profile')} className="inline-flex min-h-6 cursor-pointer items-center rounded-sm2 px-1 text-lede font-semibold text-teal hover:text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/60">Profile</button>
         </div>
       </div>
       <div ref={wrapRef} className="relative mt-4">

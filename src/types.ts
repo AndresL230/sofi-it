@@ -113,6 +113,43 @@ export interface Subscription {
   covers: string[]
 }
 
+// ---------- Financial profile (posture, not mechanics — engine input, never classifier input) ----------
+export type PaymentHabit = 'pays_in_full' | 'revolves'
+export type PayCadence = 'biweekly' | 'semimonthly' | 'monthly'
+export type MoneyPriority = 'points' | 'cash_back' | 'simplicity' | 'lowest_cost'
+
+/**
+ * What the mechanics *mean* for this person. The engine reads this on every answer; the Worker's
+ * classification prompt never sees it (the model emits classification only).
+ */
+export interface FinancialProfile {
+  employmentType: 'w2' | 'variable'
+  payCadence: PayCadence
+  /** Net take-home per paycheck — the single source for every paycheck figure. */
+  netPerCheck: number
+  annualIncome: number
+  /** The one user-editable field (segmented toggle on /profile). */
+  paymentHabit: PaymentHabit
+  creditEvent: { label: string; monthsAway: number } | null
+  priority: MoneyPriority
+  /** Display only, e.g. "2021". */
+  memberSince: string
+}
+
+/**
+ * The five profile rules as constants, so the engine, the card metas and the /profile screen all
+ * quote the same numbers. Behaviour lives in src/engine/profile.ts.
+ */
+/** Months within which an upcoming credit event tightens the utilization line. */
+export const CREDIT_EVENT_HORIZON_MONTHS = 6
+/** How hard a near credit event promotes utilization_watch in the deal. */
+export const CREDIT_EVENT_BOOST = 1.75
+export const UTILIZATION_LINE = { normal: 0.3, creditEvent: 0.2 } as const
+/** Variable income has to clear this much more buffer before an answer can read "fine". */
+export const VARIABLE_BUFFER_MULTIPLIER = 1.5
+/** Two top cards inside this fraction of each other are a near-tie — and only then does `priority` decide. */
+export const TIE_BAND = 0.05
+
 export interface UserModel {
   persona: { firstName: string; lastName: string; city: string; initials: string }
   accounts: Account[]
@@ -121,7 +158,9 @@ export interface UserModel {
   baselines: Record<SpendCategory, Baseline>
   subscriptions: Subscription[]
   points: { program: PointsProgram; balance: number; label: string; transferPartner: string; transferValueCents: number }[]
-  payroll: { amount: number; nextPayday: Date; intervalDays: number }
+  payroll: { amount: number; nextPayday: Date; intervalDays: number; cadence: PayCadence }
+  /** Financial posture — see FinancialProfile. Flows into EngineContext as ctx.financialProfile. */
+  financialProfile: FinancialProfile
   cash: { bufferFloor: number; cushion: number }
   allowance: { monthly: number; spent: number }
   priorTrip: { flight: number; around: { stay: number; food: number; local: number }; label: string; when: Date }
@@ -212,11 +251,26 @@ export interface RankedCard {
   disqualified: boolean
   winner: boolean
   utilizationAfter: number | null
+  /** Projected one month of interest on this purchase at this card's APR (0 when the APR is unknown or it can't carry). */
+  interest: number
+  /** back − interest. Equals `back` for a payer-in-full; the ranking objective for a revolver. */
+  netValue: number
+  /** Set when this row costs more in interest than it earns back (revolver ranking only). */
+  costNote?: RichText
 }
 
-export interface CardRanking { ranked: RankedCard[]; winner: RankedCard; flat: RankedCard; deltaVsFlat: number }
+export interface CardRanking {
+  ranked: RankedCard[]
+  winner: RankedCard
+  flat: RankedCard
+  deltaVsFlat: number
+  /** What the ranking optimised for: rewards (pays in full) or true cost (revolves). */
+  objective: 'rewards' | 'cost'
+  /** Set when `priority` decided a near-tie between the top two. */
+  tieBreak: { by: MoneyPriority; winner: string; runnerUp: string; gap: number } | null
+}
 
-export interface UtilizationWatch { card: CreditCardRule; before: number; after: number; threshold: number; payBy: Date }
+export interface UtilizationWatch { card: CreditCardRule; before: number; after: number; threshold: number; payBy: Date; event: { label: string; monthsAway: number } | null }
 
 export interface GoalImpact {
   goal: Goal
@@ -324,10 +378,18 @@ export interface SubscriptionView {
   overlap: { mine: string[]; candidate: string; shared: string[] } | null
 }
 
+/** One of the five deterministic profile effects, recorded when it actually changed this answer. */
+export type ProfileEffectKey = 'cost_ranking' | 'credit_event' | 'priority_tiebreak' | 'variable_buffer' | 'pay_cadence'
+export interface ProfileEffect { key: ProfileEffectKey; label: string; detail: string }
+
 export interface EngineContext {
   now: Date
   q: QueryFacts
   user: UserModel
+  /** Financial posture for this answer (the store's live paymentHabit override is already applied). */
+  financialProfile: FinancialProfile
+  /** Which of the five profile effects fired — surfaced in the demo score table. */
+  profileEffects: ProfileEffect[]
   verdict: Verdict
   pace: CategoryPace
   runway: Runway
@@ -386,7 +448,7 @@ export interface CardStack {
 // ---------- Profiles (ADDENDUM-profiles-demo-controls.md) ----------
 export interface Profile {
   id: string
-  /** Display name, e.g. "Maya Chen". */
+  /** Display name, e.g. "Anna Avalos". */
   name: string
   /** One-line who-this-is for the picker / share page. */
   blurb: string
@@ -414,6 +476,11 @@ export interface CardMeta {
   condition: (ctx: EngineContext) => boolean
   /** 0..1 — how much this card matters for THIS purchase; the composer sorts by relevance × priority. */
   relevance: (ctx: EngineContext) => number
+  /**
+   * Profile-driven multiplier (default 1). >1 raises the card's score AND its position in the deal, and
+   * widens its group cap by one so a promoted card adds to the answer instead of evicting its neighbour.
+   */
+  boost?: (ctx: EngineContext) => number
   /** Framing cards that must sit first/last and are never dropped (verdict/plan header, consequence, footer). */
   anchor?: 'first' | 'last'
   /** Layout hints. */

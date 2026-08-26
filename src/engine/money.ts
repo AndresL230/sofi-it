@@ -1,5 +1,6 @@
 import type { Affordability, CarryingCost, CreditCardRule, EventCost, PaymentOption, PointsOffset, QueryFacts, Runway, UserModel } from './types'
 import { addDays, addMonths, startOfDay } from '@/lib/dates'
+import { paydaysUntil } from '@/lib/payroll'
 import { money, num } from './format'
 import { BRAND } from '@/brand'
 
@@ -86,8 +87,7 @@ export function affordability(user: UserModel, q: QueryFacts, rw: Runway, points
   const redirectSources = user.redirectPlan.map((r) => ({ label: user.baselines[r.category].label.toLowerCase(), from: user.baselines[r.category].usual, to: r.to }))
   const redirectMonthly = redirectSources.reduce((a, r) => a + Math.max(0, r.from - r.to), 0)
   const accelerated = addDays(startOfDay(now), Math.ceil((shortfall / (weeklyPace + (redirectMonthly * 12) / 52)) * 7))
-  const paydays: Date[] = []
-  for (let d = user.payroll.nextPayday; d <= affordableInFull; d = addDays(d, user.payroll.intervalDays)) paydays.push(d)
+  const paydays = paydaysUntil(user.payroll.nextPayday, user.payroll.cadence, affordableInFull)
   const outOfPocket = points.outOfPocket
   const affordableWithPoints = addDays(startOfDay(now), Math.ceil((Math.max(0, outOfPocket - availableNow) / weeklyPace) * 7))
   return { availableNow, shortfall, weeklyPace, affordableInFull, redirectMonthly, redirectSources, accelerated, paydays, outOfPocket, affordableWithPoints }
