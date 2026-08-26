@@ -38,8 +38,8 @@ store when the card surfaced (`none` / `Lisbon`).
 | 9 | `carrying_cost` | Money context | core | ✔ | `$450 monitor` (none) | Requires `roomAfter < cushion` → amount > ≈$296 on this data (room ≈ $596). Also `$2,800 to move apartments`, `$700 laptop`, `$400 groceries`. |
 | 10 | `cashflow_timeline` | Money context | core | ✔ | `$1,200 flight to Lisbon in March` (none) | Large + shortfall > 0 (availableNow = room − cushion ≈ $296). Also `$700 laptop`, `$1,500 couch`. Cap-dropped on `moving` once the goal exists. |
 | 11 | `payday_proximity` | Money context | showpiece | ✔ | `$28 Uber` (none) | Payday is always now+3 d; needs verdict ≠ fine, so `$12 Uber` (fine) does **not** show it. Also `$95 concert tickets`, `$85 headphones`. |
-| 12 | `best_card_row` | Cards & rewards | core | ✔ | `$6 latte` (none) | Every small non-recurring stack. |
-| 13 | `card_ranking` | Cards & rewards | core | ✔ | `$140 running shoes` (none) | Every medium/large non-recurring stack (cap-dropped on `moving`). |
+| 12 | `best_card_row` | Cards & rewards | core | ✔ | `$6 latte` (none) | Any size, but only when `ranking.matters` is set — a real gain over the default card, interest avoided, trip cover, or a credit that would expire. |
+| 13 | `card_ranking` | Cards & rewards | core | ✔ | `$140 running shoes` (none) | Gallery and `best_card_row`'s "See all cards" expander only — not in any composer pool. |
 | 14 | `utilization_watch` | Cards & rewards | core | ✔ | `$140 running shoes` (none) | Freedom Unlimited sits at 30.5 % before any purchase, so the condition is true for every medium/large query; it survives the cap only on `shoes` (no goal), `$250 jacket` (no goal) and `$120 groceries at Whole Foods`. Dropped on `shoes` once the goal exists. |
 | 15 | `credit_sweep` | Cards & rewards | core | ✔ | `$54 groceries` (none) | Only in the *generic small* pool; also `$20 CVS`, `$35 board game`, `$95 concert tickets`, `$85 headphones`, `$25 movie tickets`. |
 | 16 | `credit_expiry` | Cards & rewards | showpiece | ✔ | `$60 dinner` (none) | Amex dining credit expires in 6 d. Also `$45 sushi dinner`, `$40 drinks`, `$14 Sweetgreen lunch`. Cap-dropped on `dinner` once the goal exists. |
@@ -76,7 +76,7 @@ diagnostic only — nothing was changed.
 |---|---|---|
 | `green_light` | Only groceries ≤ $72 or entertainment ≤ $26 pass `projectedWith ≤ 0.9 × usual`. It is in the `latte` matrix path but dining runRate (525) vs usual (550) can never satisfy it, so the "$6 latte → green light" story never plays. | Either lower `BASELINES.dining.runRate` to ≈ 480 (then `$6 latte` → 486 ≤ 495 passes, but `$60 dinner` stays over usual at 540 < 550 — check the "$35 over" copy) or relax the threshold to `≤ usual` for `routine` frequency. |
 | `credit_expiry` | Reachable only on dining/coffee **without** a goal: on `dinner` the 7-card cap drops it as soon as `goal_impact_chip` joins. | Give it a higher matrix slot than `split_check` on the `dinner` path, or exempt showpieces from the first cap pass. |
-| `utilization_watch`, `benefits_check`, `impulse_frequency` | Eligible on every medium query, but in the *generic medium* pool the top five non-anchors (`card_ranking` 95, `category_pulse` 90, `hold_24h` 90, `discretionary_runway` 88, …) always fill the cap. They only surface via the hand-ordered `shoes`/`monitor`/`tickets` paths (and only without a goal). | Lower `category_pulse` relevance for medium discretionary buys, or raise `utilization_watch` priority above 88 when `after > 0.35`. |
+| `benefits_check`, `impulse_frequency` | Eligible on every medium query, but the top non-anchors (`category_pulse` 90, `hold_24h` 90, `discretionary_runway` 88, …) usually fill the cap. They surface via the hand-ordered `shoes`/`monitor`/`tickets` paths. Since `best_card_row` stopped taking the `Cards & rewards` slot on rewards-neutral buys, `utilization_watch` now clears on its own. | Lower `category_pulse` relevance for medium discretionary buys. |
 | `guilt_free_balance` | Needs `verdict.tone === 'tight'` on a medium discretionary buy, and a goal flips the stack so `goal_impact_chip` pushes it out. Only `tickets`/`$200 headphones` no-goal hit it. | Give the showpiece a small relevance boost when the allowance covers < 100 %, so it outranks `impulse_frequency` on `tickets`. |
 | `pace_projection` | Priority 60 makes it the first drop on `dinner` (eligible every time, never shown). It is only visible on the `uber` path or `$20 CVS`. | Either raise to ≥ 86 or remove it from the `dinner` matrix list so the DEV "dropped" line stops advertising it. |
 | `merchant_habit` | Relies on the `MERCHANT_HINT` map (coffee/latte/espresso/lunch/salad) or a named merchant from the fallback regex; "$7 cappuccino" works only because coffee-category defaults to Blue Bottle. | Add `tatte`, `sweetgreen` variants and `breakfast` to `MERCHANT_HINT` for robustness. |
@@ -93,59 +93,59 @@ No goal (`localStorage` cleared):
 | query | path | cards (DOM order) |
 |---|---|---|
 | `$6 latte` | latte | verdict_banner, best_card_row, merchant_habit, category_pulse, consequence_line, post_purchase_footer |
-| `$60 dinner` | dinner | verdict_banner, best_card_row, category_pulse, split_check, credit_expiry, consequence_line, post_purchase_footer |
-| `$28 Uber` | uber | verdict_banner, best_card_row, payday_proximity, category_pulse, pace_projection, consequence_line, post_purchase_footer |
+| `$60 dinner` | dinner | verdict_banner, best_card_row, category_pulse, split_check, pace_projection, consequence_line, post_purchase_footer |
+| `$28 Uber` | uber | verdict_banner, payday_proximity, category_pulse, pace_projection, consequence_line, post_purchase_footer |
 | `$15/mo Crunchyroll` | crunchyroll | verdict_banner, price_creep, annualized, subscription_stack, overlap_check, consequence_line, post_purchase_footer |
-| `$140 running shoes` | shoes | verdict_banner, card_ranking, utilization_watch, hold_24h, duplicate_check, consequence_line, post_purchase_footer |
-| `$450 monitor` | monitor | verdict_banner, card_ranking, carrying_cost, benefits_check, cost_per_use, consequence_line, post_purchase_footer |
-| `$180 concert tickets` | tickets | verdict_banner, card_ranking, guilt_free_balance, discretionary_runway, impulse_frequency, consequence_line, post_purchase_footer |
-| `$1,200 flight to Lisbon in March` | flight | plan_header, total_cost_of_event, card_ranking, cashflow_timeline, points_offset, track_goal_cta, post_purchase_footer |
+| `$140 running shoes` | shoes | verdict_banner, hold_24h, duplicate_check, utilization_watch, impulse_frequency, consequence_line, post_purchase_footer |
+| `$450 monitor` | monitor | verdict_banner, cost_per_use, carrying_cost, benefits_check, guilt_free_balance, consequence_line, post_purchase_footer |
+| `$180 concert tickets` | tickets | verdict_banner, discretionary_runway, impulse_frequency, guilt_free_balance, hold_24h, consequence_line, post_purchase_footer |
+| `$1,200 flight to Lisbon in March` | flight | plan_header, total_cost_of_event, cashflow_timeline, points_offset, best_card_row, track_goal_cta, post_purchase_footer |
 | `$2,800 to move apartments` | moving | plan_header, payment_fork, carrying_cost, discretionary_runway, cashflow_timeline, consequence_line, post_purchase_footer |
-| `$54 groceries` | quick-generic | verdict_banner, best_card_row, category_pulse, green_light, credit_sweep, consequence_line, post_purchase_footer |
-| `$120 groceries at Whole Foods` | considered-generic | verdict_banner, card_ranking, utilization_watch, category_pulse, discretionary_runway, consequence_line, post_purchase_footer |
+| `$54 groceries` | quick-generic | verdict_banner, category_pulse, green_light, credit_sweep, consequence_line, post_purchase_footer |
+| `$120 groceries at Whole Foods` | considered-generic | verdict_banner, category_pulse, discretionary_runway, utilization_watch, consequence_line, post_purchase_footer |
 | `$6 latte at Blue Bottle` | latte | verdict_banner, best_card_row, merchant_habit, category_pulse, consequence_line, post_purchase_footer |
-| `$14 Sweetgreen lunch` | dinner | verdict_banner, best_card_row, category_pulse, credit_expiry, merchant_habit, consequence_line, post_purchase_footer |
-| `$20 CVS` | quick-generic | verdict_banner, best_card_row, category_pulse, credit_sweep, pace_projection, consequence_line, post_purchase_footer |
-| `$35 board game` | quick-generic | verdict_banner, best_card_row, category_pulse, credit_sweep, consequence_line, post_purchase_footer |
-| `$700 laptop` | plan-generic | plan_header, payment_fork, carrying_cost, card_ranking, cashflow_timeline, consequence_line, post_purchase_footer |
-| `$300 hotel` | flight | plan_header, total_cost_of_event, card_ranking, points_offset, track_goal_cta, post_purchase_footer |
-| `$45 sushi dinner` | dinner | verdict_banner, best_card_row, category_pulse, split_check, credit_expiry, consequence_line, post_purchase_footer |
-| `$150 gift` | considered-generic | verdict_banner, card_ranking, category_pulse, discretionary_runway, hold_24h, consequence_line, post_purchase_footer |
-| `$250 jacket` | shoes | verdict_banner, card_ranking, utilization_watch, hold_24h, duplicate_check, consequence_line, post_purchase_footer |
-| `$95 concert tickets` | quick-generic | verdict_banner, best_card_row, category_pulse, payday_proximity, credit_sweep, consequence_line, post_purchase_footer |
-| `$12 Uber` | uber | verdict_banner, best_card_row, category_pulse, consequence_line, post_purchase_footer |
+| `$14 Sweetgreen lunch` | dinner | verdict_banner, best_card_row, category_pulse, merchant_habit, consequence_line, post_purchase_footer |
+| `$20 CVS` | quick-generic | verdict_banner, category_pulse, credit_sweep, pace_projection, consequence_line, post_purchase_footer |
+| `$35 board game` | quick-generic | verdict_banner, category_pulse, credit_sweep, consequence_line, post_purchase_footer |
+| `$700 laptop` | plan-generic | plan_header, payment_fork, cashflow_timeline, carrying_cost, discretionary_runway, consequence_line, post_purchase_footer |
+| `$300 hotel` | flight | plan_header, total_cost_of_event, points_offset, best_card_row, track_goal_cta, post_purchase_footer |
+| `$45 sushi dinner` | dinner | verdict_banner, best_card_row, category_pulse, split_check, consequence_line, post_purchase_footer |
+| `$150 gift` | considered-generic | verdict_banner, category_pulse, discretionary_runway, hold_24h, utilization_watch, consequence_line, post_purchase_footer |
+| `$250 jacket` | shoes | verdict_banner, hold_24h, duplicate_check, utilization_watch, guilt_free_balance, consequence_line, post_purchase_footer |
+| `$95 concert tickets` | quick-generic | verdict_banner, category_pulse, payday_proximity, credit_sweep, pace_projection, consequence_line, post_purchase_footer |
+| `$12 Uber` | uber | verdict_banner, category_pulse, consequence_line, post_purchase_footer |
 | `$10/mo Disney+` | crunchyroll | verdict_banner, price_creep, annualized, subscription_stack, overlap_check, consequence_line, post_purchase_footer |
 | `$8/mo Audible` | crunchyroll | verdict_banner, price_creep, annualized, subscription_stack, consequence_line, post_purchase_footer |
 | `$1,500 couch` | moving | plan_header, payment_fork, carrying_cost, discretionary_runway, cashflow_timeline, consequence_line, post_purchase_footer |
-| `$2,000 flight to Tokyo` | flight | plan_header, total_cost_of_event, card_ranking, cashflow_timeline, points_offset, track_goal_cta, post_purchase_footer |
-| `$40 drinks` | dinner | verdict_banner, best_card_row, category_pulse, split_check, credit_expiry, consequence_line, post_purchase_footer |
-| `$400 groceries` | considered-generic | verdict_banner, card_ranking, carrying_cost, category_pulse, discretionary_runway, consequence_line, post_purchase_footer |
-| `$85 headphones` | quick-generic | verdict_banner, best_card_row, category_pulse, payday_proximity, credit_sweep, consequence_line, post_purchase_footer |
-| `$200 headphones` | monitor | verdict_banner, card_ranking, benefits_check, guilt_free_balance, cost_per_use, consequence_line, post_purchase_footer |
-| `$500 dinner` | considered-generic | verdict_banner, card_ranking, category_pulse, discretionary_runway, hold_24h, consequence_line, post_purchase_footer |
-| `$25 movie tickets` | quick-generic | verdict_banner, best_card_row, category_pulse, green_light, credit_sweep, consequence_line, post_purchase_footer |
-| `$30 parking` | uber | verdict_banner, best_card_row, payday_proximity, category_pulse, pace_projection, consequence_line, post_purchase_footer |
+| `$2,000 flight to Tokyo` | flight | plan_header, total_cost_of_event, cashflow_timeline, points_offset, best_card_row, track_goal_cta, post_purchase_footer |
+| `$40 drinks` | dinner | verdict_banner, best_card_row, category_pulse, split_check, consequence_line, post_purchase_footer |
+| `$400 groceries` | considered-generic | verdict_banner, category_pulse, discretionary_runway, utilization_watch, carrying_cost, consequence_line, post_purchase_footer |
+| `$85 headphones` | quick-generic | verdict_banner, category_pulse, payday_proximity, credit_sweep, pace_projection, consequence_line, post_purchase_footer |
+| `$200 headphones` | monitor | verdict_banner, cost_per_use, benefits_check, guilt_free_balance, duplicate_check, consequence_line, post_purchase_footer |
+| `$500 dinner` | considered-generic | verdict_banner, best_card_row, category_pulse, discretionary_runway, hold_24h, consequence_line, post_purchase_footer |
+| `$25 movie tickets` | quick-generic | verdict_banner, category_pulse, green_light, credit_sweep, consequence_line, post_purchase_footer |
+| `$30 parking` | uber | verdict_banner, payday_proximity, category_pulse, pace_projection, consequence_line, post_purchase_footer |
 
 With the Lisbon goal tracked:
 
 | query | path | cards (DOM order) |
 |---|---|---|
-| `$6 latte` | latte | verdict_banner, best_card_row, merchant_habit, category_pulse, consequence_line, post_purchase_footer |
+| `$6 latte` | latte | (unchanged) |
 | `$60 dinner` | dinner | verdict_banner, best_card_row, goal_impact_chip, category_pulse, split_check, consequence_line, post_purchase_footer |
-| `$28 Uber` | uber | verdict_banner, best_card_row, goal_impact_chip, payday_proximity, category_pulse, consequence_line, post_purchase_footer |
+| `$28 Uber` | uber | verdict_banner, goal_impact_chip, payday_proximity, category_pulse, pace_projection, consequence_line, post_purchase_footer |
 | `$15/mo Crunchyroll` | crunchyroll | (unchanged) |
-| `$140 running shoes` | shoes | verdict_banner, card_ranking, hold_24h, duplicate_check, goal_impact_chip, consequence_line, post_purchase_footer |
-| `$450 monitor` | monitor | verdict_banner, card_ranking, carrying_cost, cost_per_use, goal_impact_chip, consequence_line, post_purchase_footer |
-| `$180 concert tickets` | tickets | verdict_banner, card_ranking, discretionary_runway, impulse_frequency, goal_impact_chip, consequence_line, post_purchase_footer |
-| `$1,200 flight to Lisbon in March` | flight | plan_header, total_cost_of_event, card_ranking, cashflow_timeline, points_offset, goal_collision, post_purchase_footer |
-| `$2,800 to move apartments` | moving | plan_header, payment_fork, carrying_cost, goal_collision, discretionary_runway, consequence_line, post_purchase_footer |
+| `$140 running shoes` | shoes | verdict_banner, goal_impact_chip, hold_24h, duplicate_check, utilization_watch, consequence_line, post_purchase_footer |
+| `$450 monitor` | monitor | verdict_banner, goal_impact_chip, cost_per_use, carrying_cost, benefits_check, consequence_line, post_purchase_footer |
+| `$180 concert tickets` | tickets | verdict_banner, goal_impact_chip, discretionary_runway, impulse_frequency, guilt_free_balance, consequence_line, post_purchase_footer |
+| `$1,200 flight to Lisbon in March` | flight | plan_header, total_cost_of_event, cashflow_timeline, points_offset, best_card_row, goal_collision, post_purchase_footer |
+| `$2,800 to move apartments` | moving | plan_header, payment_fork, goal_collision, carrying_cost, discretionary_runway, consequence_line, post_purchase_footer |
 | `$45 sushi dinner` | dinner | verdict_banner, best_card_row, goal_impact_chip, category_pulse, split_check, consequence_line, post_purchase_footer |
-| `$150 gift` | considered-generic | verdict_banner, card_ranking, category_pulse, hold_24h, goal_impact_chip, consequence_line, post_purchase_footer |
-| `$300 hotel` | flight | plan_header, total_cost_of_event, card_ranking, points_offset, goal_collision, post_purchase_footer |
-| `$700 laptop` | plan-generic | plan_header, payment_fork, card_ranking, goal_collision, cashflow_timeline, consequence_line, post_purchase_footer |
+| `$150 gift` | considered-generic | verdict_banner, goal_impact_chip, category_pulse, discretionary_runway, hold_24h, consequence_line, post_purchase_footer |
+| `$300 hotel` | flight | plan_header, total_cost_of_event, points_offset, best_card_row, goal_collision, post_purchase_footer |
+| `$700 laptop` | plan-generic | plan_header, payment_fork, goal_collision, cashflow_timeline, carrying_cost, consequence_line, post_purchase_footer |
 | `$54 groceries` | quick-generic | (unchanged) |
-| `$250 jacket` | shoes | verdict_banner, card_ranking, hold_24h, duplicate_check, goal_impact_chip, consequence_line, post_purchase_footer |
-| `$500 dinner` | considered-generic | verdict_banner, card_ranking, category_pulse, hold_24h, goal_impact_chip, consequence_line, post_purchase_footer |
+| `$250 jacket` | shoes | verdict_banner, goal_impact_chip, hold_24h, duplicate_check, utilization_watch, consequence_line, post_purchase_footer |
+| `$500 dinner` | considered-generic | verdict_banner, best_card_row, goal_impact_chip, category_pulse, hold_24h, consequence_line, post_purchase_footer |
 
 ## Appendix B — re-running for a new profile
 

@@ -25,7 +25,7 @@ interface Example { key: string; query: string; title: string; note: string; goa
 const EXAMPLES: Example[] = [
   { key: 'latte', query: '$6 latte', title: 'Single column', note: 'Small spend — no grid at all, one narrow column of thin cards.' },
   { key: 'dinner', query: '$60 dinner', title: 'Single column + interactive', note: 'Same column, but a split-the-bill control earns its place.' },
-  { key: 'shoes', query: '$140 running shoes', title: 'Considered bento', note: 'A tall ranking anchors the grid; short cards stack beside it.' },
+  { key: 'shoes', query: '$140 running shoes', title: 'Considered bento', note: 'No card row — every card earns the same here, so the grid is all behaviour.' },
   { key: 'tickets', query: '$180 concert tickets', title: 'Considered — no duplicate', note: 'Same archetype, different cards, so the rows break elsewhere.' },
   { key: 'crunchyroll', query: '$15/mo Crunchyroll', title: 'Recurring bento', note: 'The subscription story: stack, overlap, price history.' },
   { key: 'flight', query: '$1,200 flight to Lisbon in March', title: 'Plan + showpiece', note: 'Iceberg and goal collision; a plan header spans the full width.', goal: true },

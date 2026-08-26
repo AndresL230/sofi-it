@@ -1,14 +1,17 @@
 import { useState } from 'react'
-import type { EngineContext, RankedCard } from '@/engine/types'
+import type { CardMateriality, EngineContext, RankedCard } from '@/engine/types'
 import { CardShell, CardArt, Money, Rich, Caps, T, cn } from '../kit'
 import { RankingRows } from '../_ranking'
 
-interface Props { winner: RankedCard; rows: RankedCard[]; deltaVsFlat: number; flatShort: string }
+interface Props { winner: RankedCard; rows: RankedCard[]; matters: CardMateriality }
 
-/** #12 — mini card art (1.586:1), the card as the verdict, the gain against the flat card as the one figure. */
-function BestCardRow({ winner, rows, deltaVsFlat, flatShort }: Props) {
+/**
+ * #12 — mini card art (1.586:1), the card as the verdict, and one figure for why it is worth
+ * switching to. The figure follows the reason the engine had for showing this row at all: money
+ * gained, interest avoided, coverage added, or a credit that would otherwise expire.
+ */
+function BestCardRow({ winner, rows, matters }: Props) {
   const [open, setOpen] = useState(false)
-  const better = deltaVsFlat > 0
   return (
     <CardShell className="flex flex-col justify-center">
       <div className="flex items-center gap-3.5">
@@ -18,13 +21,19 @@ function BestCardRow({ winner, rows, deltaVsFlat, flatShort }: Props) {
           <Caps>Pay with</Caps>
           <h3 className={cn(T.title, 'mt-1 font-extrabold leading-snug text-navy')}>{winner.card.name}</h3>
           <div className="mt-1.5 flex flex-wrap items-baseline gap-x-1.5">
-            {better ? (
-              <>
-                <span className="text-metric-sm font-extrabold tabular-nums leading-none text-green"><Money value={deltaVsFlat} size="inline" cents="decimal" signed animated={false} /></span>
-                <span className={T.caption}>more than your {flatShort}</span>
-              </>
+            {matters.reason === 'protection' ? (
+              <span className={cn(T.caption, 'font-semibold text-teal-ink')}>trip cover your {matters.versus} does not carry</span>
             ) : (
-              <span className={cn(T.caption, 'font-semibold')}>already the best of your cards</span>
+              <>
+                <span className="text-metric-sm font-extrabold tabular-nums leading-none text-green">
+                  <Money value={matters.amount} size="inline" cents="decimal" signed={matters.reason !== 'credit'} animated={false} />
+                </span>
+                <span className={T.caption}>
+                  {matters.reason === 'gain' ? <>more than your {matters.versus}</> : null}
+                  {matters.reason === 'interest' ? <>cheaper than your {matters.versus}, after interest</> : null}
+                  {matters.reason === 'credit' ? <>of credit this uses up before it expires</> : null}
+                </span>
+              </>
             )}
           </div>
         </div>
@@ -47,7 +56,7 @@ function BestCardRow({ winner, rows, deltaVsFlat, flatShort }: Props) {
   )
 }
 
-export const select = (ctx: EngineContext): Props => ({ winner: ctx.ranking.winner, rows: ctx.ranking.ranked, deltaVsFlat: ctx.ranking.deltaVsFlat, flatShort: ctx.ranking.flat.card.name.replace('SoFi Unlimited', '').trim() })
+export const select = (ctx: EngineContext): Props => ({ winner: ctx.ranking.winner, rows: ctx.ranking.ranked, matters: ctx.ranking.matters! })
 
 export { meta, condition } from './meta'
 export default BestCardRow

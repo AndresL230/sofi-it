@@ -45,11 +45,11 @@ const MATRIX_PATHS: Record<string, { layout: CardStack['layout']; cards: CardTyp
   dinner: { layout: 'quick', cards: ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'category_pulse', 'split_check', 'credit_expiry', 'merchant_habit', 'pace_projection', 'green_light', 'consequence_line', 'post_purchase_footer'] },
   uber: { layout: 'quick', cards: ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'payday_proximity', 'category_pulse', 'pace_projection', 'consequence_line', 'post_purchase_footer'] },
   crunchyroll: { layout: 'recurring', cards: ['verdict_banner', 'price_creep', 'annualized', 'subscription_stack', 'overlap_check', 'consequence_line', 'post_purchase_footer'] },
-  shoes: { layout: 'considered', cards: ['verdict_banner', 'card_ranking', 'goal_impact_chip', 'hold_24h', 'duplicate_check', 'utilization_watch', 'guilt_free_balance', 'benefits_check', 'impulse_frequency', 'cost_per_use', 'consequence_line', 'post_purchase_footer'] },
-  monitor: { layout: 'considered', cards: ['verdict_banner', 'card_ranking', 'goal_impact_chip', 'cost_per_use', 'carrying_cost', 'benefits_check', 'guilt_free_balance', 'utilization_watch', 'hold_24h', 'duplicate_check', 'consequence_line', 'post_purchase_footer'] },
-  tickets: { layout: 'considered', cards: ['verdict_banner', 'card_ranking', 'goal_impact_chip', 'discretionary_runway', 'impulse_frequency', 'guilt_free_balance', 'hold_24h', 'utilization_watch', 'benefits_check', 'consequence_line', 'post_purchase_footer'] },
-  flight: { layout: 'plan', cards: ['plan_header', 'total_cost_of_event', 'cashflow_timeline', 'points_offset', 'card_ranking', 'goal_collision', 'track_goal_cta', 'post_purchase_footer'] },
-  moving: { layout: 'plan', cards: ['plan_header', 'payment_fork', 'goal_collision', 'carrying_cost', 'discretionary_runway', 'cashflow_timeline', 'card_ranking', 'consequence_line', 'post_purchase_footer'] },
+  shoes: { layout: 'considered', cards: ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'hold_24h', 'duplicate_check', 'utilization_watch', 'guilt_free_balance', 'benefits_check', 'impulse_frequency', 'cost_per_use', 'consequence_line', 'post_purchase_footer'] },
+  monitor: { layout: 'considered', cards: ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'cost_per_use', 'carrying_cost', 'benefits_check', 'guilt_free_balance', 'utilization_watch', 'hold_24h', 'duplicate_check', 'consequence_line', 'post_purchase_footer'] },
+  tickets: { layout: 'considered', cards: ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'discretionary_runway', 'impulse_frequency', 'guilt_free_balance', 'hold_24h', 'utilization_watch', 'benefits_check', 'consequence_line', 'post_purchase_footer'] },
+  flight: { layout: 'plan', cards: ['plan_header', 'total_cost_of_event', 'cashflow_timeline', 'points_offset', 'best_card_row', 'goal_collision', 'track_goal_cta', 'post_purchase_footer'] },
+  moving: { layout: 'plan', cards: ['plan_header', 'payment_fork', 'goal_collision', 'carrying_cost', 'discretionary_runway', 'cashflow_timeline', 'best_card_row', 'consequence_line', 'post_purchase_footer'] },
 }
 
 /** Which golden path (if any) a purchase maps onto. Unknown purchases fall through to scoring. */
@@ -70,8 +70,8 @@ export function layoutFor(ctx: EngineContext): CardStack['layout'] {
 /** Cards a generic (non-matrix) purchase may draw from, by size class. */
 function genericPool(ctx: EngineContext): CardType[] {
   if (ctx.q.frequency === 'recurring') return ['verdict_banner', 'annualized', 'subscription_stack', 'price_creep', 'overlap_check', 'consequence_line', 'post_purchase_footer']
-  if (ctx.q.size === 'large') return ['plan_header', 'payment_fork', 'total_cost_of_event', 'goal_collision', 'cashflow_timeline', 'carrying_cost', 'discretionary_runway', 'points_offset', 'card_ranking', 'track_goal_cta', 'consequence_line', 'post_purchase_footer']
-  if (ctx.q.size === 'medium') return ['verdict_banner', 'card_ranking', 'goal_impact_chip', 'category_pulse', 'discretionary_runway', 'hold_24h', 'utilization_watch', 'guilt_free_balance', 'duplicate_check', 'benefits_check', 'impulse_frequency', 'cost_per_use', 'carrying_cost', 'pace_projection', 'consequence_line', 'post_purchase_footer']
+  if (ctx.q.size === 'large') return ['plan_header', 'payment_fork', 'total_cost_of_event', 'goal_collision', 'cashflow_timeline', 'carrying_cost', 'discretionary_runway', 'points_offset', 'best_card_row', 'track_goal_cta', 'consequence_line', 'post_purchase_footer']
+  if (ctx.q.size === 'medium') return ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'category_pulse', 'discretionary_runway', 'hold_24h', 'utilization_watch', 'guilt_free_balance', 'duplicate_check', 'benefits_check', 'impulse_frequency', 'cost_per_use', 'carrying_cost', 'pace_projection', 'consequence_line', 'post_purchase_footer']
   return ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'category_pulse', 'green_light', 'credit_expiry', 'payday_proximity', 'merchant_habit', 'split_check', 'credit_sweep', 'pace_projection', 'consequence_line', 'post_purchase_footer']
 }
 

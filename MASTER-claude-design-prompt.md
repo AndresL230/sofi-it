@@ -114,7 +114,7 @@ Compact, widget-dense, single column max-width ~640px:
 Two-column answer (stacks on mobile):
 **Left column:**
 1. Verdict banner (turquoise tint): "**Fine, with a caveat.** $612 of discretionary room left before your next paycheck (Fri) after rent and subscriptions."
-2. **Card ranking — full component, all 5 cards** (see §4). Winner: SoFi 2% ($2.80 back). Badges: Citi Custom Cash grayed with gold badge "5% cap reached — $13 of $500 left"; Freedom Unlimited with salmon badge "Would hit 34% utilization — pay before statement close (the 12th)".
+2. **The card row, only when the card is a decision.** This is a saving-and-spending coach, not a rewards optimiser: the compact `best_card_row` renders at any size, but *only* when the choice changes the money — a real gain over the default card (scaled: ≥ 0.5% of the purchase, floor $1), interest avoided for someone carrying a balance, trip cover on a booking, or a credit that would otherwise expire. On $140 shoes every card lands within a rounding error of the SoFi 2% and there is nothing to clear, so **no card row renders at all** and the slot goes to the utilization gauge and the behaviour lens. The full 5-card leaderboard (§4) stays one tap away in the row's "See all cards" expander, and standalone in the gallery.
 3. **Benefits check row:** icons + text — "Purchase protection: 120 days (Amex Gold) · Return protection: 90 days (Amex Gold) · No extended-warranty relevance."
 **Right column:**
 4. **Impulse panel** (card, neutral): "3rd apparel purchase this quarter ($95 sneakers, $120 boots)." Cost-per-use line: "Your boots have worked out to ≈ $8/wear so far. At that rate these are fine; at 3 wears they're $47/wear."
@@ -147,7 +147,7 @@ Reached from the Coach Insights sub-navigation next to Goals. Headline: **"Your 
 
 ## 4. Shared components
 
-**Card ranking (used in S1 expander, S2, S3):** vertical list, winner on top with turquoise left glow and reason line + $ back; each other card shows delta vs winner ("−$1.40 vs best") and, where relevant, a badge: gold "cap reached", salmon "utilization warning", gray "no bonus category". Card art: simple rounded rectangles in brand colors with the card name — do not use bank logos, just styled text.
+**Card ranking (expander + gallery only — never dealt into an answer):** vertical list, winner on top with turquoise left glow and reason line + $ back; each other card shows delta vs winner ("−$1.40 vs best") and, where relevant, a badge: gold "cap reached", salmon "utilization warning", gray "no bonus category". Card art: simple rounded rectangles in brand colors with the card name — do not use bank logos, just styled text.
 
 **Verdict banner:** full-width tinted strip, verdict word bold first ("Fine." / "Tight." / "Over."), one clause after it, amount right-aligned in hero numerals. Never more than one sentence of judgment — the tone is one honest line, zero lectures.
 

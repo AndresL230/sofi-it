@@ -259,11 +259,26 @@ export interface RankedCard {
   costNote?: RichText
 }
 
+/**
+ * Why the card choice is worth a row at all. Null when every card lands within a rounding error of
+ * the default one and there is nothing to clear, avoid or gain — on those purchases the answer says
+ * nothing about cards, because the card is not the decision.
+ */
+export interface CardMateriality {
+  reason: 'gain' | 'interest' | 'protection' | 'credit'
+  /** Dollars at stake (0 for `protection`, where the value is coverage, not cash). */
+  amount: number
+  /** Short name of the card you'd otherwise have reached for. */
+  versus: string
+}
+
 export interface CardRanking {
   ranked: RankedCard[]
   winner: RankedCard
   flat: RankedCard
   deltaVsFlat: number
+  /** See CardMateriality — gates best_card_row. */
+  matters: CardMateriality | null
   /** What the ranking optimised for: rewards (pays in full) or true cost (revolves). */
   objective: 'rewards' | 'cost'
   /** Set when `priority` decided a near-tie between the top two. */

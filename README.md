@@ -85,7 +85,7 @@ src/
   cards/                one folder per card (34): <id>/{index.tsx, meta.ts, graphic.tsx?}
     index.ts            import.meta.glob registry → CARDS, CARD_LIST, CARD_METAS
     kit.tsx             everything a card may import besides types/format
-    _ranking.tsx        shared by best_card_row / card_ranking
+    _ranking.tsx        shared by best_card_row's expander / card_ranking
   components/           Money.tsx, Rich.tsx, DateText.tsx, CardArt.tsx, ui/*
   screens/              Home, Answer, Goals, Transactions (lazy), CardGallery + gallery/{ByExpense.tsx, expense.ts}, CoachInput, Shell, SharePage (lazy)
   demo/                 DemoPanel (lazy; ✦ Demo pill + panel), ProfileSwitcher (nav avatar), ProfileList, TimeTravel, Classifier, Inspector, ui
@@ -191,7 +191,7 @@ The composer never imports a card. Metas are injected by the registry so each ca
 - `layoutRows()` then chooses row breaks with the Knuth–Plass dynamic programme TeX uses for paragraphs: badness per row = `(12 − Σ natural)²`, plus `40` for rows of more than three cells and `10 × (max h − min h)²` for pairing very different heights. Full-width anchors (`verdict_banner`, `plan_header`, `consequence_line`, `post_purchase_footer`, `track_goal_cta`, `goal_impact_chip`) always break their own row; a width-capped showpiece (iceberg, fork, sparkline) that cannot reach 12 columns pays extra to sit alone mid-stack, so it pairs, and a lone card on the last row stretches.
 - `justify()` distributes each row's leftover columns proportionally within `[min, max]` with largest-remainder rounding, so every row sums to exactly 12.
 
-`Answer.tsx` renders one `grid-cols-12` row per `LayoutRow` (single column below `md`), each cell spanning `--span` columns and rendering its stack vertically; cards stretch to the row height and stacks share the extra space. Every row carries `data-row="id[+id]:span …"` (e.g. `card_ranking:6 hold_24h+duplicate_check:6`) for QA scripts, next to the per-card `data-card`.
+`Answer.tsx` renders one `grid-cols-12` row per `LayoutRow` (single column below `md`), each cell spanning `--span` columns and rendering its stack vertically; cards stretch to the row height and stacks share the extra space. Every row carries `data-row="id[+id]:span …"` (e.g. `hold_24h:6 duplicate_check:6`) for QA scripts, next to the per-card `data-card`.
 
 ## The nine matrix queries
 
@@ -304,7 +304,7 @@ The header is wordmark · nav section · Plus pill · profile avatar; the Add / 
 ## Design notes
 
 - **Flat cards.** `--shadow-card: none` in `src/styles/globals.css`; `.pc-card` is white on the warm page with a 16 px radius and no rim, border or edge accent (the winner inset bar, gold top rule, purple goal rule and ticket dashed edge were all removed) — a user decision.
-- **Which card** (`card_ranking`) shows the top three rows with an "N more cards ›" / "Show top cards only" toggle; `best_card_row` keeps its "See all cards" expander.
+- **Which card** leads with `best_card_row` — one compact row — and only when `ranking.matters` says the choice changes the money. `card_ranking` (top three rows with an "N more cards ›" toggle) is no longer dealt into answers: it lives in the gallery and behind `best_card_row`'s "See all cards" expander.
 - Bento cells fill: cards stretch to the row height, stacks share the extra space, short cards centre their content.
 - Goals are emphasised: hero goal card on `/goals`, a larger suggested-goal card, and a purple goal pill with progress in the coach input.
 

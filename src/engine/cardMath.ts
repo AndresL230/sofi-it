@@ -1,4 +1,4 @@
-import type { CardRanking, Category, CreditCardRule, FinancialProfile, QueryFacts, RankedCard, RewardCategory, RichText, UserModel, UtilizationWatch } from './types'
+import type { CardMateriality, CardRanking, Category, CreditCardRule, FinancialProfile, QueryFacts, RankedCard, RewardCategory, RichText, UserModel, UtilizationWatch } from './types'
 import { money, num } from './format'
 import { PRIORITY_RANK, TIE_BAND, nearCreditEvent, revolves, utilizationLine } from './profile'
 
@@ -108,7 +108,41 @@ export function rankCards(user: UserModel, q: QueryFacts): CardRanking {
     }
   })
   const flat = ranked.find((r) => r.card.isFlatHouseCard)!
-  return { ranked, winner: ranked[0], flat, deltaVsFlat: Math.round((ranked[0].back - flat.back) * 100) / 100, objective: cost ? 'cost' : 'rewards', tieBreak }
+  const deltaVsFlat = Math.round((ranked[0].back - flat.back) * 100) / 100
+  return { ranked, winner: ranked[0], flat, deltaVsFlat, matters: materiality(ranked, flat, deltaVsFlat, rc, q, cost), objective: cost ? 'cost' : 'rewards', tieBreak }
+}
+
+/** Short card name for prose — the issuer is noise once you own the card. */
+const shortName = (name: string) => name.replace('Chase ', '').replace('SoFi Unlimited', '').replace(' Unlimited', '').trim()
+
+/**
+ * Is the card choice worth saying out loud on THIS purchase?
+ *
+ * This is a saving-and-spending coach, not a rewards optimiser: when every card earns within a
+ * rounding error of the default one and there is nothing to clear, avoid or cover, the answer is
+ * better off spending the row on where the money actually goes. The bar scales with the purchase —
+ * a dollar of difference means something on a $60 dinner and nothing on a $2,800 move.
+ */
+function materiality(ranked: RankedCard[], flat: RankedCard, deltaVsFlat: number, rc: RewardCategory, q: QueryFacts, cost: boolean): CardMateriality | null {
+  if (q.frequency === 'recurring') return null
+  const floor = Math.max(1, q.amount * 0.005)
+  const winner = ranked[0]
+  const flatShort = shortName(flat.card.name)
+  // 1. a real gain over the card they'd otherwise reach for
+  if (deltaVsFlat >= floor) return { reason: 'gain', amount: deltaVsFlat, versus: flatShort }
+  // 2. for a revolver, what picking the wrong card would cost in interest
+  const live = ranked.filter((r) => !r.disqualified)
+  const worst = live[live.length - 1]
+  if (cost && worst && worst !== winner) {
+    const spread = Math.round((winner.netValue - worst.netValue) * 100) / 100
+    if (spread >= floor) return { reason: 'interest', amount: spread, versus: shortName(worst.card.name) }
+  }
+  // 3. trip protection on a booking is worth more than any points gap
+  if (rc === 'travel' && winner.card.benefits.tripProtection && !flat.card.benefits.tripProtection) return { reason: 'protection', amount: 0, versus: flatShort }
+  // 4. a credit that would otherwise go unused
+  const credit = winner.card.credits.find((c) => c.category === rc)
+  if (credit) return { reason: 'credit', amount: credit.amount, versus: flatShort }
+  return null
 }
 
 function reasonFor(card: CreditCardRule, rc: RewardCategory, q: QueryFacts, winner: boolean, isBonus: boolean, disqualified: boolean, cost: boolean): RichText {
