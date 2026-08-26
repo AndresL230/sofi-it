@@ -12,7 +12,7 @@ function CreditSweep({ credits, total }: Props) {
   return (
     <CardShell className="flex flex-wrap items-center gap-[10px]">
       {credits.map((c, i) => (
-        <div key={c.label} className="rounded-[4px_10px_10px_4px] border-l-2 border-dashed border-gold-deep px-3 py-2 text-[12px] text-slate" style={{ background: 'var(--gold-tint)', animation: `popIn .3s ${d(300 + i * 80)} both` }}>
+        <div key={c.label} className="rounded-sm2 px-3 py-2 text-[12px] text-slate" style={{ background: 'var(--gold-tint)', animation: `popIn .3s ${d(300 + i * 80)} both` }}>
           <b className="text-[14px] text-ink"><Money value={c.amount} size="inline" cents="never" animated={false} /></b> {c.label}
         </div>
       ))}

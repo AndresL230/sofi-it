@@ -6,7 +6,7 @@ interface Props { rows: { label: string; value: number }[]; outOfPocket: number;
 /** #17 — receipt math: right-aligned ledger rows in tabular numerals, a rule, then real out-of-pocket in hero numerals. */
 function PointsOffset({ rows, outOfPocket, movesTo }: Props) {
   return (
-    <CardShell className="border-t-[3px] border-gold px-[22px]">
+    <CardShell className="px-[22px]">
       <div className="mb-2 text-[14px] font-bold">Points &amp; credits can shrink this</div>
       <div className="tabular-nums">
         {rows.map((r) => (

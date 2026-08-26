@@ -6,7 +6,7 @@ export function RankingRows({ rows, compact }: { rows: RankedCard[]; compact?: b
   return (
     <>
       {rows.map((r, i) => (
-        <div key={r.card.id} className={cn('mt-2 flex items-center gap-3 rounded-ctl px-[14px] py-3', r.winner ? 'bg-white shadow-winner' : 'bg-[#FAFAF9]', r.disqualified && 'opacity-60')}>
+        <div key={r.card.id} className={cn('mt-2 flex items-center gap-3 rounded-ctl px-[14px] py-3', r.winner ? 'bg-teal-tint/60' : 'bg-[#FAFAF9]', r.disqualified && 'opacity-60')}>
           <div className="w-6 shrink-0 text-center text-[26px] font-extrabold leading-none" style={{ color: r.winner ? 'var(--teal)' : 'var(--lavender-deep)' }}>{i + 1}</div>
           <CardArt art={r.card.art} label={r.card.artLabel} last4={r.card.last4} size={compact ? 'sm' : 'md'} />
           <div className="min-w-0 flex-1">

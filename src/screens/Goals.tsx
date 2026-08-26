@@ -37,7 +37,7 @@ export function Goals() {
       <Link to="/" className="mb-[10px] inline-block text-[14px] font-semibold">← Insights</Link>
       <h1 className="mb-[18px] text-h1 font-bold">Goals</h1>
       {goal ? (
-        <section className="pc-card border-l-4 border-purple px-[22px] py-5">
+        <section className="pc-card px-[22px] py-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-[16px] font-bold text-purple">{goal.emoji ?? '✦'} {goal.name}</div>
             <Badge tone={onTrack ? 'green' : 'salmon'} size="xs" className="py-[3px]">{onTrack ? 'on track' : 'behind'}</Badge>
