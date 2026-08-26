@@ -61,7 +61,7 @@ export default {
       // Half-steps the default 4px scale lacks. Deliberately NO integer keys here: Tailwind's
       // defaults already define 13/14/17 etc, and redefining one silently resizes every
       // existing h-14 / w-14 / p-14 in the codebase.
-      spacing: { 4.5: '18px', 5.5: '22px', 6.5: '26px', 7.5: '30px', 17.5: '70px' },
+      spacing: { 4.5: '18px', 5.5: '22px', 6.5: '26px', 7.5: '30px', 9.5: '38px', 17.5: '70px' },
       borderRadius: { card: '16px', banner: '14px', ctl: '12px', sm2: '10px', pill: '999px' },
       boxShadow: {
         card: 'var(--shadow-card)',
