@@ -103,7 +103,10 @@ export function Home() {
           <a className="mt-[10px] inline-block cursor-pointer text-[14px] font-semibold">View all transactions</a>
         </section>
       </div>
-      <div className="mt-[18px] text-center"><Link to="/gallery" className="text-[12px] text-slate-muted hover:text-slate">card gallery</Link></div>
+      <div className="mt-[18px] flex justify-center gap-4 text-[12px]">
+        <Link to="/gallery" className="text-slate-muted hover:text-slate">card gallery</Link>
+        <Link to="/qr" className="text-slate-muted hover:text-slate">qr code</Link>
+      </div>
       <span className="sr-only"><Num value={0} animated={false} /></span>
     </>
   )

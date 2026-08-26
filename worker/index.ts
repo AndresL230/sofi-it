@@ -82,10 +82,16 @@ async function rateLimited(ip: string, env: Env): Promise<boolean> {
   const limit = Number(env.RATE_LIMIT_PER_HOUR ?? 20)
   const hour = Math.floor(Date.now() / 3_600_000)
   const key = `rl:${hour}:${ip}`
-  const n = Number((await env.CACHE.get(key)) ?? 0) + 1
-  // KV is eventually consistent; good enough to stop a hammer, and the client degrades gracefully anyway.
-  await env.CACHE.put(key, String(n), { expirationTtl: 3600 })
-  return n > limit
+  // KV is eventually consistent and allows ~1 write/s/key; a failed read or write must never 500 —
+  // the client degrades to its fallback classifier anyway. Good enough to stop a hammer.
+  try {
+    const n = Number((await env.CACHE.get(key)) ?? 0) + 1
+    if (n > limit) return true
+    await env.CACHE.put(key, String(n), { expirationTtl: 3600 })
+    return false
+  } catch {
+    return false
+  }
 }
 
 async function classifyCached(query: string, env: Env, ctx: ExecutionContext): Promise<Response> {

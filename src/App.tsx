@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Shell } from '@/screens/Shell'
 import { Home } from '@/screens/Home'
@@ -5,6 +6,9 @@ import { Answer } from '@/screens/Answer'
 import { Goals } from '@/screens/Goals'
 import { CardGallery } from '@/screens/CardGallery'
 import { Toaster } from '@/components/ui/sonner'
+
+/** Lazy so the `qrcode` library only ships with the /qr chunk, not the main bundle. */
+const QrPage = lazy(() => import('@/screens/QrPage'))
 
 export default function App() {
   return (
@@ -16,6 +20,7 @@ export default function App() {
           <Route path="goals" element={<Goals />} />
           <Route path="gallery" element={<CardGallery />} />
         </Route>
+        <Route path="qr" element={<Suspense fallback={null}><QrPage /></Suspense>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
