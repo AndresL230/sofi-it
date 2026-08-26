@@ -5,12 +5,23 @@ import type { CardMeta, CardStack, CardType, EngineContext } from '@/types'
  *   1. filter by each card's `condition(ctx)`  (a card whose data condition fails silently doesn't render)
  *   2. score = relevance(ctx) × priority       (relevance 0..1 is the card's own judgment for THIS purchase)
  *   3. sort by score
- *   4. caps: 7 cards · 1 interactive · 1 showpiece (2 on large)
+ *   4. caps: 7 cards · 1 interactive · 1 showpiece (2 on large) · 1 per capped group (see GROUP_CAP)
  *   5. anchors: verdict/plan header first, consequence + footer last; anchors are never dropped
  * The nine matrix queries take the golden-path bypass: a hand-ordered stack (still condition-filtered and capped),
  * so the scripted demo is deterministic. The engine never imports a card — metas are injected by the registry.
  */
 const MAX_CARDS = 7
+
+/**
+ * Per-group ceiling, applied alongside the kind caps.
+ * Seven cards declare `group: 'Cards & rewards'` (which card to pay with, utilization, benefits,
+ * credit expiry, points, sweep). Two or three of them cleared every stack, so every answer read
+ * like a credit-card ad and the actual verdict got crowded out. One per answer: the highest-scoring
+ * one wins, which keeps the pay-with recommendation on the golden paths (it is ordered first there)
+ * and lets utilization / benefits take the slot when it is genuinely the more useful angle.
+ * Anchors are exempt — they are never dropped.
+ */
+const GROUP_CAP: Record<string, number> = { 'Cards & rewards': 1 }
 
 const MATRIX_PATHS: Record<string, { layout: CardStack['layout']; cards: CardType[] }> = {
   latte: { layout: 'quick', cards: ['verdict_banner', 'best_card_row', 'goal_impact_chip', 'merchant_habit', 'category_pulse', 'green_light', 'pace_projection', 'consequence_line', 'post_purchase_footer'] },
@@ -62,13 +73,17 @@ export function compose(ctx: EngineContext, metas: CardMeta[]): CardStack {
   scored.sort((a, b) => b.score - a.score)
   // 4. caps
   let interactive = 0, showpieces = 0
+  const perGroup = new Map<string, number>()
   const kept: CardMeta[] = []
   for (const { m } of scored) {
     if (m.kind === 'interactive' && interactive >= 1) continue
     if (m.kind === 'showpiece' && showpieces >= showpieceCap) continue
+    const groupCap = GROUP_CAP[m.group]
+    if (groupCap !== undefined && !m.anchor && (perGroup.get(m.group) ?? 0) >= groupCap) continue
     kept.push(m)
     if (m.kind === 'interactive') interactive++
     if (m.kind === 'showpiece') showpieces++
+    perGroup.set(m.group, (perGroup.get(m.group) ?? 0) + 1)
   }
   while (kept.length > MAX_CARDS) {
     const idx = [...kept].reverse().findIndex((m) => !m.anchor)
