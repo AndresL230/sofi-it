@@ -21,7 +21,7 @@ const WIDTH: Partial<Record<CardType, [natural: number, min: number, max: number
   card_ranking: [6, 6, 12], payment_fork: [7, 6, 8], total_cost_of_event: [7, 6, 8], goal_collision: [6, 6, 12], cashflow_timeline: [6, 6, 12], price_creep: [6, 6, 8], subscription_stack: [6, 5, 8],
   discretionary_runway: [6, 5, 12], carrying_cost: [4, 4, 6], points_offset: [5, 4, 6], pace_projection: [6, 5, 12], category_pulse: [6, 5, 12],
   benefits_check: [4, 4, 6], utilization_watch: [5, 4, 6], guilt_free_balance: [6, 5, 8], cost_per_use: [5, 4, 6], hold_24h: [5, 4, 6], duplicate_check: [4, 4, 6], impulse_frequency: [6, 5, 8],
-  annualized: [6, 5, 12], overlap_check: [5, 4, 12], best_card_row: [12, 8, 12], merchant_habit: [6, 5, 8], credit_expiry: [6, 5, 8], credit_sweep: [6, 5, 12], payday_proximity: [6, 5, 12], split_check: [5, 4, 6], green_light: [6, 5, 12],
+  annualized: [6, 5, 12], overlap_check: [5, 4, 12], best_card_row: [12, 5, 12], merchant_habit: [6, 5, 8], credit_expiry: [6, 5, 8], credit_sweep: [6, 5, 12], payday_proximity: [6, 5, 12], split_check: [5, 4, 6], green_light: [6, 5, 12],
 }
 export const itemFor = (id: CardType): LayoutItem => { const [natural, min, max] = WIDTH[id] ?? [6, 4, 12]; return { id, natural, min, max, h: HEIGHT[id] ?? 2 } }
 
