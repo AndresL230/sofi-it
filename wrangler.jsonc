@@ -5,6 +5,9 @@
   "routes": [{ "pattern": "meridian.andresl.dev", "custom_domain": true }],
   "account_id": "0bda3a2560ca48711ef7336cc421abed",
   "main": "worker/index.ts",
+  // Builds the SPA into ./dist before deploy. Required because dist/ is gitignored,
+  // so Workers Builds runs `npx wrangler deploy` against a clone that has no dist/.
+  "build": { "command": "npm run build", "watch_dir": ["src", "worker"] },
   "compatibility_date": "2025-06-01",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
