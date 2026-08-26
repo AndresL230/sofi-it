@@ -108,12 +108,26 @@ Legend — **Fidelity:** faithful = lift markup as-is · simplified = present bu
 | `Date.now()` used only for `tenWeeks()` and one slider; everything else pinned to Aug 2026 / 2027 | ✘ all dates → relative. |
 | Component-wide single `state` object (people/uses/held shared across screens) | ✘ card-local state. |
 
-## Decisions I need from you before Step 2 (recommended default first)
+## Decisions (resolved 2026-08-26)
 
-1. **Palette/brand.** The export re-hued everything to an original "meridian." palette (teal `#0E8FA8`, navy `#1D2144`, purple `#4B2E83`, red `#D64550`, salmon `#DD7975`, gold `#F5CE6E`, slate `#53565A`, lavender `#E5E1E6`, green `#0E9E5F`, bg `#F7F5F2`) because Claude Design declined to reproduce SoFi branding. Both specs say SoFi hexes (`#00A2C7`, `#201747`, `#330072`, `#E03E52`, `#FED880`…). Your conflict rule says visuals → export. **Default: ship the export's nine colors as the CSS variables**, and name the tokens semantically (`--teal`, `--navy`…) so a one-line swap to SoFi hexes is possible later. Say "SoFi hexes" if you'd rather I use the spec values.
-2. **Brand name in copy.** Card names / loan / wordmark: export says "Meridian Unlimited 2%", "Meridian loan", "meridian."; specs say SoFi. These are *data values*, so spec wins by your rule. **Default: SoFi names in data, export's minimal nav layout with a "SoFi"-style wordmark.**
-3. **Missing architecture spec.** Proceed using your brief as the spec (⚠ INFERRED items: `EngineContext` shape, Plaid adapter shape, the nine matrix queries, golden-path names)? **Default: yes.**
-4. **The nine matrix queries** (⚠ INFERRED from the export's parser + your choreography): `$6 latte` (merchant_habit) · `$60 dinner` (credit_expiry + split_check) · `$54 groceries` (green_light) · `$18 uber` (payday_proximity) · `$140 running shoes` (considered) · `$1,200 flight to Lisbon in March` (plan) · `$2,800 laptop` (fork) · `$15/mo Crunchyroll` (recurring) · `$1,800 moving` (large + goal → goal_collision). Correct these if your matrix differs.
+1. **Palette → SoFi hexes, not the export's.** The "visuals → export" rule covers layout, graphics, and silhouette — not tokens. The nine colors come from SoFi's externship template swatches, so they're supplied data. Ship `#00A2C7` teal · `#201747` navy · `#330072` purple · `#E03E52` red · `#DD7975` salmon · `#FED880` gold · `#53565A` slate · `#E5E1E6` lavender · `#00A05A` green, semantically named (`--teal`, `--navy`, …) so the swap stays one edit in either direction. Page bg `#F7F5F3`, text `#1B1B1B` per the master prompt.
+2. **Brand → SoFi everywhere**, including the wordmark, on the export's minimal nav layout. Wordmark and product name live behind a single `BRAND` constant so a neutral rename is one line.
+3. **Architecture spec** (`claude-code-prompt-sofi-purchase-coach.md`) is required at the repo root before scaffolding — it carries the engine/composer boundary, Worker classifier design, milestone order, and acceptance checklist. Not building from the brief alone. *(Status: still not present — searched repo, git history, `~`, both Claude Code session transcripts for this repo, and all Claude Design projects.)*
+4. **The nine matrix queries** (authoritative):
+
+| # | Query | Cards it exists to reach |
+|---|---|---|
+| 1 | `$6 latte` | merchant_habit |
+| 2 | `$60 dinner` | credit_expiry, split_check, category_pulse (+ goal_impact_chip → Tight flip once Lisbon exists) |
+| 3 | `$28 Uber` | payday_proximity |
+| 4 | `$15/mo Crunchyroll` | price_creep, annualized, subscription_stack, overlap_check |
+| 5 | `$140 running shoes` | card_ranking, utilization_watch, duplicate_check, hold_24h, guilt_free_balance |
+| 6 | `$450 monitor` | **carrying_cost**, **benefits_check** (extended-warranty variant), **cost_per_use** — only path to these |
+| 7 | `$180 concert tickets` | **impulse_frequency**, entertainment-category **discretionary_runway** |
+| 8 | `$1,200 flight to Lisbon in March` | plan_header, total_cost_of_event, cashflow_timeline, points_offset, track_goal_cta |
+| 9 | `$2,800 to move apartments` | payment_fork (bars computed from exactly $2,800: cash $2,800 / loan $2,969 @ 10.99% / Freedom $3,180 @ 24.24%), goal_collision when a goal exists |
+
+No groceries query (barred from hold_24h, surfaces nothing latte/Uber don't). No laptop query — the monitor is the electronics case. The moving amount must stay $2,800 or payment_fork's numbers silently go wrong.
 
 ## Things in the export that are prettier than the spec (keeping, per your rule)
 - `category_pulse` hand-rolled capsule with a hatched segment beats a restyled Tremor CategoryBar; I'll keep the export's bar and only use Tremor where a card has no signature graphic of its own.
