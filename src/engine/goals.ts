@@ -28,7 +28,7 @@ export function goalImpact(goal: Goal | null, q: QueryFacts, pace: CategoryPace,
   const landsAfter = addDays(landsBefore, daysPushed)
   const weeksLeft = Math.max(0, daysBetween(now, goal.deadline) / 7)
   const onTrack = landsAfter.getTime() <= goal.deadline.getTime()
-  const avgTicket = q.spendCategory === 'dining' ? 32 : Math.max(10, Math.round(q.amount))
+  const avgTicket = q.spendCategory === 'dining' ? 40 : Math.max(10, Math.round(q.amount))
   const skips = Math.max(1, Math.ceil(overshoot / avgTicket))
   const noun = q.spendCategory === 'dining' ? (skips === 1 ? 'dinner' : 'dinners') : q.spendCategory === 'entertainment' ? (skips === 1 ? 'night out' : 'nights out') : (skips === 1 ? 'small buy' : 'small buys')
   return {

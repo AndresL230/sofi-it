@@ -13,7 +13,9 @@ export function verdict({ q, pace, runway, goalImpact, utilization, duplicate, s
   }
   if (runway.roomAfter < 0) return { word: 'Over.', tone: 'over', clause: ['This clears out the month\'s room — checking would drop under your ', money(runway.bufferFloor), ' buffer.'] }
   if (goalImpact && goalImpact.daysPushed > 0) return { word: 'Tight.', tone: 'tight', clause: [`Doable — but it's ${goalImpact.goal.name.split(' ')[0]} money now.`] }
-  if (pace.projectedWith > pace.usual * 1.08 && !q.spendCategoryEssentialLike) {
+  if (q.size === 'medium' && runway.roomAfter < runway.cushion) return { word: 'Tight.', tone: 'tight', clause: [money(runway.room), ' of room before ', date(runway.nextPayday, 'weekdayLong'), ' — this takes most of it.'] }
+  const paceCeiling = q.size === 'small' ? 1.08 : 1.6
+  if (pace.projectedWith > pace.usual * paceCeiling && !q.spendCategoryEssentialLike) {
     if (q.size === 'small' && runway.daysToPayday <= 4) return { word: 'Tight.', tone: 'tight', clause: ['Payday is ', date(runway.nextPayday, 'weekdayLong'), ' — runway is thin until then.'] }
     return { word: 'Tight.', tone: 'tight', clause: [cap(lower), ' lands about ', money(Math.max(1, Math.round(pace.overshoot))), ' over usual with this.'] }
   }

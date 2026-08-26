@@ -10,9 +10,9 @@ function BestCardRow({ winner, rows, deltaVsFlat, flatShort }: Props) {
   const [open, setOpen] = useState(false)
   return (
     <CardShell>
-      <div className="flex items-center gap-[14px]">
+      <div className="flex flex-wrap items-center gap-[14px]">
         <CardArt art={winner.card.art} label={winner.card.artLabel} last4={winner.card.last4} />
-        <div className="flex-1 text-[14px]"><b>{winner.card.name}</b> — <Rich text={winner.reason} animated={false} /></div>
+        <div className="min-w-[180px] flex-1 text-[14px]"><b>{winner.card.name}</b> — <Rich text={winner.reason} animated={false} /></div>
         <span className="shrink-0 rounded-pill bg-green-tint px-[11px] py-1 text-[12px] font-bold text-green">{deltaVsFlat > 0 ? <><Money value={deltaVsFlat} size="inline" cents="decimal" signed animated={false} /> vs your {flatShort}</> : 'best available'}</span>
       </div>
       <button onClick={() => setOpen(!open)} className="mt-[10px] inline-flex cursor-pointer items-center gap-1 text-[13.5px] font-semibold text-teal hover:text-teal-ink" aria-expanded={open}>{open ? 'Hide cards' : 'See all cards'} <span className={open ? 'rotate-90 transition-transform' : 'transition-transform'}>›</span></button>

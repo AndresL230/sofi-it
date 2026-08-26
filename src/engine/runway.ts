@@ -1,6 +1,5 @@
 import type { Runway, UserModel } from './types'
 import { daysBetween, nextDayOfMonth, sameMonth, weekdayLong } from '@/lib/dates'
-import { spentThisMonth } from './paces'
 
 /** Discretionary room before the next paycheck: checking − rent − remaining subs − remaining essentials − buffer. */
 export function runway(user: UserModel, amount: number, now: Date): Runway {
@@ -12,7 +11,8 @@ export function runway(user: UserModel, amount: number, now: Date): Runway {
     { label: 'Rent', amount: user.rent.amount, due: rentDue },
     { label: 'Subs', amount: Math.round(subsRemaining * 100) / 100, due: now },
   ]
-  const essentialsRemaining = (['groceries', 'transport'] as const).reduce((a, c) => a + Math.max(0, user.baselines[c].runRate - spentThisMonth(user, c, now)), 0)
+  // Essentials you'll need before the paycheck after next (one pay cycle), so room doesn't swing with the day of month.
+  const essentialsRemaining = (['groceries', 'transport'] as const).reduce((a, c) => a + user.baselines[c].usual, 0) * (user.payroll.intervalDays / 30)
   const room = Math.round(checking - bills.reduce((a, b) => a + b.amount, 0) - essentialsRemaining - user.cash.bufferFloor)
   return {
     checking, bills, essentialsRemaining: Math.round(essentialsRemaining), bufferFloor: user.cash.bufferFloor, cushion: user.cash.cushion,

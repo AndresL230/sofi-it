@@ -10,7 +10,7 @@ function DiscretionaryRunway({ checking, room, reserved, bills, payday }: Props)
     <CardShell>
       <div className="mb-3 text-[13px] text-slate">Your runway to the next paycheck.</div>
       <div className="relative flex h-[46px] items-stretch overflow-hidden rounded-sm2 bg-navy">
-        <div className="flex items-center whitespace-nowrap pl-3 text-[12px] font-bold text-white" style={{ width: pct(room), background: 'var(--teal)', minWidth: room > 0 ? 72 : 0 }}><Money value={room} size="inline" cents="never" />&nbsp;of room</div>
+        <div className="flex items-center whitespace-nowrap pl-3 text-[12px] font-bold text-white" style={{ width: pct(room), background: 'var(--teal)', minWidth: room > 0 ? 112 : 0 }}><Money value={room} size="inline" cents="never" />&nbsp;of room</div>
         <div className="relative" style={{ width: pct(reserved) }}><div className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2" style={{ background: 'repeating-linear-gradient(90deg, rgba(255,255,255,.5) 0 12px, transparent 12px 26px)' }} /></div>
         {bills.map((b, i) => (
           <div key={b.label} className="flex items-center justify-center text-[9px] font-bold uppercase text-navy" style={{ width: pct(b.amount), background: i % 2 ? 'var(--lavender)' : 'var(--lavender-deep)', minWidth: b.amount / checking > 0.15 ? 60 : 0 }}>

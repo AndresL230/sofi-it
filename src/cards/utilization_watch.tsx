@@ -33,4 +33,4 @@ function UtilizationWatch({ cardName, after, threshold, payBy }: Props) {
 export const condition = (ctx: EngineContext) => ctx.utilization !== null
 export const select = (ctx: EngineContext): Props => ({ cardName: ctx.utilization!.card.name.replace('Chase ', ''), after: ctx.utilization!.after, threshold: ctx.utilization!.threshold, payBy: ctx.utilization!.payBy })
 
-export default defineCard<Props>({ type: 'utilization_watch', section: 'Cards & rewards', label: '', condition, select, Component: UtilizationWatch, samples: [{ query: '$140 running shoes' }] })
+export default defineCard<Props>({ type: 'utilization_watch', column: 'left', section: 'Cards & rewards', label: '', condition, select, Component: UtilizationWatch, samples: [{ query: '$140 running shoes' }] })

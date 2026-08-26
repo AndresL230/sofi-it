@@ -55,8 +55,8 @@ export function Home() {
           <div className="text-[15px] font-semibold text-slate">Net worth</div>
           <div className="mt-[6px]"><Money value={netWorth + 0.06} size="hero" /></div>
           <div className="mt-[2px] text-[13px] font-semibold text-green">▲ <Money value={sixMonthDelta} size="inline" cents="never" /> past 6 months</div>
-          <svg viewBox="0 0 300 72" className="mt-3 h-[72px] w-full" aria-hidden>
-            <path d={path} fill="none" stroke="var(--teal)" strokeWidth="2.5" strokeLinecap="round" />
+          <svg viewBox="0 0 300 72" preserveAspectRatio="none" className="mt-3 h-[72px] w-full" aria-hidden>
+            <path d={path} fill="none" stroke="var(--teal)" strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
           </svg>
           <div className="mt-[10px] flex gap-[6px]">
             {RANGES.map((r) => (

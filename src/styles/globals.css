@@ -96,3 +96,6 @@ number-flow-react { --number-flow-mask-height: 0.2em; }
 
 /* payday_proximity: the "now" dot travels from today's tile toward payday and stops ~70% of the way */
 @keyframes dotTravelVar { from { left: var(--dot-from) } to { left: var(--dot-to) } }
+
+/* price_creep: the line draws left→right without depending on rAF */
+@keyframes sparkReveal { from { clip-path: inset(0 100% 0 0) } to { clip-path: inset(0 0 0 0) } }

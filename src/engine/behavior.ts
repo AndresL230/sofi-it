@@ -6,8 +6,8 @@ const MERCHANT_HINT: Record<string, string> = { coffee: 'Blue Bottle Coffee', la
 export function merchantHabit(user: UserModel, q: QueryFacts, now: Date): MerchantHabit | null {
   const hint = q.merchant ?? Object.entries(MERCHANT_HINT).find(([k]) => q.normalized.toLowerCase().includes(k))?.[1] ?? (q.category === 'coffee' ? 'Blue Bottle Coffee' : null)
   if (!hint) return null
-  const key = hint.toLowerCase().split(' ')[0]
-  const visits = user.txns.filter((t) => t.amount > 0 && t.merchant.toLowerCase().includes(key))
+  const key = hint.toLowerCase()
+  const visits = user.txns.filter((t) => t.amount > 0 && t.merchant.toLowerCase().startsWith(key.split(' ').slice(0, 2).join(' ')))
   if (!visits.length) return null
   const thisMonth = visits.filter((t) => sameMonth(t.date, now))
   const ytd = visits.filter((t) => t.date >= startOfYear(now))
@@ -18,8 +18,9 @@ export function merchantHabit(user: UserModel, q: QueryFacts, now: Date): Mercha
 /** Quarter dot-strip: discretionary buys ≥ $40 in this spend category over the trailing 13 weeks. */
 export function impulseHistory(user: UserModel, q: QueryFacts, now: Date): ImpulseHistory {
   const weeks = 13
+  const threshold = q.spendCategory === 'shopping' ? 75 : q.spendCategory === 'entertainment' ? 40 : 50
   const past = user.txns
-    .filter((t) => t.amount >= 40 && t.category === q.spendCategory && !t.tags?.includes('trip') && daysBetween(t.date, now) >= 0 && daysBetween(t.date, now) < weeks * 7)
+    .filter((t) => t.amount >= threshold && t.category === q.spendCategory && !t.tags?.includes('trip') && daysBetween(t.date, now) >= 0 && daysBetween(t.date, now) < weeks * 7)
     .map((t) => ({ txn: t, weekIndex: weeks - 1 - Math.floor(daysBetween(t.date, now) / 7) }))
   return { weeks, past, todayWeekIndex: weeks - 1, countThisQuarter: past.length }
 }

@@ -40,4 +40,4 @@ function TotalCostOfEvent({ flight, stay, food, local, allIn, ratio }: Props) {
 export const condition = (ctx: EngineContext) => ctx.eventCost !== null && ctx.q.size === 'large'
 export const select = (ctx: EngineContext): Props => ({ flight: ctx.eventCost!.flight, stay: ctx.eventCost!.stay, food: ctx.eventCost!.food, local: ctx.eventCost!.local, allIn: ctx.eventCost!.allIn, ratio: ctx.eventCost!.ratio })
 
-export default defineCard<Props>({ type: 'total_cost_of_event', section: 'Large-purchase showpieces', label: '', condition, select, Component: TotalCostOfEvent, samples: [{ query: '$1,200 flight to Lisbon in March' }] })
+export default defineCard<Props>({ type: 'total_cost_of_event', column: 'left', section: 'Large-purchase showpieces', label: '', condition, select, Component: TotalCostOfEvent, samples: [{ query: '$1,200 flight to Lisbon in March' }] })

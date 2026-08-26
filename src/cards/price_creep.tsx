@@ -1,6 +1,7 @@
 import type { EngineContext } from '@/engine/types'
 import { defineCard, CardShell, Money, useDelay } from './kit'
-import { SparkAreaChart } from '@/vendor/tremor/SparkAreaChart'
+import { lazy, Suspense } from 'react'
+const SparkAreaChart = lazy(() => import('@/vendor/tremor/SparkAreaChart').then((m) => ({ default: m.SparkAreaChart })))
 
 interface Props { monthly: number[]; monthLabels: string[]; raises: { name: string; delta: number; monthIndex: number }[]; candidate: { name: string; price: number }; raiseTotal: number; driftPerYear: number }
 
@@ -18,7 +19,7 @@ function PriceCreep({ monthly, monthLabels, raises, candidate, raiseTotal, drift
       <div className="text-[15px] font-semibold">Same subscriptions. <b className="text-salmon-ink"><Money value={raiseTotal} size="inline" cents={Number.isInteger(raiseTotal) ? 'never' : 'decimal'} signed animated={false} />/mo</b> in raises.</div>
       <div className="relative mt-[26px]" style={{ height: H + 18 }}>
         <div className="absolute inset-x-0 top-0" style={{ height: H, width: '92%' }}>
-          <SparkAreaChart data={monthly.map((v, i) => ({ i, v }))} index="i" category="v" color="var(--salmon)" min={min} max={max} height={H} delay={d(200)} />
+          <Suspense fallback={null}><SparkAreaChart data={monthly.map((v, i) => ({ i, v }))} index="i" category="v" color="var(--salmon)" min={min} max={max} height={H} delay={d(200)} /></Suspense>
         </div>
         <svg className="absolute inset-x-0 top-0" style={{ height: H, width: '100%' }} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
           {raises.map((r, k) => <circle key={r.name} cx={x(r.monthIndex)} cy={y(monthly[r.monthIndex])} r="1.2" fill="var(--salmon)" style={{ animation: `popIn .2s ${d(350 + k * 250)} both` }} />)}
@@ -46,4 +47,4 @@ export const select = (ctx: EngineContext): Props => {
   return { monthly: ctx.subs.monthly, monthLabels: labels, raises: ctx.subs.raises, candidate: { name: ctx.q.serviceName ?? 'this one', price: ctx.q.amount }, raiseTotal, driftPerYear: Math.round(raiseTotal * 12) }
 }
 
-export default defineCard<Props>({ type: 'price_creep', section: 'Recurring', label: '', condition, select, Component: PriceCreep, samples: [{ query: '$15/mo Crunchyroll' }] })
+export default defineCard<Props>({ type: 'price_creep', column: 'left', section: 'Recurring', label: '', condition, select, Component: PriceCreep, samples: [{ query: '$15/mo Crunchyroll' }] })

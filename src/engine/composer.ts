@@ -77,7 +77,9 @@ export function compose(ctx: EngineContext, eligible: (t: CardType) => boolean):
     if (idx < 0) break
     chosen.splice(chosen.length - 1 - idx, 1)
   }
-  const order = new Map(path.entries.map((en, i) => [en.type, i]))
+  // Render order: banner/header first, framing (consequence, footer) last, everything else in path order.
+  const TAIL: Partial<Record<CardType, number>> = { consequence_line: 1000, post_purchase_footer: 1001 }
+  const order = new Map(path.entries.map((en, i) => [en.type, TAIL[en.type] ?? i]))
   const cards = chosen.sort((a, b) => (order.get(a.type) ?? 0) - (order.get(b.type) ?? 0)).map((c) => c.type)
   const dropped = path.entries.map((x) => x.type).filter((t) => !cards.includes(t))
   return { path: path.name, layout: path.layout, cards, dropped }

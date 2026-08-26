@@ -11,7 +11,7 @@ const subsTotal = Math.round(SUBSCRIPTIONS.reduce((a, s) => a + s.price, 0) * 10
  */
 export const BASELINES: Record<SpendCategory, Baseline> = {
   dining: { category: 'dining', label: 'Dining', usual: 550, runRate: 525, essential: false },
-  groceries: { category: 'groceries', label: 'Groceries', usual: 480, runRate: 470, essential: true },
+  groceries: { category: 'groceries', label: 'Groceries', usual: 480, runRate: 360, essential: true },
   transport: { category: 'transport', label: 'Transport', usual: 160, runRate: 150, essential: true },
   shopping: { category: 'shopping', label: 'Shopping', usual: 250, runRate: 230, essential: false },
   entertainment: { category: 'entertainment', label: 'Entertainment', usual: 120, runRate: 82, essential: false },

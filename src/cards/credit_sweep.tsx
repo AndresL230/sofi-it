@@ -8,11 +8,7 @@ interface Props { credits: { label: string; amount: number }[]; total: number }
 function CreditSweep({ credits, total }: Props) {
   const d = useDelay()
   const [swept, setSwept] = useState(0)
-  useEffect(() => {
-    const timers = credits.map((c, i) => setTimeout(() => setSwept((s) => Math.round((s + c.amount) * 100) / 100), parseInt(d(300 + i * 80)) + 150))
-    return () => timers.forEach(clearTimeout)
-  }, [credits, d])
-  void total
+  useEffect(() => { setSwept(total) }, [total])
   return (
     <CardShell className="flex flex-wrap items-center gap-[10px]">
       {credits.map((c, i) => (
@@ -20,7 +16,7 @@ function CreditSweep({ credits, total }: Props) {
           <b className="text-[14px] text-ink"><Money value={c.amount} size="inline" cents="never" animated={false} /></b> {c.label}
         </div>
       ))}
-      <span className="ml-auto rounded-pill bg-green-tint px-[14px] py-[6px] text-[13px] font-extrabold text-green" style={{ animation: `popIn .3s ${d(300 + credits.length * 80)} both` }}><Money value={swept} size="inline" cents="never" /> swept</span>
+      <span className="ml-auto rounded-pill bg-green-tint px-[14px] py-[6px] text-[13px] font-extrabold text-green" style={{ animation: `popIn .3s ${d(300 + credits.length * 80)} both` }}><Money value={swept} size="inline" cents="never" delayMs={parseInt(d(300 + credits.length * 80))} /> swept</span>
     </CardShell>
   )
 }

@@ -76,9 +76,9 @@ export function buildContext(c: PurchaseClassification, goal: Goal | null, user:
 
   const ledger: EngineContext['ledger'] = q.frequency === 'recurring'
     ? [{ label: 'subscriptions', before: subs.total, after: subs.newTotal, unit: '/mo' }, { label: 'all-in', before: subs.total * 12, after: subs.newTotal * 12, unit: '/yr' }]
-    : q.size === 'large' && rw.roomAfter < 0
-      ? [{ label: 'checking', before: rw.checking, after: rw.checking - q.amount }, { label: winnerCard.name.replace('Chase ', ''), before: winnerCard.balance, after: winnerCard.balance + q.amount }, { label: catLower, before: pace.spent, after: pace.spent + q.amount }]
-      : [{ label: 'checking', before: rw.checking, after: rw.checking - q.amount }, { label: winnerCard.name.replace('Chase ', '').replace(' Unlimited', ''), before: winnerCard.balance, after: winnerCard.balance + q.amount }, { label: catLower, before: pace.spent, after: pace.spent + q.amount }]
+    : q.size === 'large' && rw.roomAfter < 0 && q.category !== 'travel'
+      ? [{ label: 'cash: checking', before: rw.checking, after: rw.checking - q.amount }, { label: 'loan', before: 0, after: options.find((o) => o.key === 'loan')!.monthly ?? 0, unit: '/mo' }, { label: 'card interest', before: 0, after: options.find((o) => o.key === 'card')!.total - q.amount, unit: '/yr' }]
+      : [{ label: q.category === 'travel' ? 'checking, if today' : 'checking', before: rw.checking, after: rw.checking - q.amount }, { label: winnerCard.name.replace('Chase ', '').replace(' Unlimited', ''), before: winnerCard.balance, after: winnerCard.balance + q.amount }, { label: catLower, before: pace.spent, after: pace.spent + q.amount }]
   const goalLedger = goal ? { label: goal.name.split(' ')[0], delta: gi ? -gi.daysPushed : 0 } : null
 
   return {

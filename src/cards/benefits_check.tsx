@@ -26,4 +26,4 @@ const EXCLUDED = ['dining', 'coffee', 'groceries', 'transport', 'subscription']
 export const condition = (ctx: EngineContext) => ctx.q.size !== 'small' && !EXCLUDED.includes(ctx.q.category) && ctx.benefits.some((b) => b.active)
 export const select = (ctx: EngineContext): Props => ({ shields: ctx.benefits })
 
-export default defineCard<Props>({ type: 'benefits_check', section: 'Cards & rewards', label: '', condition, select, Component: BenefitsCheck, samples: [{ query: '$140 running shoes', label: 'apparel' }, { query: '$450 monitor', label: 'electronics — extended warranty' }] })
+export default defineCard<Props>({ type: 'benefits_check', column: 'left', section: 'Cards & rewards', label: '', condition, select, Component: BenefitsCheck, samples: [{ query: '$140 running shoes', label: 'apparel' }, { query: '$450 monitor', label: 'electronics — extended warranty' }] })

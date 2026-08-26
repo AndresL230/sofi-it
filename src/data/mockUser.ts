@@ -121,6 +121,9 @@ export function buildPlaidResponse(now = new Date()): PlaidResponse {
   // Two apparel buys this quarter
   spend('shopping', 'Nike', 95, addDays(today, -42), ACCOUNT_IDS.sofi2, ['apparel', 'sneakers'])
   spend('shopping', 'Blundstone', 120, addDays(today, -70), ACCOUNT_IDS.sofi2, ['apparel', 'boots'])
+  // Entertainment this quarter (impulse_frequency dots for the tickets query)
+  spend('entertainment', 'Ticketmaster', 85, addDays(today, -49), ACCOUNT_IDS.sofi2, ['tickets'])
+  spend('entertainment', 'Sunset Cinema', 52, addDays(today, -22), ACCOUNT_IDS.sofi2, ['tickets'])
   // Prior trip cluster (~4 months ago): flight booked earlier, the rest during the trip
   const trip = addMonths(today, -PRIOR_TRIP.monthsAgo)
   spend('travel', 'JetBlue', PRIOR_TRIP.flight, addDays(trip, -35), ACCOUNT_IDS.csp, ['trip', 'flight'])

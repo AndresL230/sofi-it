@@ -21,6 +21,9 @@ function earn(card: CreditCardRule, rc: RewardCategory, amount: number) {
   return { mult, back: Math.round(back * 100) / 100 }
 }
 
+/** Share of a monthly bonus cap at which the capped card is treated as locked to that category. */
+const CAP_LOCK_RATIO = 0.9
+
 /** Rank the five cards for this purchase. Ties: travel prefers trip protection; otherwise the flat house card wins ("simple and best"). */
 export function rankCards(user: UserModel, q: QueryFacts): CardRanking {
   const rc = rewardCategory(q.category)
@@ -28,9 +31,12 @@ export function rankCards(user: UserModel, q: QueryFacts): CardRanking {
     const { mult, back } = earn(card, rc, q.amount)
     let disqualified = false
     let badge: RankedCard['badge']
-    if (card.cap && card.cap.category === rc) {
+    // A capped-bonus card whose monthly cap is ≥90% used is out for every purchase this month — the category
+    // is already locked in (Citi: dining), so it earns nothing useful on anything else either.
+    if (card.cap && card.cap.used / card.cap.monthlyCap >= CAP_LOCK_RATIO) {
       const left = card.cap.monthlyCap - card.cap.used
-      if (left < q.amount) { disqualified = true; badge = { kind: 'cap', left, cap: card.cap.monthlyCap, rate: card.cap.rate, tone: 'gold' } }
+      disqualified = true
+      badge = { kind: 'cap', left, cap: card.cap.monthlyCap, rate: card.cap.rate, tone: 'gold' }
     }
     const utilizationAfter = card.limit ? (card.balance + q.amount) / card.limit : null
     return { card, back: disqualified ? 0 : back, multiplier: mult, disqualified, badge, utilizationAfter }
@@ -59,7 +65,7 @@ export function rankCards(user: UserModel, q: QueryFacts): CardRanking {
 
 function reasonFor(card: CreditCardRule, rc: RewardCategory, q: QueryFacts, winner: boolean, isBonus: boolean, disqualified: boolean, user: UserModel): RichText {
   const mult = card.bonus[rc] ?? card.base
-  if (disqualified && card.cap) return [num(card.cap.rate), '% top category (', card.cap.category, ')']
+  if (disqualified && card.cap) return card.cap.category === rc ? [num(card.cap.rate), '% top category (', card.cap.category, ')'] : ['Top category is ', card.cap.category, ' this month']
   if (card.program === 'cash') {
     if (card.isFlatHouseCard) return winner ? ['Flat ', num(mult), '% — no bonus category applies to ', NOUN[rc], '. Simple and best.'] : (rc === 'travel' ? ['Flat ', num(mult), '% — but no travel protection on a ', money(q.amount), ' booking'] : ['Flat ', num(mult), '%, your default card'])
     return [num(mult, { fraction: 1 }), '% flat']

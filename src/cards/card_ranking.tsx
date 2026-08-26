@@ -17,4 +17,4 @@ function CardRanking({ rows, title }: Props) {
 export const condition = (ctx: EngineContext) => ctx.q.size !== 'small' && ctx.q.frequency !== 'recurring'
 export const select = (ctx: EngineContext): Props => ({ rows: ctx.ranking.ranked, title: ctx.q.size === 'large' ? 'Which card, when you book' : 'Which card' })
 
-export default defineCard<Props>({ type: 'card_ranking', section: 'Cards & rewards', label: '', condition, select, Component: CardRanking, samples: [{ query: '$140 running shoes' }] })
+export default defineCard<Props>({ type: 'card_ranking', column: 'left', section: 'Cards & rewards', label: '', condition, select, Component: CardRanking, samples: [{ query: '$140 running shoes' }] })

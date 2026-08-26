@@ -34,7 +34,7 @@ export function Stamp({ delay, size = 68 }: { delay: string; size?: number }) {
 }
 
 export const condition = (ctx: EngineContext) =>
-  ctx.q.size === 'small' && ctx.q.frequency !== 'recurring' && ctx.pace.usual > 0 && ctx.pace.projectedWith <= ctx.pace.usual * 0.85 && (ctx.goalImpact ? ctx.goalImpact.onTrack : true)
+  ctx.q.size === 'small' && ctx.q.frequency !== 'recurring' && ctx.pace.usual > 0 && ctx.pace.projectedWith <= ctx.pace.usual * 0.9 && (ctx.goalImpact ? ctx.goalImpact.onTrack : true)
 export const select = (ctx: EngineContext): Props => ({ label: ctx.pace.label, under: Math.round(ctx.pace.usual - ctx.pace.projectedWith), plural: ctx.pace.label.endsWith('s') })
 
 export default defineCard<Props>({ type: 'green_light', section: 'Verdict & framing', label: '', condition, select, Component: GreenLight, samples: [{ query: '$54 groceries' }] })

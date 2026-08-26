@@ -36,9 +36,12 @@ export interface MoneyProps {
   /** Disable the roll (static render, e.g. inside long lists). */
   animated?: boolean
   title?: string
+  /** Delay the roll (ms) — count-ups that should land after a signature motion. */
+  delayMs?: number
 }
+const timing = (delayMs?: number) => (delayMs ? { transformTiming: { duration: 750, delay: delayMs, easing: 'ease-out' }, spinTiming: { duration: 750, delay: delayMs, easing: 'ease-out' }, opacityTiming: { duration: 350, delay: delayMs, easing: 'ease-out' } } : {})
 
-export function Money({ value, size = 'md', cents = 'auto', signed, prefix = '', suffix = '', approx, className, animated = true, title }: MoneyProps) {
+export function Money({ value, size = 'md', cents = 'auto', signed, prefix = '', suffix = '', approx, className, animated = true, title, delayMs }: MoneyProps) {
   const v = approx ? Math.round(value) : Math.round(value * 100) / 100
   const mode: Exclude<CentsMode, 'auto'> =
     cents === 'auto' ? (size === 'inline' ? (Number.isInteger(v) ? 'never' : 'decimal') : 'raised') : cents
@@ -56,10 +59,11 @@ export function Money({ value, size = 'md', cents = 'auto', signed, prefix = '',
             value={whole}
             prefix={pre + sign}
             animated={animated}
+            {...timing(delayMs)}
             format={{ style: 'currency', currency: 'USD', maximumFractionDigits: 0, minimumFractionDigits: 0 }}
           />
           <sup aria-hidden="false">
-            <NumberFlow value={c} animated={animated} format={{ minimumIntegerDigits: 2, useGrouping: false }} />
+            <NumberFlow value={c} animated={animated} {...timing(delayMs)} format={{ minimumIntegerDigits: 2, useGrouping: false }} />
           </sup>
           {suffix ? <span className="ml-0.5 text-[.5em] font-semibold text-slate-muted">{suffix}</span> : null}
         </NumberFlowGroup>
@@ -74,6 +78,7 @@ export function Money({ value, size = 'md', cents = 'auto', signed, prefix = '',
         prefix={pre + sign}
         suffix={suffix}
         animated={animated}
+        {...timing(delayMs)}
         format={{ style: 'currency', currency: 'USD', maximumFractionDigits: fraction, minimumFractionDigits: fraction }}
       />
     </span>
@@ -81,7 +86,7 @@ export function Money({ value, size = 'md', cents = 'auto', signed, prefix = '',
 }
 
 /** Non-currency animated number (counts, days, percentages, points). */
-export function Num({ value, suffix = '', prefix = '', fraction = 0, className, animated = true, signed }: { value: number; suffix?: string; prefix?: string; fraction?: number; className?: string; animated?: boolean; signed?: boolean }) {
+export function Num({ value, suffix = '', prefix = '', fraction = 0, className, animated = true, signed, delayMs }: { value: number; suffix?: string; prefix?: string; fraction?: number; className?: string; animated?: boolean; signed?: boolean; delayMs?: number }) {
   return (
     <span className={cn('money', className)}>
       <NumberFlow
@@ -89,6 +94,7 @@ export function Num({ value, suffix = '', prefix = '', fraction = 0, className, 
         prefix={prefix + (signed && value > 0 ? '+' : '')}
         suffix={suffix}
         animated={animated}
+        {...timing(delayMs)}
         format={{ maximumFractionDigits: fraction, minimumFractionDigits: fraction }}
       />
     </span>

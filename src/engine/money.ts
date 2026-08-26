@@ -3,6 +3,13 @@ import { addDays, addMonths, startOfDay } from '@/lib/dates'
 import { money, num } from './format'
 import { BRAND } from '@/brand'
 
+/** The card a purchase would realistically ride: highest known APR among real credit lines that can (nearly) hold it. Charge cards can't carry a balance. */
+export function rideCard(amount: number, user: UserModel): CreditCardRule {
+  const known = user.cards.filter((c) => c.apr !== null && c.limit !== null)
+  const fits = known.filter((c) => (c.limit as number) - c.balance >= amount * 0.95)
+  return [...(fits.length ? fits : known)].sort((a, b) => (b.apr ?? 0) - (a.apr ?? 0))[0] ?? user.cards[0]
+}
+
 /** Standard amortized payment. */
 export function amortizedPayment(principal: number, apr: number, months: number): number {
   const r = apr / 12
@@ -14,13 +21,13 @@ export function amortizedPayment(principal: number, apr: number, months: number)
 export function paymentOptions(amount: number, user: UserModel): PaymentOption[] {
   const loanMonthly = amortizedPayment(amount, user.loan.apr, user.loan.termMonths)
   const loanTotal = Math.round(loanMonthly * user.loan.termMonths)
-  const card = [...user.cards].filter((c) => c.limit === null || c.limit - c.balance >= amount).sort((a, b) => b.apr - a.apr)[0] ?? user.cards[0]
-  const cardMonthly = amortizedPayment(amount, card.apr, 12)
+  const card = rideCard(amount, user)
+  const cardMonthly = amortizedPayment(amount, card.apr ?? 0, 12)
   const cardTotal = Math.round(cardMonthly * 12)
   const opts: PaymentOption[] = [
     { key: 'cash', label: 'Cash now', total: amount, monthly: null, note: ['gone today, ', money(0), ' extra'], apr: null, months: null, winner: false },
-    { key: 'loan', label: BRAND.loan, total: loanTotal, monthly: Math.round(loanMonthly), note: [num(user.loan.termMonths), ' mo · ', num(user.loan.apr * 100, { fraction: 2 }), '% · ', money(Math.round(loanMonthly)), '/mo'], apr: user.loan.apr, months: user.loan.termMonths, winner: false },
-    { key: 'card', label: 'Ride the card', total: cardTotal, monthly: Math.round(cardMonthly), note: [card.name.replace('Chase ', '').replace(' Unlimited', ''), ' ', num(card.apr * 100, { fraction: 2 }), '% · a year to clear'], apr: card.apr, months: 12, winner: false, cardName: card.name },
+    { key: 'loan', label: BRAND.loan, total: loanTotal, monthly: Math.round(loanMonthly), note: [num(user.loan.termMonths), ' mo · ', num(user.loan.apr * 100, { fraction: 2, suffix: '%' }), ' · ', money(Math.round(loanMonthly)), '/mo'], apr: user.loan.apr, months: user.loan.termMonths, winner: false },
+    { key: 'card', label: 'Ride the card', total: cardTotal, monthly: Math.round(cardMonthly), note: [card.name.replace('Chase ', '').replace(' Unlimited', ''), ' ', num((card.apr ?? 0) * 100, { fraction: 2, suffix: '%' }), ' · a year to clear'], apr: card.apr, months: 12, winner: false, cardName: card.name },
   ]
   const min = Math.min(...opts.map((o) => o.total))
   return opts.map((o) => ({ ...o, winner: o.total === min }))
@@ -28,12 +35,12 @@ export function paymentOptions(amount: number, user: UserModel): PaymentOption[]
 
 /** Interest stacking month by month if it rides the card and only minimums get paid. */
 export function carryingCost(amount: number, user: UserModel, now: Date, months = 3, cardOverride?: CreditCardRule): CarryingCost {
-  const card = cardOverride ?? ([...user.cards].filter((c) => c.limit === null || c.limit - c.balance >= amount).sort((a, b) => b.apr - a.apr)[0] ?? user.cards[0])
+  const card = cardOverride ?? rideCard(amount, user)
   let bal = amount
   const rows = []
   let total = 0
   for (let i = 1; i <= months; i++) {
-    const interest = bal * (card.apr / 12)
+    const interest = bal * ((card.apr ?? 0) / 12)
     const minPay = Math.max(25, bal * 0.02)
     total += interest
     rows.push({ label: addMonths(now, i).toLocaleDateString('en-US', { month: 'short' }), date: addMonths(now, i), balance: Math.round(bal), interest: Math.round(interest * 100) / 100 })
@@ -72,7 +79,7 @@ export function eventCost(user: UserModel, amount: number): EventCost {
 
 /** When a large purchase becomes affordable in full, at pace and with a redirect. */
 export function affordability(user: UserModel, q: QueryFacts, rw: Runway, points: PointsOffset, now: Date, weeklyPace = 125): Affordability {
-  const availableNow = Math.max(0, rw.room)
+  const availableNow = Math.max(0, rw.room - rw.cushion)
   const shortfall = Math.max(0, q.amount - availableNow)
   const weeksAtPace = shortfall / weeklyPace
   const affordableInFull = addDays(startOfDay(now), Math.ceil(weeksAtPace * 7))

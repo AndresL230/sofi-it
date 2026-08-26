@@ -33,4 +33,4 @@ function PaymentFork({ amount, options }: Props) {
 export const condition = (ctx: EngineContext) => ctx.q.size === 'large' && ctx.runway.roomAfter < 0
 export const select = (ctx: EngineContext): Props => ({ amount: ctx.q.amount, options: ctx.paymentOptions })
 
-export default defineCard<Props>({ type: 'payment_fork', section: 'Large-purchase showpieces', label: '', condition, select, Component: PaymentFork, samples: [{ query: '$2,800 to move apartments' }] })
+export default defineCard<Props>({ type: 'payment_fork', column: 'left', section: 'Large-purchase showpieces', label: '', condition, select, Component: PaymentFork, samples: [{ query: '$2,800 to move apartments' }] })

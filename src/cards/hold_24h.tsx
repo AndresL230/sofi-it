@@ -18,7 +18,7 @@ function Hold24h({ thing, amount, cardShort, goalName, hours, verdictWord, actio
       <AnimatePresence mode="wait" initial={false}>
         {phase === 'front' ? (
           <motion.div key="front" {...flip} className="pc-card px-5 py-[18px]" style={{ transformStyle: 'preserve-3d' }}>
-            <Button variant="outline" className="w-full whitespace-normal py-[13px] text-[14.5px] h-auto" onClick={() => setPhase('held')}>Hold it for <Num value={hours} animated={false} /> hours — I'll re-ask you tomorrow.</Button>
+            <Button variant="outline" className="w-full whitespace-normal py-[13px] text-[14.5px] h-auto" onClick={() => setPhase('held')}><span>Hold it for <Num value={hours} animated={false} /> hours — I'll re-ask you tomorrow.</span></Button>
           </motion.div>
         ) : phase === 'held' ? (
           <motion.div key="held" {...flip} className="relative overflow-hidden rounded-card bg-navy px-5 py-[22px] text-center text-white" style={{ transformStyle: 'preserve-3d' }}>

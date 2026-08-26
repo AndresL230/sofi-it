@@ -74,7 +74,8 @@ export interface CreditCardRule {
   art: [string, string]
   balance: number
   limit: number | null
-  apr: number
+  /** Only Freedom's APR is given in the spec; unknown APRs stay null rather than invented. */
+  apr: number | null
   program: PointsProgram
   /** Cents of value per point when earning. */
   pointValueCents: number

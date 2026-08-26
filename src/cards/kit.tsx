@@ -44,6 +44,8 @@ export interface CardModule<P> {
   samples: { query: string; goal?: boolean; label?: string; override?: (p: P) => P }[]
   /** Layout hint for two-column answer layouts. */
   span?: 'full' | 'auto'
+  /** Which stack a card lands in when the answer is two columns (default: right). */
+  column?: 'left' | 'right'
   /** Chrome-free element (consequence_line, chip) — the renderer skips the card wrapper/stagger styling. */
   bare?: boolean
 }
