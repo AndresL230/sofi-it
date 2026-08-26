@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "sofi-purchase-coach",
+  "workers_dev": true,
   "routes": [{ "pattern": "meridian.andresl.dev", "custom_domain": true }],
   "account_id": "0bda3a2560ca48711ef7336cc421abed",
   "main": "worker/index.ts",
